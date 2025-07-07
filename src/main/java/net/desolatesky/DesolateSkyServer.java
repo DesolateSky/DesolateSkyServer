@@ -8,6 +8,7 @@ import net.desolatesky.block.handler.BlockHandlers;
 import net.desolatesky.command.Commands;
 import net.desolatesky.command.console.ConsoleCommandHandler;
 import net.desolatesky.cooldown.CooldownConfig;
+import net.desolatesky.entity.EntityListener;
 import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.biome.Biomes;
 import net.desolatesky.instance.listener.InstanceListener;
@@ -112,11 +113,16 @@ public final class DesolateSkyServer {
         BlockHandlers.registerAll();
         Biomes.registerBiomes();
 
+        this.registerListeners();
+
+        this.setupPermissions();
+    }
+
+    private void registerListeners() {
         final GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         PlayerListener.register(globalEventHandler);
         InstanceListener.register(globalEventHandler);
-
-        this.setupPermissions();
+        EntityListener.register(globalEventHandler);
     }
 
     private void setupPermissions() {

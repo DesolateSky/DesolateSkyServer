@@ -31,7 +31,6 @@ public final class BreakingManager {
         this.breakingDataMap.entrySet().removeIf(entry -> {
             final BreakingData breakingData = entry.getValue();
             final DSPlayer player = breakingData.player();
-            player.sendMessage("Ticking");
             final DSInstance instance = breakingData.instance();
             final BlockVec blockPos = breakingData.blockPos();
             if (!player.isOnline()) {
@@ -56,14 +55,12 @@ public final class BreakingManager {
                 return true;
             }
             final Integer breakTime = block.getTag(BlockTags.BREAK_TIME);
-            player.sendMessage("Break time: " + breakTime);
             if (breakTime == null || breakTime <= 0) {
                 resetBreakProgress(instance, breakingData.id(), blockPos);
                 return false;
             }
             breakingData.hit();
             final Duration currentBreakDuration = breakingData.currentBreakingTime();
-            player.sendMessage("Current break duration: " + currentBreakDuration.toMillis() + "ms");
             if (currentBreakDuration.toMillis() < breakTime) {
                 final byte progress = calculateCrackProgress((int) currentBreakDuration.toMillis(), breakTime);
                 sendBreakProgress(instance, breakingData.id(), blockPos, progress);
@@ -83,7 +80,6 @@ public final class BreakingManager {
         if (previousData != null && previousData.blockPos().equals(blockPos)) {
             previousData.setLastHitTime(Instant.now());
             previousData.setCurrentlyBreaking(true);
-            player.sendMessage("Continuing breaking block at " + blockPos);
             return;
         }
         if (previousData != null) {

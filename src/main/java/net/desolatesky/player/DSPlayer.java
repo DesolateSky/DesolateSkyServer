@@ -2,12 +2,16 @@ package net.desolatesky.player;
 
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.cooldown.PlayerCooldowns;
+import net.desolatesky.entity.DSEntity;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePos;
 import net.desolatesky.instance.team.TeamInstance;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.PlayerHand;
+import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.network.player.GameProfile;
 import net.minestom.server.network.player.PlayerConnection;
@@ -19,7 +23,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class DSPlayer extends Player {
+public class DSPlayer extends Player implements DSEntity {
 
     private final PlayerCooldowns cooldowns;
     private InstancePos lastLogoutPos;
@@ -29,6 +33,7 @@ public class DSPlayer extends Player {
     public DSPlayer(@NotNull PlayerConnection playerConnection, @NotNull GameProfile gameProfile) {
         super(playerConnection, gameProfile);
         this.cooldowns = new PlayerCooldowns(DesolateSkyServer.get().cooldownConfig(), new HashMap<>());
+        this.getAttribute(Attribute.BLOCK_BREAK_SPEED).setBaseValue(0);
     }
 
     @Override
@@ -45,6 +50,10 @@ public class DSPlayer extends Player {
 
     public void setIsland(TeamInstance instance) {
         this.islandId = instance.getUuid();
+    }
+
+    public void setIslandId(@Nullable UUID islandId) {
+        this.islandId = islandId;
     }
 
     public boolean hasPermission(String permission) {
@@ -89,8 +98,19 @@ public class DSPlayer extends Player {
         return this.lastLogoutPos;
     }
 
+    @Override
     public DSInstance getDSInstance() {
         return (DSInstance) super.getInstance();
+    }
+
+    @Override
+    public void onClick(DSEntity clicker, Point interactionPoint, PlayerHand hand) {
+
+    }
+
+    @Override
+    public void onPunch(DSEntity attacker) {
+
     }
 
 }

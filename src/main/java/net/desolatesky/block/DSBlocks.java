@@ -1,13 +1,16 @@
 package net.desolatesky.block;
 
+import net.desolatesky.registry.DSRegistry;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockHandler;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.tag.Tag;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public final class DSBlocks {
+public final class DSBlocks extends DSRegistry<Block> {
 
     private static final DSBlocks INSTANCE = new DSBlocks();
 
@@ -16,40 +19,36 @@ public final class DSBlocks {
     }
 
     private DSBlocks() {
+        super(BlockTags.ID);
     }
 
-    private final Map<Key, Block> blocks = new HashMap<>();
-
-
-    private Block register(Key id, Block block) {
-        final Block actual = block.withTag(BlockTags.ID, id);
-        this.blocks.put(id, actual);
-        return actual;
+    @Override
+    protected <T> Block withTag(Block block, Tag<T> tag, T value) {
+        return block.withTag(tag, value);
     }
 
-    private Block register(Block block) {
-        return this.register(block.key(), block);
+    @Override
+    protected Block getDefault(Key key) {
+        return Block.fromKey(key);
     }
 
-    public Key getBlockId(Block block) {
-        final Key id = block.getTag(BlockTags.ID);
-        if (id == null) {
-            return block.key();
-        }
-        return id;
-    }
-
-    public Block get(Key key) {
-        return this.blocks.getOrDefault(key, Block.fromKey(key));
-    }
-
-    public Block get(Block block) {
-        return this.get(this.getBlockId(block));
+    @Override
+    protected <T> T getTag(Block block, Tag<T> tag) {
+        return block.getTag(tag);
     }
 
     public Block get(Block block, BlockHandler blockHandler) {
-        final Key key = this.getBlockId(block);
-        return this.blocks.computeIfAbsent(key, k -> block.withHandler(blockHandler));
+        final Key key = this.getId(block);
+        return this.elements.computeIfAbsent(key, k -> block.withHandler(blockHandler));
+    }
+
+    @Override
+    protected Key getId(Block block) {
+        final Key key = this.getTag(block, this.idTag);
+        if (key == null) {
+            return block.key();
+        }
+        return key;
     }
 
 }

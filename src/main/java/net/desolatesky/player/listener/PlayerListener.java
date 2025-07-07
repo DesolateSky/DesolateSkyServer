@@ -6,8 +6,8 @@ import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.InstancePos;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.player.database.PlayerData;
 import net.minestom.server.coordinate.BlockVec;
-import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
@@ -27,6 +27,7 @@ public final class PlayerListener {
     public static final EventNode<Event> ROOT = EventNode.all("instance-listener")
             .addChild(EventNode.type("player-join", EventFilter.PLAYER, (event, player) -> player instanceof DSPlayer)
                     .addListener(AsyncPlayerConfigurationEvent.class, event -> {
+                        final DSPlayer player = (DSPlayer) event.getPlayer();
                         final DesolateSkyServer server = DesolateSkyServer.get();
                         final DSInstanceManager instanceManager = server.instanceManager();
                         event.setSpawningInstance(instanceManager.lobbyInstance());
@@ -37,11 +38,14 @@ public final class PlayerListener {
                         player.setFlying(true);
                         final DesolateSkyServer server = DesolateSkyServer.get();
                         final DSInstanceManager instanceManager = server.instanceManager();
-                        final InstancePos instancePos = server.playerManager().getPlayerLogoutPos(
-                                player.getUuid(),
-                                instanceManager::getOrLoadInstance
-                        );
-                        player.getAttribute(Attribute.BLOCK_BREAK_SPEED).setBaseValue(0);
+                        final PlayerData playerData = server.playerManager().loadPlayerData(player.getUuid(), instanceManager::getOrLoadInstance);
+                        if (playerData == null) {
+                            return;
+                        }
+                        player.setIslandId(playerData.islandId());
+                        instanceManager.tryLoadPlayerIsland(player);
+                        System.out.println("Player " + player.getUsername() + " loaded with island ID: " + playerData.islandId());
+                        final InstancePos instancePos = playerData.logoutPosition();
                         if (instancePos == null) {
                             return;
                         }
@@ -49,7 +53,9 @@ public final class PlayerListener {
                     })
                     .addListener(PlayerDisconnectEvent.class, event -> {
                         final DSPlayer player = (DSPlayer) event.getPlayer();
-                        DesolateSkyServer.get().instanceManager().unloadPlayerIsland(player);
+                        final DesolateSkyServer server = DesolateSkyServer.get();
+                        server.instanceManager().handlePlayerLeaver(player);
+                        server.playerManager().savePlayer(player);
                     })
                     .addListener(PlayerStartDiggingEvent.class, event -> {
                         final DSPlayer player = (DSPlayer) event.getPlayer();

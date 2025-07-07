@@ -4,6 +4,7 @@ import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePos;
 import net.desolatesky.instance.region.Region;
+import net.desolatesky.instance.weather.WeatherManager;
 import net.desolatesky.player.DSPlayer;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Pos;
@@ -16,7 +17,9 @@ import net.minestom.server.world.biome.Biome;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.SplittableRandom;
 import java.util.UUID;
+import java.util.random.RandomGenerator;
 
 public final class LobbyInstance extends InstanceContainer implements DSInstance {
 
@@ -27,10 +30,13 @@ public final class LobbyInstance extends InstanceContainer implements DSInstance
         return lobbyInstance;
     }
 
+    private final RandomGenerator randomSource = new SplittableRandom();
+
     private final BreakingManager breakingManager = new BreakingManager(new HashMap<>());
     private final Path worldPath;
     private final InstancePos spawnPoint;
     private final Region region;
+    private final WeatherManager weatherManager = new WeatherManager(this, this.randomSource);
 
     private LobbyInstance(UUID uuid, Path worldPath, Pos spawnPoint, Region region) {
         super(uuid, DimensionType.OVERWORLD);
@@ -77,6 +83,16 @@ public final class LobbyInstance extends InstanceContainer implements DSInstance
     @Override
     public boolean canBreakBlock(DSPlayer player, BlockVec pos, Block block) {
         return false;
+    }
+
+    @Override
+    public WeatherManager weatherManager() {
+        return this.weatherManager;
+    }
+
+    @Override
+    public RandomGenerator randomSource() {
+        return this.randomSource;
     }
 
 }

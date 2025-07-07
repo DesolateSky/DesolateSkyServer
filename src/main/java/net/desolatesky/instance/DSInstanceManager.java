@@ -9,12 +9,14 @@ import net.desolatesky.player.DSPlayer;
 import net.desolatesky.teleport.TeleportLocations;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.WorldBorder;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.UUID;
 
 public final class DSInstanceManager {
@@ -39,14 +41,17 @@ public final class DSInstanceManager {
         MinecraftServer.getInstanceManager().registerInstance(this.lobbyInstance);
     }
 
-    public @Nullable TeamInstance getPlayerIsland(DSPlayer player) {
+    public @Nullable TeamInstance getPlayerIsland(DSPlayer player, boolean load) {
+        if (load) {
+            return this.tryLoadPlayerIsland(player);
+        }
         final UUID islandId = player.islandId();
         if (islandId == null) {
             return null;
         }
         final Instance instance = this.instanceManager.getInstance(islandId);
         if (!(instance instanceof final TeamInstance teamInstance)) {
-            return null;
+            return this.tryLoadPlayerIsland(player);
         }
         return teamInstance;
     }
@@ -66,18 +71,22 @@ public final class DSInstanceManager {
         return teamInstance;
     }
 
-    public void unloadPlayerIsland(DSPlayer player) {
+    public void handlePlayerLeaver(DSPlayer player) {
         if (!player.hasIsland()) {
             return;
         }
-        final TeamInstance teamInstance = this.getPlayerIsland(player);
+        final TeamInstance teamInstance = this.getPlayerIsland(player, false);
         if (teamInstance != null) {
-            teamInstance.unload().whenComplete((result, error) -> MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
-                if (!teamInstance.getPlayers().isEmpty()) {
-                    return;
-                }
-                this.instanceManager.unregisterInstance(teamInstance);
-            }));
+            teamInstance.onLeave(player);
+            final UUID islandId = teamInstance.getUuid();
+            if (MinecraftServer.getConnectionManager().getOnlinePlayers().stream().noneMatch(p -> islandId.equals(((DSPlayer) p).islandId()) && !p.equals(player))) {
+                teamInstance.unload().whenComplete((result, error) -> MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
+                    if (!teamInstance.getPlayers().isEmpty()) {
+                        return;
+                    }
+                    this.instanceManager.unregisterInstance(teamInstance);
+                }));
+            }
         } else {
             throw new IllegalStateException("Player has an island instance but it could not be found: " + player.islandId());
         }
@@ -117,7 +126,7 @@ public final class DSInstanceManager {
     }
 
     public void teleportToIsland(DSPlayer player) {
-        final TeamInstance teamInstance = this.getPlayerIsland(player);
+        final TeamInstance teamInstance = this.getPlayerIsland(player, true);
         if (teamInstance == null) {
             return;
         }

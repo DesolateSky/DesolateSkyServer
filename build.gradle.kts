@@ -9,6 +9,7 @@ version = "1.0.0-SNAPSHOT"
 repositories {
     mavenCentral()
     maven("https://repo.hypera.dev/snapshots/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
 }
 
 dependencies {
@@ -19,6 +20,9 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.17")
     implementation("dev.lu15:luckperms-minestom:5.4-SNAPSHOT")
     implementation("org.spongepowered:configurate-hocon:4.1.2")
+    implementation("org.joml:joml:1.10.8")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
 }
 
 java {

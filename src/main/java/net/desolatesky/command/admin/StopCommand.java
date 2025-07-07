@@ -19,7 +19,6 @@ public final class StopCommand extends Command {
             if (sender instanceof DSPlayer player) {
                 return player.hasPermission(permission);
             }
-            System.out.println(sender.getClass().getName());
             return sender instanceof ServerSender || sender instanceof ConsoleSender;
         });
 

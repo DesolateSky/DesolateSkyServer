@@ -35,7 +35,6 @@ public final class ConsoleCommandHandler extends Thread {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             while (MinecraftServer.getServer().isOpen()) {
                 final String command = reader.readLine();
-                System.out.println("Executing command: " + command);
                 if (command == null || command.isEmpty()) {
                     continue;
                 }

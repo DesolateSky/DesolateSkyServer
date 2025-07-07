@@ -48,4 +48,8 @@ public final class ComponentUtil {
         return current;
     }
 
+    public static Component noItalics(Component component) {
+        return component.decoration(TextDecoration.ITALIC, false);
+    }
+
 }

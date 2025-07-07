@@ -5,6 +5,7 @@ import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePos;
 import net.desolatesky.instance.generator.StartingIslandGenerator;
+import net.desolatesky.instance.weather.WeatherManager;
 import net.desolatesky.player.DSPlayer;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
@@ -15,21 +16,27 @@ import net.minestom.server.instance.LightingChunk;
 import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.Material;
+import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.SplittableRandom;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.random.RandomGenerator;
 
 public final class TeamInstance extends InstanceContainer implements DSInstance {
 
     private static final Pos initialSpawnPoint = new Pos(0.5, 64, 0.5);
+    private final RandomGenerator randomSource = new SplittableRandom();
     private final BreakingManager breakingManager = new BreakingManager(new HashMap<>());
+    private final WeatherManager weatherManager = new WeatherManager(this, this.randomSource);
     private UUID owner;
     private InstancePos spawnPoint;
+    private Task tickTask;
 
     public static @Nullable TeamInstance load(InstanceManager instanceManager, UUID ownerUUID, Path worldFolderPath) {
         final Path worldPath = worldFolderPath.resolve(ownerUUID.toString()).resolve("world");
@@ -58,6 +65,7 @@ public final class TeamInstance extends InstanceContainer implements DSInstance 
     }
 
     public CompletableFuture<Void> unload() {
+        this.tickTask.cancel();
         return this.saveChunksToStorage().whenComplete((result, error) -> this.saveInstance().join());
     }
 
@@ -73,14 +81,15 @@ public final class TeamInstance extends InstanceContainer implements DSInstance 
 
     @Override
     public void onLeave(DSPlayer player) {
-
+        this.weatherManager.handlePlayerLeave(player);
     }
 
     private void load() {
-        this.scheduler().scheduleTask(this::onTick, TaskSchedule.nextTick(), TaskSchedule.nextTick());
+        this.tickTask = this.scheduler().scheduleTask(this::onTick, TaskSchedule.nextTick(), TaskSchedule.nextTick());
     }
 
     private void onTick() {
+        this.weatherManager.tick();
         this.breakingManager.tick();
     }
 
@@ -101,6 +110,20 @@ public final class TeamInstance extends InstanceContainer implements DSInstance 
     @Override
     public boolean canBreakBlock(DSPlayer player, BlockVec pos, Block block) {
         return !block.hasTag(BlockTags.UNBREAKABLE);
+    }
+
+    @Override
+    public WeatherManager weatherManager() {
+        return this.weatherManager;
+    }
+
+    @Override
+    public RandomGenerator randomSource() {
+        return this.randomSource;
+    }
+
+    public UUID owner() {
+        return this.owner;
     }
 
 }

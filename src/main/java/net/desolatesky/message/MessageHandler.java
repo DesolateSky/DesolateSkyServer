@@ -104,7 +104,6 @@ public class MessageHandler {
                 case "title" -> value.get(TitleMessage.class);
                 default -> value.get(ChatMessage.class);
             };
-            System.out.println("Loaded message: " + entry.getKey() + " of type " + type + " " + message);
             if (message == null) {
                 throw new IllegalArgumentException();
             }

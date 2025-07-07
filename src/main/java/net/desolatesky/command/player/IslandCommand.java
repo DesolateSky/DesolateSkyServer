@@ -51,11 +51,13 @@ public final class IslandCommand extends Command {
 
     private void goToIsland(DSPlayer player) {
         if (!player.hasIsland()) {
+            player.sendMessage(Messages.HAS_NO_ISLAND);
             return;
         }
         final DSInstanceManager instanceManager = DesolateSkyServer.get().instanceManager();
-        final TeamInstance instance = instanceManager.getPlayerIsland(player);
+        final TeamInstance instance = instanceManager.getPlayerIsland(player, true);
         if (instance == null) {
+            player.sendMessage(Messages.ISLAND_NOT_FOUND);
             return;
         }
         instanceManager.teleportToIsland(player);

@@ -1,6 +1,6 @@
 package net.desolatesky.player;
 
-import net.desolatesky.instance.InstancePos;
+import net.desolatesky.player.database.PlayerData;
 import net.desolatesky.player.database.PlayerDatabase;
 import net.minestom.server.instance.Instance;
 import org.jetbrains.annotations.Nullable;
@@ -21,8 +21,12 @@ public final class DSPlayerManager {
         return this.playerDatabase;
     }
 
-    public @Nullable InstancePos getPlayerLogoutPos(UUID playerUuid, Function<UUID, Instance> instanceGetter) {
-        return this.playerDatabase.getPlayerLogoutPosition(playerUuid, instanceGetter);
+    public @Nullable PlayerData loadPlayerData(UUID playerUuid, Function<UUID, Instance> instanceGetter) {
+        return this.playerDatabase.getPlayerData(playerUuid, instanceGetter);
+    }
+
+    public void savePlayer(DSPlayer player) {
+        this.playerDatabase.savePlayer(player);
     }
 
     public static DSPlayerManager create(Path databasePath) {
