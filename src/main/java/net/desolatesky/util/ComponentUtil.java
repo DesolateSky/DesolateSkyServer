@@ -52,4 +52,8 @@ public final class ComponentUtil {
         return component.decoration(TextDecoration.ITALIC, false);
     }
 
+    public static Component noItalics(String text) {
+        return noItalics(Component.text(text));
+    }
+
 }

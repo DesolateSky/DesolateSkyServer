@@ -1,17 +1,27 @@
 package net.desolatesky.instance.weather;
 
+import net.desolatesky.block.DSBlocks;
+import net.desolatesky.entity.EntityKeys;
+import net.desolatesky.entity.loot.EntityLootRegistry;
 import net.desolatesky.entity.type.DebrisEntity;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.DSItems;
+import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.util.collection.Pair;
 import net.desolatesky.util.collection.WeightedCollection;
+import net.kyori.adventure.util.RGBLike;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.ServerFlag;
+import net.minestom.server.adventure.MinestomAdventure;
+import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
+import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.Player;
-import net.minestom.server.instance.Instance;
+import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -40,21 +50,25 @@ public final class WeatherManager {
     private static final double MIN_WIND_HEIGHT_SCALE = 0.75;
 
     private static final double DESPAWN_DISTANCE = 15;
+    private static final double DESPAWN_DISTANCE_SQUARED = DESPAWN_DISTANCE * DESPAWN_DISTANCE;
 
-    private final Instance instance;
-    private final DSInstance dsInstance;
+    private static final int DEFAULT_MAX_ITEMS = 15;
+
+    private final DSBlocks blocks;
+    private final EntityLootRegistry entityLootRegistry;
+    private final DSInstance instance;
     private final RandomGenerator random;
-    private final Map<UUID, Collection<DebrisEntity>> playerItems = new HashMap<>();
+    private final Map<UUID, PlayerDebris> playerItems = new HashMap<>();
 
     private Vec windVelocity;
 
-    public WeatherManager(Instance instance, RandomGenerator random) {
-        this.dsInstance = (DSInstance) instance;
+    public WeatherManager(DSBlocks blocks, EntityLootRegistry entityLootRegistry, DSInstance instance, RandomGenerator random) {
+        this.blocks = blocks;
+        this.entityLootRegistry = entityLootRegistry;
         this.instance = instance;
         this.random = random;
         this.windVelocity = new Vec(0.1, 0, 0.25).normalize().mul(0.075);
     }
-
 
     public Vec getWindAtLocation(Point location) {
         final double y = location.y();
@@ -74,7 +88,11 @@ public final class WeatherManager {
 
     public void handlePlayerLeave(Player player) {
         final UUID playerId = player.getUuid();
-        final Collection<DebrisEntity> itemsInWorld = this.playerItems.remove(playerId);
+        final PlayerDebris playerDebris = this.playerItems.remove(playerId);
+        if (playerDebris == null) {
+            return;
+        }
+        final Collection<DebrisEntity> itemsInWorld = playerDebris.items;
         if (itemsInWorld != null) {
             for (final DebrisEntity entity : itemsInWorld) {
                 entity.remove();
@@ -85,29 +103,44 @@ public final class WeatherManager {
     public void tick() {
         try {
             for (final Player player : this.instance.getPlayers()) {
-                final WeightedCollection<ItemStack> items = this.getPlayerItems(player);
                 final UUID playerId = player.getUuid();
-                Collection<DebrisEntity> itemsInWorld = this.playerItems.get(playerId);
-                if (itemsInWorld != null) {
-                    itemsInWorld.removeIf(DebrisEntity::isRemoved);
+                PlayerDebris playerDebris = this.playerItems.get(playerId);
+                if (playerDebris != null) {
+                    playerDebris.items.removeIf(entity -> {
+                        if (entity.isRemoved()) {
+                            return true;
+                        }
+                        if (entity.getDistanceSquared(player.getPosition()) > DESPAWN_DISTANCE_SQUARED) {
+                            entity.remove();
+                            return true;
+                        }
+                        return false;
+                    });
                 }
-                if (itemsInWorld != null) {
-                    for (final DebrisEntity entity : itemsInWorld) {
+                if (playerDebris != null) {
+                    for (final DebrisEntity entity : playerDebris.items) {
                         entity.setVelocity(this.windVelocity.mul(ServerFlag.SERVER_TICKS_PER_SECOND));
                     }
+                    final DebrisEntity targetedEntity = (DebrisEntity) player.getLineOfSightEntity(player.getAttributeValue(Attribute.ENTITY_INTERACTION_RANGE), e -> e instanceof DebrisEntity);
+                    playerDebris.trackEntity(targetedEntity);
                 }
+
                 final int maxItems = this.getMaxItems(player);
-                if (itemsInWorld != null && itemsInWorld.size() >= maxItems) {
+                if (playerDebris != null && playerDebris.items.size() >= maxItems) {
                     continue;
                 }
-                if (itemsInWorld == null) {
-                    itemsInWorld = Collections.newSetFromMap(new ConcurrentHashMap<>());
-                    this.playerItems.put(playerId, itemsInWorld);
+                if (playerDebris == null) {
+                    playerDebris = new PlayerDebris(Collections.newSetFromMap(new ConcurrentHashMap<>()));
+                    this.playerItems.put(playerId, playerDebris);
                 }
                 if (this.random.nextDouble(100.0) <= SPAWN_ITEM_CHANCE) {
-                    final DebrisEntity debrisEntity = new DebrisEntity(this.dsInstance, items);
+                    final LootTable lootTable = this.entityLootRegistry.getLootTable(EntityKeys.DEBRIS_ENTITY);
+                    if (lootTable == null) {
+                        continue;
+                    }
+                    final DebrisEntity debrisEntity = new DebrisEntity(this.blocks, this.instance, lootTable);
                     debrisEntity.setInstance(this.instance, this.getRandomPosition(player.getPosition()));
-                    itemsInWorld.add(debrisEntity);
+                    playerDebris.items.add(debrisEntity);
                 }
             }
             this.changeWind();
@@ -143,21 +176,56 @@ public final class WeatherManager {
         this.windVelocity = this.windVelocity.rotateAroundAxis(new Vec(0, 1, 0), angle);
     }
 
-    private WeightedCollection<ItemStack> getPlayerItems(Player player) {
-        final DSItems items = DSItems.get();
-        final ItemStack dust = items.dustItem();
-        final ItemStack stick = items.stickItem();
-        return WeightedCollection.of(
-                List.of(
-                        Pair.of(dust, 1.0),
-                        Pair.of(stick, 1.0)
-                )
-        );
-    }
-
     private int getMaxItems(Player player) {
         final int playerCount = this.instance.getPlayers().size();
-        return Math.ceilDiv(15, playerCount);
+        return Math.ceilDiv(DEFAULT_MAX_ITEMS, playerCount);
+    }
+
+    private static class PlayerDebris {
+
+        private static final RGBLike GLOW_COLOR = Color.WHITE;
+
+        private final Collection<DebrisEntity> items;
+        private @Nullable DebrisEntity targetedEntity;
+
+        public PlayerDebris(Collection<DebrisEntity> items) {
+            this.items = items;
+        }
+
+        private void trackEntity(@Nullable DebrisEntity entity) {
+            if (entity == null) {
+                if (this.targetedEntity != null) {
+                    this.targetedEntity.setGlowing(false);
+                }
+                this.targetedEntity = null;
+                return;
+            }
+            if (this.targetedEntity == null) {
+                this.targetedEntity = entity;
+                this.glowEntity(entity);
+                return;
+            }
+            if (this.targetedEntity == entity) {
+                return;
+            }
+            if (this.targetedEntity.isRemoved()) {
+                this.targetedEntity = entity;
+                this.glowEntity(entity);
+                return;
+            }
+            this.targetedEntity.setGlowing(false);
+            this.targetedEntity = entity;
+            this.glowEntity(entity);
+        }
+
+        private void glowEntity(DebrisEntity entity) {
+            entity.setGlowing(GLOW_COLOR);
+        }
+
+        private void removeGlow(DebrisEntity entity) {
+            entity.setGlowing(false);
+        }
+
     }
 
 }

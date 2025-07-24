@@ -10,14 +10,14 @@ import net.minestom.server.command.builder.Command;
 
 public final class StopCommand extends Command {
 
-    public static final String permission = "desolatesky.command.stop";
+    public static final String PERMISSION = "desolatesky.command.stop";
 
     public StopCommand() {
         super("stop");
 
         this.setCondition((sender, commandString) -> {
             if (sender instanceof DSPlayer player) {
-                return player.hasPermission(permission);
+                return player.hasPermission(PERMISSION);
             }
             return sender instanceof ServerSender || sender instanceof ConsoleSender;
         });

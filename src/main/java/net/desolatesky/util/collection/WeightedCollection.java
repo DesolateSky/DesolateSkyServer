@@ -43,7 +43,7 @@ public final class WeightedCollection<E> {
     }
 
     public E next() {
-        double value = this.random.nextDouble() * this.total;
+        final double value = this.random.nextDouble() * this.total;
         return this.map.higherEntry(value).getValue();
     }
 

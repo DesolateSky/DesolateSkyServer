@@ -13,7 +13,8 @@ repositories {
 }
 
 dependencies {
-    implementation("net.minestom:minestom:2025.07.04-1.21.5")
+//    implementation("net.minestom:minestom:2025.07.04-1.21.5")
+    implementation("net.minestom:minestom:2025.07.11-1.21.7")
     implementation("com.zaxxer:HikariCP:6.3.0")
     implementation("org.xerial:sqlite-jdbc:3.50.2.0")
     implementation("dev.hollowcube:schem:1.3.1")
@@ -21,6 +22,7 @@ dependencies {
     implementation("dev.lu15:luckperms-minestom:5.4-SNAPSHOT")
     implementation("org.spongepowered:configurate-hocon:4.1.2")
     implementation("org.joml:joml:1.10.8")
+    implementation("org.mongodb:mongodb-driver-sync:5.0.1")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
 }

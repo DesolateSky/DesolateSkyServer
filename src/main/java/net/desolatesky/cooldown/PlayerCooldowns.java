@@ -1,15 +1,45 @@
 package net.desolatesky.cooldown;
 
+import net.desolatesky.database.MongoCodec;
 import net.kyori.adventure.key.Key;
+import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PlayerCooldowns {
+
+    public static final MongoCodec<PlayerCooldowns, PlayerCooldowns, CooldownConfig> MONGO_CODEC = new MongoCodec<>() {
+        @Override
+        public void write(PlayerCooldowns input, Document document) {
+            final Map<Key, CooldownData> cooldowns = input.cooldowns;
+            final List<Document> cooldownDocuments = cooldowns.values().stream()
+                    .map(data -> {
+                        final Document cooldownDocument = new Document();
+                        CooldownData.MONGO_CODEC.write(data, cooldownDocument);
+                        return document;
+                    })
+                    .toList();
+            document.append("cooldowns", cooldownDocuments);
+        }
+
+        @Override
+        public @UnknownNullability PlayerCooldowns read(Document document, CooldownConfig cooldownConfig) {
+            final List<Document> cooldownDocuments = document.getList("cooldowns", Document.class);
+            final Map<Key, CooldownData> cooldowns = cooldownDocuments.stream()
+                    .map(cooldownDocument -> CooldownData.MONGO_CODEC.read(cooldownDocument, null))
+                    .collect(Collectors.toMap(data -> data.cooldown().key(), Function.identity()));
+            return new PlayerCooldowns(cooldownConfig, cooldowns);
+        }
+    };
 
     private final CooldownConfig cooldownConfig;
     private final Map<Key, CooldownData> cooldowns;

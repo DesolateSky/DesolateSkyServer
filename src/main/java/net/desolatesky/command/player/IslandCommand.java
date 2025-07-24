@@ -5,38 +5,34 @@ import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.team.TeamInstance;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.teleport.TeleportManager;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.instance.InstanceManager;
 
 public final class IslandCommand extends Command {
 
-    public IslandCommand() {
+    private final DSInstanceManager instanceManager;
+    private final TeleportManager teleportManager;
+
+    public IslandCommand(DesolateSkyServer server) {
         super("island", "is");
+        this.instanceManager = server.instanceManager();
+        this.teleportManager = server.teleportManager();
 
-        this.setCondition((sender, command) -> {
-            if (!(sender instanceof final DSPlayer player)) {
-                return false;
-            }
-            if (command == null) {
-                return true;
-            }
-            final String[] args = command.split(" ");
-            if (args.length < 2) {
-                return true;
-            }
-            if (args[1].equals("created")) {
-                return !player.hasIsland();
-            }
-            return true;
-        });
+        this.setCondition((sender, command) -> sender instanceof DSPlayer);
 
-        this.addSyntax((sender, context) -> {
-            this.createIsland((DSPlayer) sender);
-        }, ArgumentType.Literal("create"));
+        this.addConditionalSyntax(
+                (sender, context) -> !((DSPlayer) sender).hasIsland(),
+                (sender, context) -> this.createIsland((DSPlayer) sender),
+                ArgumentType.Literal("create")
+        );
 
-        this.addSyntax((sender, context) -> {
-            this.goToIsland((DSPlayer) sender);
-        }, ArgumentType.Literal("go"));
+        this.addConditionalSyntax(
+                (sender, context) -> ((DSPlayer) sender).hasIsland(),
+                (sender, context) -> this.goToIsland((DSPlayer) sender),
+                ArgumentType.Literal("go")
+        );
     }
 
     private void createIsland(DSPlayer player) {
@@ -44,9 +40,8 @@ public final class IslandCommand extends Command {
             player.sendIdMessage(Messages.ALREADY_HAS_ISLAND);
             return;
         }
-        final DSInstanceManager instanceManager = DesolateSkyServer.get().instanceManager();
-        instanceManager.createIslandInstance(player);
-        instanceManager.teleportToIsland(player);
+        this.instanceManager.createIslandInstance(player);
+        this.instanceManager.teleportToIsland(this.teleportManager, player);
     }
 
     private void goToIsland(DSPlayer player) {
@@ -54,13 +49,12 @@ public final class IslandCommand extends Command {
             player.sendMessage(Messages.HAS_NO_ISLAND);
             return;
         }
-        final DSInstanceManager instanceManager = DesolateSkyServer.get().instanceManager();
-        final TeamInstance instance = instanceManager.getPlayerIsland(player, true);
+        final TeamInstance instance = this.instanceManager.getPlayerIsland(player, true);
         if (instance == null) {
             player.sendMessage(Messages.ISLAND_NOT_FOUND);
             return;
         }
-        instanceManager.teleportToIsland(player);
+        this.instanceManager.teleportToIsland(this.teleportManager, player);
     }
 
 }

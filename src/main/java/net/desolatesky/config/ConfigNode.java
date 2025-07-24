@@ -165,8 +165,8 @@ public class ConfigNode implements CommentedConfigurationNodeIntermediary<Config
         return this.internalNode.get(type);
     }
 
-    public @Nullable <T> T get(Type type, Class<T> typeClass) throws SerializationException {
-        final Object object = this.internalNode.get(type, typeClass);
+    public @Nullable <T> T get(Class<T> typeClass) throws SerializationException {
+        final Object object = this.internalNode.get(typeClass);
         if (object == null) {
             return null;
         }
@@ -176,8 +176,8 @@ public class ConfigNode implements CommentedConfigurationNodeIntermediary<Config
         return typeClass.cast(object);
     }
 
-    public <T> T getNonNull(Type type, Class<T> typeClass) throws SerializationException {
-        final T value = this.get(type, typeClass);
+    public <T> T getNonNull(Class<T> typeClass) throws SerializationException {
+        final T value = this.get(typeClass);
         if (value == null) {
             throw new SerializationException("Expected non-null value for type " + typeClass.getName());
         }

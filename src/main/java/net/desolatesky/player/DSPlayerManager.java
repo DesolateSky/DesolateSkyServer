@@ -1,7 +1,7 @@
 package net.desolatesky.player;
 
 import net.desolatesky.player.database.PlayerData;
-import net.desolatesky.player.database.PlayerDatabase;
+import net.desolatesky.player.database.PlayerDatabaseAccessor;
 import net.minestom.server.instance.Instance;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,27 +11,27 @@ import java.util.function.Function;
 
 public final class DSPlayerManager {
 
-    private final PlayerDatabase playerDatabase;
+    private final PlayerDatabaseAccessor playerDatabase;
 
-    private DSPlayerManager(PlayerDatabase playerDatabase) {
+    private DSPlayerManager(PlayerDatabaseAccessor playerDatabase) {
         this.playerDatabase = playerDatabase;
     }
 
-    public PlayerDatabase playerDatabase() {
+    public PlayerDatabaseAccessor playerDatabase() {
         return this.playerDatabase;
     }
 
-    public @Nullable PlayerData loadPlayerData(UUID playerUuid, Function<UUID, Instance> instanceGetter) {
-        return this.playerDatabase.getPlayerData(playerUuid, instanceGetter);
+    public @Nullable PlayerData loadPlayerData(UUID playerUuid) {
+        return this.playerDatabase.load(playerUuid);
     }
 
     public void savePlayer(DSPlayer player) {
-        this.playerDatabase.savePlayer(player);
+        final PlayerData playerData = player.playerData();
+        playerData.prepareForSave(player);
+        this.playerDatabase.save(player.getUuid(), player);
     }
 
-    public static DSPlayerManager create(Path databasePath) {
-        final PlayerDatabase playerDatabase = new PlayerDatabase(databasePath);
-        playerDatabase.init();
+    public static DSPlayerManager create(PlayerDatabaseAccessor playerDatabase) {
         return new DSPlayerManager(playerDatabase);
     }
 

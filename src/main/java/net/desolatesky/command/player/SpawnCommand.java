@@ -7,14 +7,13 @@ import net.minestom.server.command.builder.Command;
 
 public final class SpawnCommand extends Command {
 
-    public SpawnCommand() {
+    public SpawnCommand(DesolateSkyServer server) {
         super("spawn", "lobby");
 
         this.setDefaultExecutor((sender, context) -> {
             if (!(sender instanceof final DSPlayer player)) {
                 return;
             }
-            final DesolateSkyServer server = DesolateSkyServer.get();
             server.teleportManager().queue(TeleportLocations.SPAWN, player, server.instanceManager().getLobbySpawnPos());
         });
     }

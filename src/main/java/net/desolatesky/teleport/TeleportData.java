@@ -1,6 +1,6 @@
 package net.desolatesky.teleport;
 
-import net.desolatesky.instance.InstancePos;
+import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -16,20 +16,20 @@ public final class TeleportData implements Keyed {
 
     private final Key locationKey;
     private final int totalTicks;
-    private final InstancePos destination;
+    private final InstancePoint destination;
     private final DSPlayer player;
     private final boolean cancelOnMove;
     private final @Nullable Consumer<TeleportData> tickCallback;
     private final @Nullable Consumer<TeleportData> cancellationCallback;
     private final @Nullable Consumer<TeleportData> preSuccessCallback;
     private final @Nullable Consumer<TeleportData> postSuccessCallback;
-    private InstancePos previousLocation;
+    private InstancePoint previousLocation;
     private int ticksPassed;
 
     public TeleportData(
             Key key,
             int totalTicks,
-            InstancePos destination,
+            InstancePoint destination,
             DSPlayer player,
             boolean cancelOnMove,
             @Nullable Consumer<TeleportData> tickCallback,
@@ -50,7 +50,7 @@ public final class TeleportData implements Keyed {
         this.ticksPassed = 0;
     }
 
-    public TeleportData(Key key, int totalTicks, InstancePos destination, DSPlayer player, boolean cancelOnMove) {
+    public TeleportData(Key key, int totalTicks, InstancePoint destination, DSPlayer player, boolean cancelOnMove) {
         this(key, totalTicks, destination, player, cancelOnMove, null, null, null, null);
     }
 
@@ -58,7 +58,7 @@ public final class TeleportData implements Keyed {
         return this.totalTicks;
     }
 
-    public InstancePos destination() {
+    public InstancePoint destination() {
         return this.destination;
     }
 
@@ -70,7 +70,7 @@ public final class TeleportData implements Keyed {
         return this.cancelOnMove;
     }
 
-    public InstancePos previousLocation() {
+    public InstancePoint previousLocation() {
         return this.previousLocation;
     }
 
@@ -103,7 +103,7 @@ public final class TeleportData implements Keyed {
     }
 
     public boolean checkMovement() {
-        final InstancePos currentLocation = this.player.getInstancePosition();
+        final InstancePoint currentLocation = this.player.getInstancePosition();
         if (this.previousLocation == null) {
             this.previousLocation = currentLocation;
             return true;

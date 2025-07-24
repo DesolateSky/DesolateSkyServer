@@ -7,7 +7,9 @@ import net.minestom.server.adventure.audience.PacketGroupingAudience;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.network.packet.server.play.BlockBreakAnimationPacket;
+import net.minestom.server.utils.Direction;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -66,7 +68,10 @@ public final class BreakingManager {
                 sendBreakProgress(instance, breakingData.id(), blockPos, progress);
                 return false;
             }
-            breakingData.instance().breakBlock(player, blockPos, block);
+            // get the face of the block the player is looking at
+
+            final BlockFace blockFace = BlockFace.fromDirection(player.getPosition().facing()).getOppositeFace();
+            breakingData.instance().breakBlock(player, blockPos, block, blockFace);
             return true;
         });
     }

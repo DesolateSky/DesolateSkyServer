@@ -5,19 +5,19 @@ import net.kyori.adventure.key.Keyed;
 
 import java.time.Duration;
 
-public interface Cooldown extends Keyed {
+public sealed interface Cooldown extends Keyed permits Cooldown.Durational {
 
     static Cooldown empty(Key key) {
-        return new CooldownImpl(key, Duration.ZERO);
+        return new Durational(key, Duration.ZERO);
     }
 
     static Cooldown create(Key key, Duration duration) {
-        return new CooldownImpl(key, duration);
+        return new Durational(key, duration);
     }
 
     Duration duration();
 
-    record CooldownImpl(Key key, Duration duration) implements Cooldown {
+    record Durational(Key key, Duration duration) implements Cooldown {
 
     }
 

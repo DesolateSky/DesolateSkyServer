@@ -3,6 +3,8 @@ package net.desolatesky.instance.generator;
 import net.desolatesky.block.BlockBuilder;
 import net.desolatesky.block.BlockProperties;
 import net.desolatesky.block.BlockTags;
+import net.desolatesky.block.DSBlock;
+import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.DSBlocks;
 import net.desolatesky.block.handler.BlockHandlers;
 import net.desolatesky.block.property.SlabType;
@@ -22,38 +24,48 @@ public final class StartingIslandGenerator implements Generator {
 
     private final TeamInstance instance;
 
-    public StartingIslandGenerator(TeamInstance instance) {
+    private Block bottomBlock;
+    private Block topTrapdoor;
+    private Block westTrapdoor;
+    private Block eastTrapdoor;
+    private Block southTrapdoor;
+    private Block northTrapdoor;
+
+    public StartingIslandGenerator(DSBlocks blocks, TeamInstance instance) {
         this.instance = instance;
+        this.initializeBlocks(blocks);
     }
 
-    private final Block bottomBlock = BlockBuilder.of(DSBlocks.get(), Block.WAXED_EXPOSED_CUT_COPPER_SLAB)
-            .property(BlockProperties.SLAB_TYPE, SlabType.TOP)
-            .tag(BlockTags.UNBREAKABLE, true)
-            .build();
-    private final Block topTrapdoor = BlockBuilder.of(DSBlocks.get(), Block.WAXED_EXPOSED_COPPER_TRAPDOOR, BlockHandlers.TRAPDOOR_HANDLER)
-            .property(BlockProperties.OPEN, false)
-            .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
-            .build();
-    private final Block westTrapdoor = BlockBuilder.of(DSBlocks.get(), Block.WAXED_EXPOSED_COPPER_TRAPDOOR, BlockHandlers.TRAPDOOR_HANDLER)
-            .property(BlockProperties.OPEN, true)
-            .property(BlockProperties.FACING, Direction.WEST)
-            .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
-            .build();
-    private final Block eastTrapdoor = BlockBuilder.of(DSBlocks.get(), Block.WAXED_EXPOSED_COPPER_TRAPDOOR, BlockHandlers.TRAPDOOR_HANDLER)
-            .property(BlockProperties.OPEN, true)
-            .property(BlockProperties.FACING, Direction.EAST)
-            .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
-            .build();
-    private final Block southTrapdoor = BlockBuilder.of(DSBlocks.get(), Block.WAXED_EXPOSED_COPPER_TRAPDOOR, BlockHandlers.TRAPDOOR_HANDLER)
-            .property(BlockProperties.OPEN, true)
-            .property(BlockProperties.FACING, Direction.SOUTH)
-            .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
-            .build();
-    private final Block northTrapdoor = BlockBuilder.of(DSBlocks.get(), Block.WAXED_EXPOSED_COPPER_TRAPDOOR, BlockHandlers.TRAPDOOR_HANDLER)
-            .property(BlockProperties.OPEN, true)
-            .property(BlockProperties.FACING, Direction.NORTH)
-            .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
-            .build();
+    private void initializeBlocks(DSBlocks blocks) {
+        this.bottomBlock = BlockBuilder.from(blocks.waxedExposedCutCopperSlab())
+                .property(BlockProperties.SLAB_TYPE, SlabType.TOP)
+                .tag(BlockTags.UNBREAKABLE, true)
+                .build();
+        this.topTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+                .property(BlockProperties.OPEN, false)
+                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
+                .build();
+        this.westTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+                .property(BlockProperties.OPEN, true)
+                .property(BlockProperties.FACING, Direction.WEST)
+                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
+                .build();
+        this.eastTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+                .property(BlockProperties.OPEN, true)
+                .property(BlockProperties.FACING, Direction.EAST)
+                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
+                .build();
+        this.southTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+                .property(BlockProperties.OPEN, true)
+                .property(BlockProperties.FACING, Direction.SOUTH)
+                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
+                .build();
+        this.northTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+                .property(BlockProperties.OPEN, true)
+                .property(BlockProperties.FACING, Direction.NORTH)
+                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
+                .build();
+    }
 
     @Override
     public void generate(@NotNull GenerationUnit unit) {

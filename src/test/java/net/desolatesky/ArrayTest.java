@@ -1,9 +1,8 @@
 package net.desolatesky;
 
-import net.desolatesky.util.ArrayUtil;
+import net.desolatesky.util.array.ShiftedArray;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -23,7 +22,7 @@ public class ArrayTest {
                 {"7", "8", "9"}
         };
         final String[][] copy = new String[3][3];
-        ArrayUtil.shiftToTopLeftCorner(given, copy, Objects::isNull, null);
+        ShiftedArray.shiftToTopLeftCorner(given, copy, Objects::isNull, null);
         assertArrayEquals(expected, copy);
     }
 
@@ -40,7 +39,7 @@ public class ArrayTest {
                 {null, null, null}
         };
         final String[][] copy = new String[3][3];
-        ArrayUtil.shiftToTopLeftCorner(given, copy, Objects::isNull, null);
+        ShiftedArray.shiftToTopLeftCorner(given, copy, Objects::isNull, null);
         assertArrayEquals(expected, copy);
     }
 
@@ -57,7 +56,7 @@ public class ArrayTest {
                 {null, null, null}
         };
         final String[][] copy = new String[3][3];
-        ArrayUtil.shiftToTopLeftCorner(given, copy, Objects::isNull, null);
+        ShiftedArray.shiftToTopLeftCorner(given, copy, Objects::isNull, null);
         assertArrayEquals(expected, copy);
     }
 
@@ -74,7 +73,7 @@ public class ArrayTest {
                 {null, null, null}
         };
         final String[][] copy = new String[3][3];
-        ArrayUtil.shiftToTopLeftCorner(given, copy, Objects::isNull, null);
+        ShiftedArray.shiftToTopLeftCorner(given, copy, Objects::isNull, null);
         assertArrayEquals(expected, copy);
     }
 

@@ -4,19 +4,28 @@ import net.desolatesky.block.BlockBuilder;
 import net.desolatesky.block.BlockProperties;
 import net.desolatesky.block.DSBlocks;
 import net.desolatesky.entity.DSEntity;
+import net.desolatesky.entity.EntityKeys;
 import net.desolatesky.instance.DSInstance;
+import net.desolatesky.instance.InstancePoint;
+import net.desolatesky.loot.LootContext;
+import net.desolatesky.loot.generator.LootGenerator;
+import net.desolatesky.loot.generator.LootGeneratorType;
+import net.desolatesky.loot.table.LootTable;
+import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.InventoryUtil;
+import net.desolatesky.util.Namespace;
 import net.desolatesky.util.RandomUtil;
-import net.desolatesky.util.collection.WeightedCollection;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.util.RGBLike;
+import net.minestom.server.collision.BoundingBox;
+import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
-import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
-import net.minestom.server.entity.metadata.EntityMeta;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
-import net.minestom.server.entity.metadata.monster.zombie.ZombieMeta;
 import net.minestom.server.entity.metadata.other.ArmorStandMeta;
 import net.minestom.server.entity.metadata.other.InteractionMeta;
 import net.minestom.server.instance.block.Block;
@@ -27,32 +36,40 @@ import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
 
 public class DebrisEntity extends Entity implements DSEntity {
+
+    private static final float WIDTH = 2.0f;
+    private static final float HEIGHT = 2.0f;
+
+    public static final LootGeneratorType LOOT_GENERATOR_TYPE = LootGeneratorType.create("debris");
 
     private static final int DISPLAYS = 3;
     private static final Direction[] POSSIBLE_DIRECTIONS = new Direction[]{
             Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST
     };
 
+    private final DSBlocks blocks;
     private final RandomGenerator randomGenerator = new SplittableRandom();
     private final DSInstance dsInstance;
-    private final WeightedCollection<ItemStack> debrisItems;
     private final Collection<Display> displays = new ArrayList<>();
     private final Entity baseEntity;
+    private final LootTable lootTable;
 
-    public DebrisEntity(DSInstance dsInstance, WeightedCollection<ItemStack> debrisItems) {
+    public DebrisEntity(DSBlocks blocks, DSInstance dsInstance, LootTable lootTable) {
         super(EntityType.INTERACTION);
+        this.blocks = blocks;
         this.dsInstance = dsInstance;
-        this.debrisItems = debrisItems;
+        this.lootTable = lootTable;
         final InteractionMeta interactionMeta = (InteractionMeta) this.getEntityMeta();
         interactionMeta.setNotifyAboutChanges(false);
         this.setNoGravity(true);
         this.setInvisible(false);
-        interactionMeta.setWidth(1.5f);
-        interactionMeta.setHeight(1.5f);
+        interactionMeta.setWidth(WIDTH);
+        interactionMeta.setHeight(HEIGHT);
         interactionMeta.setNotifyAboutChanges(true);
         this.baseEntity = new Entity(EntityType.ARMOR_STAND);
         final ArmorStandMeta armorStandMeta = (ArmorStandMeta) this.baseEntity.getEntityMeta();
@@ -61,6 +78,8 @@ public class DebrisEntity extends Entity implements DSEntity {
         armorStandMeta.setSmall(true);
         armorStandMeta.setInvisible(true);
         armorStandMeta.setNotifyAboutChanges(true);
+
+        this.setBoundingBox(new BoundingBox(WIDTH, HEIGHT, WIDTH));
     }
 
     @Override
@@ -100,24 +119,50 @@ public class DebrisEntity extends Entity implements DSEntity {
 
     @Override
     public void onClick(DSEntity clicker, Point interactionPoint, PlayerHand hand) {
-        if (!(clicker instanceof final Player player)) {
+        if (!(clicker instanceof final DSPlayer player)) {
             return;
         }
-        this.giveItem(player);
+        this.giveLoot(player);
     }
 
     @Override
     public void onPunch(DSEntity attacker) {
-        if (!(attacker instanceof final Player player)) {
+        if (!(attacker instanceof final DSPlayer player)) {
             return;
         }
-        this.giveItem(player);
+        this.giveLoot(player);
     }
 
-    private void giveItem(Player player) {
-        final ItemStack randomItem = this.debrisItems.next();
-        player.getInventory().addItemStack(randomItem);
+    private void giveLoot(DSPlayer player) {
         this.remove();
+        final Collection<ItemStack> generatedItems = this.generateLoot();
+        if (generatedItems.isEmpty()) {
+            return;
+        }
+        InventoryUtil.addItemsToInventory(player, generatedItems, player.getInstancePosition());
+    }
+
+    public Collection<ItemStack> generateLoot() {
+        final LootGenerator lootGenerator = this.lootTable.getGenerator(LOOT_GENERATOR_TYPE);
+        if (lootGenerator == null) {
+            return Collections.emptyList();
+        }
+        return lootGenerator.generateLoot(LootContext.create(this.lootTable.randomSource()));
+    }
+
+    public void setGlowing(RGBLike color) {
+        this.displays.forEach(display -> {
+            final BlockDisplayMeta blockMeta = (BlockDisplayMeta) display.getEntityMeta();
+            blockMeta.setGlowColorOverride(Color.fromRGBLike(color).asRGB());
+            blockMeta.setNotifyAboutChanges(true);
+            display.setGlowing(true);
+        });
+    }
+
+    @Override
+    public void setGlowing(boolean glowing) {
+        super.setGlowing(glowing);
+        this.displays.forEach(display -> display.setGlowing(glowing));
     }
 
     @Override
@@ -135,12 +180,24 @@ public class DebrisEntity extends Entity implements DSEntity {
         this.baseEntity.setVelocity(velocity);
     }
 
+    @Override
+    public @NotNull Key key() {
+        return EntityKeys.DEBRIS_ENTITY;
+    }
+
+    @Override
+    public InstancePoint<Pos> getInstancePosition() {
+        return new InstancePoint<>(this.getInstance(), this.getPosition());
+    }
+
     private class Display extends Entity implements DSEntity {
+
+        private static final Key ENTITY_KEY = Namespace.key("debris_entity", "display");
 
         public Display(Direction direction, float[] rotation, Point translation) {
             super(EntityType.BLOCK_DISPLAY);
             final BlockDisplayMeta blockMeta = (BlockDisplayMeta) this.getEntityMeta();
-            final Block block = BlockBuilder.of(DSBlocks.get(), Block.LEAF_LITTER)
+            final Block block = BlockBuilder.from(DebrisEntity.this.blocks.leafLitter())
                     .property(BlockProperties.FACING, direction)
                     .property(BlockProperties.SEGMENT_AMOUNT, 4)
                     .build();
@@ -169,6 +226,15 @@ public class DebrisEntity extends Entity implements DSEntity {
 
         }
 
+        @Override
+        public @NotNull Key key() {
+            return ENTITY_KEY;
+        }
+
+        @Override
+        public InstancePoint<Pos> getInstancePosition() {
+            return new InstancePoint<>(DebrisEntity.this.getInstance(), this.getPosition());
+        }
     }
 
 }

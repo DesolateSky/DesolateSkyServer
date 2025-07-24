@@ -1,6 +1,7 @@
 package net.desolatesky.instance.listener;
 
 import net.desolatesky.block.BlockTags;
+import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.lobby.LobbyInstance;
 import net.desolatesky.player.DSPlayer;
 import net.minestom.server.entity.Player;
@@ -36,13 +37,6 @@ public final class InstanceListener {
             .addChild(EventNode.type("block-break", EventFilter.INSTANCE, (event, instance) -> instance instanceof LobbyInstance)
                     .addListener(PlayerBlockBreakEvent.class, event -> event.setCancelled(true))
                     .addListener(PlayerBlockPlaceEvent.class, event -> event.setCancelled(true))
-                    .addListener(PlayerMoveEvent.class, event -> {
-                        final LobbyInstance lobbyInstance = (LobbyInstance) event.getInstance();
-                        final DSPlayer player = (DSPlayer) event.getPlayer();
-                        if (player.getPosition().y() < -64) {
-                            player.teleport(lobbyInstance.getSpawnPoint());
-                        }
-                    })
             );
 
     public static void register(EventNode<Event> root) {

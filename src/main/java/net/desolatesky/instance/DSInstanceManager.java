@@ -7,16 +7,15 @@ import net.desolatesky.instance.team.TeamInstance;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.teleport.TeleportLocations;
+import net.desolatesky.teleport.TeleportManager;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.WorldBorder;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.UUID;
 
 public final class DSInstanceManager {
@@ -24,11 +23,13 @@ public final class DSInstanceManager {
 
     private static final double DIAMETER = 100;
 
+    private final DesolateSkyServer server;
     private final Path worldFolderPath;
     private LobbyInstance lobbyInstance;
     private final InstanceManager instanceManager;
 
-    public DSInstanceManager(Path worldFolderPath, InstanceManager instanceManager) {
+    public DSInstanceManager(DesolateSkyServer server, Path worldFolderPath, InstanceManager instanceManager) {
+        this.server = server;
         this.worldFolderPath = worldFolderPath;
         this.instanceManager = instanceManager;
     }
@@ -36,7 +37,7 @@ public final class DSInstanceManager {
     public void createLobbyInstance() {
         final Path lobbyWorldPath = this.worldFolderPath.resolve("lobby");
         final Pos spawn = new Pos(0, 64, 0);
-        this.lobbyInstance = LobbyInstance.createLobby(LOBBY_WORLD_ID, lobbyWorldPath, spawn, Region.square(spawn, DIAMETER));
+        this.lobbyInstance = LobbyInstance.createLobby(this.server, LOBBY_WORLD_ID, lobbyWorldPath, spawn, Region.square(spawn, DIAMETER));
         this.lobbyInstance.setWorldBorder(new WorldBorder(DIAMETER, spawn.x(), spawn.z(), 0, 0, (int) DIAMETER));
         MinecraftServer.getInstanceManager().registerInstance(this.lobbyInstance);
     }
@@ -64,7 +65,7 @@ public final class DSInstanceManager {
         if (worldId.equals(LOBBY_WORLD_ID)) {
             return this.lobbyInstance;
         }
-        final TeamInstance teamInstance = TeamInstance.load(this.instanceManager, worldId, this.worldFolderPath);
+        final TeamInstance teamInstance = TeamInstance.load(this.server, this.instanceManager, worldId, this.worldFolderPath);
         if (teamInstance == null) {
             return this.lobbyInstance;
         }
@@ -101,7 +102,7 @@ public final class DSInstanceManager {
             throw new IllegalStateException("Player has an island instance but it could not be found: " + player.getUuid());
         }
         final UUID playerUuid = player.getUuid();
-        final TeamInstance teamInstance = TeamInstance.create(this.instanceManager, playerUuid, this.worldFolderPath);
+        final TeamInstance teamInstance = TeamInstance.create(this.server, this.instanceManager, playerUuid, this.worldFolderPath);
         player.setIsland(teamInstance);
         player.sendIdMessage(Messages.CREATED_ISLAND);
         return teamInstance;
@@ -117,7 +118,7 @@ public final class DSInstanceManager {
             player.setIsland(teamInstance);
             return teamInstance;
         }
-        final TeamInstance instance = TeamInstance.load(this.instanceManager, islandId, this.worldFolderPath);
+        final TeamInstance instance = TeamInstance.load(this.server, this.instanceManager, islandId, this.worldFolderPath);
         if (instance == null) {
             return null;
         }
@@ -125,17 +126,16 @@ public final class DSInstanceManager {
         return instance;
     }
 
-    public void teleportToIsland(DSPlayer player) {
+    public void teleportToIsland(TeleportManager teleportManager, DSPlayer player) {
         final TeamInstance teamInstance = this.getPlayerIsland(player, true);
         if (teamInstance == null) {
             return;
         }
-        this.teleportToIsland(player, teamInstance);
+        this.teleportToIsland(teleportManager, player, teamInstance);
     }
 
-    public void teleportToIsland(DSPlayer player, TeamInstance teamInstance) {
-        final DesolateSkyServer server = DesolateSkyServer.get();
-        server.teleportManager().queue(TeleportLocations.ISLAND, player, teamInstance.getSpawnPoint());
+    public void teleportToIsland(TeleportManager teleportManager, DSPlayer player, TeamInstance teamInstance) {
+        teleportManager.queue(TeleportLocations.ISLAND, player, teamInstance.getSpawnPointFor(player));
     }
 
     public UUID getLobbyWorldId() {
@@ -146,8 +146,8 @@ public final class DSInstanceManager {
         return this.lobbyInstance;
     }
 
-    public InstancePos getLobbySpawnPos() {
-        return this.lobbyInstance.getSpawnPoint();
+    public InstancePoint<Pos> getLobbySpawnPos() {
+        return this.lobbyInstance.getDefaultSpawnPoint();
     }
 
 }

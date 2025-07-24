@@ -1,6 +1,6 @@
 package net.desolatesky.teleport;
 
-import net.desolatesky.instance.InstancePos;
+import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
@@ -27,7 +27,7 @@ public final class TeleportManager {
         this.teleportationTasks = new ConcurrentHashMap<>();
     }
 
-    public TeleportDataBuilder builder(Key locationKey, DSPlayer player, int totalTicks, InstancePos target) {
+    public TeleportDataBuilder builder(Key locationKey, DSPlayer player, int totalTicks, InstancePoint target) {
         return new TeleportDataBuilder(
                 locationKey,
                 totalTicks,
@@ -37,17 +37,17 @@ public final class TeleportManager {
         );
     }
 
-    public void queue(Key locationKey, DSPlayer player, int ticks, InstancePos target) {
+    public void queue(Key locationKey, DSPlayer player, int ticks, InstancePoint target) {
         this.builder(locationKey, player, ticks, target).queue();
     }
 
-    public void queue(Key locationKey, DSPlayer player, InstancePos target) {
+    public void queue(Key locationKey, DSPlayer player, InstancePoint target) {
         final int totalTicks = this.teleportConfig.getTeleportTicks(locationKey);
         this.queue(locationKey, player, totalTicks, target);
     }
 
     private void sendSuccessMessage(TeleportData teleportData, String message) {
-        final InstancePos target = teleportData.destination();
+        final InstancePoint target = teleportData.destination();
         this.messageHandler.sendMessage(
                 teleportData.player(),
                 message,
@@ -79,8 +79,8 @@ public final class TeleportManager {
                 return TaskSchedule.tick(1);
             }
             data.onPreSuccess();
-            final InstancePos instancePos = data.destination();
-            player.teleport(instancePos).whenComplete((result, error) -> {
+            final InstancePoint instancePoint = data.destination();
+            player.teleport(instancePoint).whenComplete((result, error) -> {
                 if (error != null) {
                     data.onCancel();
                     return;
@@ -95,7 +95,7 @@ public final class TeleportManager {
 
         private final Key locationKey;
         private final int totalTicks;
-        private final InstancePos destination;
+        private final InstancePoint destination;
         private final DSPlayer player;
         private final boolean cancelOnMove;
 
@@ -111,7 +111,7 @@ public final class TeleportManager {
         };
         private @Nullable Consumer<TeleportData> postSuccessCallback = data -> TeleportManager.this.sendSuccessMessage(data, Messages.TELEPORT_SUCCESS);
 
-        public TeleportDataBuilder(Key locationKey, int totalTicks, InstancePos destination, DSPlayer player, boolean cancelOnMove) {
+        public TeleportDataBuilder(Key locationKey, int totalTicks, InstancePoint destination, DSPlayer player, boolean cancelOnMove) {
             this.locationKey = locationKey;
             this.totalTicks = totalTicks;
             this.destination = destination;
