@@ -11,6 +11,7 @@ import net.desolatesky.block.loot.BlockLootRegistry;
 import net.desolatesky.command.Commands;
 import net.desolatesky.command.console.ConsoleCommandHandler;
 import net.desolatesky.config.ConfigFile;
+import net.desolatesky.config.ConfigNode;
 import net.desolatesky.cooldown.CooldownConfig;
 import net.desolatesky.crafting.CraftingManager;
 import net.desolatesky.crafting.menu.listener.CraftingMenuListener;
@@ -25,6 +26,7 @@ import net.desolatesky.instance.listener.InstanceListener;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.listener.ItemListeners;
 import net.desolatesky.message.MessageHandler;
+import net.desolatesky.pack.ResourcePackSettings;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.DSPlayerManager;
 import net.desolatesky.player.database.PlayerData;
@@ -34,12 +36,19 @@ import net.desolatesky.player.listener.PlayerListener;
 import net.desolatesky.registry.DSRegistries;
 import net.desolatesky.teleport.TeleportConfig;
 import net.desolatesky.teleport.TeleportManager;
+import net.desolatesky.util.ResourceLoader;
 import net.luckperms.api.LuckPerms;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.extras.MojangAuth;
 import org.spongepowered.configurate.ConfigurateException;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
@@ -129,7 +138,19 @@ public final class DesolateSkyServer {
         MinecraftServer.setBrandName("DesolateSky");
         ConsoleCommandHandler.startConsoleCommandHandler();
         MojangAuth.init();
-        minecraftServer.start("0.0.0.0", 25565);
+        startServer(minecraftServer);
+    }
+
+    private static void startServer(MinecraftServer minecraftServer) {
+        try {
+            final ConfigFile settingsFile = ConfigFile.get(Path.of("server-settings.conf"), "/server-settings.conf");
+            final ConfigNode root = settingsFile.rootNode();
+            final String address = root.node("address").getNonNull(String.class);
+            final int port = root.node("port").getNonNull(Integer.class);
+            minecraftServer.start(address, port);
+        } catch (ConfigurateException e) {
+            throw new RuntimeException("Failed to load server settings", e);
+        }
     }
 
     private void initialize() {
@@ -168,9 +189,31 @@ public final class DesolateSkyServer {
         InstanceListener.register(globalEventHandler);
         EntityListener.register(globalEventHandler);
 
-        new PlayerListener(this).register(globalEventHandler);
+        final ConfigFile resourcePackConfig = ConfigFile.get(Path.of("resource-pack.conf"), "/resource-pack.conf");
+        new PlayerListener(this, ResourcePackSettings.fromConfig(resourcePackConfig.rootNode()), loadFavicon()).register(globalEventHandler);
         new ItemListeners(this.registries).register(globalEventHandler);
         new CraftingMenuListener(this.craftingManager).register(globalEventHandler);
+    }
+
+    private static byte[] loadFavicon() {
+        final File file = ResourceLoader.load(Path.of("server-icon.png"), "/server-icon.png");
+        try {
+            final BufferedImage image = ImageIO.read(file);
+            if (image == null) {
+                throw new IllegalStateException("Failed to read server icon image");
+            }
+            final Raster raster = image.getData();
+            final int width = raster.getWidth();
+            final int height = raster.getHeight();
+            if (width != 64 || height != 64) {
+                throw new IllegalStateException("Server icon must be 64x64 pixels");
+            }
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(image, "PNG", outputStream);
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load favicon", e);
+        }
     }
 
     private void setupPermissions() {

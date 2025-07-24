@@ -4,6 +4,7 @@ import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.command.admin.GiveCommand;
 import net.desolatesky.command.admin.StopCommand;
 import net.desolatesky.command.player.CraftCommand;
+import net.desolatesky.command.player.DiscordCommand;
 import net.desolatesky.command.player.IslandCommand;
 import net.desolatesky.command.player.LaunchCommand;
 import net.desolatesky.command.player.SpawnCommand;
@@ -21,7 +22,8 @@ public final class Commands {
                 new LaunchCommand(),
                 new SpawnCommand(server),
                 new CraftCommand(),
-                new GiveCommand(server.itemRegistry())
+                new GiveCommand(server.itemRegistry()),
+                new DiscordCommand()
         );
     }
 

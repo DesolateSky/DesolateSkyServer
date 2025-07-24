@@ -1,10 +1,9 @@
 package net.desolatesky.config;
 
+import net.desolatesky.util.ResourceLoader;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 
 import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
 
@@ -40,22 +39,7 @@ public class ConfigFile {
     }
 
     private void load() {
-        final File file = this.filePath.toFile();
-        if (!file.exists()) {
-            final InputStream resourceStream = this.getClass().getResourceAsStream(this.resourcePath);
-            if (resourceStream == null) {
-                throw new IllegalStateException("Resource not found: " + this.resourcePath);
-            }
-            try {
-                final File parentFile = file.getParentFile();
-                if (parentFile != null && !parentFile.exists()) {
-                    parentFile.mkdirs();
-                }
-                Files.copy(resourceStream, this.filePath);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to copy resource to file: " + this.filePath, e);
-            }
-        }
+        ResourceLoader.load(this.filePath, this.resourcePath, this.getClass());
     }
 
     public File getFile() {

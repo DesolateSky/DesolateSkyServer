@@ -31,6 +31,7 @@ public final class DSBlocks {
     private DSBlock leafLitter;
     private DSBlock waxedExposedCutCopperSlab;
     private DSBlock waxedExposedCopperTrapdoor;
+    private DSBlock craftingTable;
 
     // CUSTOM
     private DSBlock debrisCatcher;
@@ -42,6 +43,7 @@ public final class DSBlocks {
         this.leafLitter = this.addDefault(DSBlock.create(Block.LEAF_LITTER));
         this.waxedExposedCutCopperSlab = this.addDefault(DSBlock.create(Block.WAXED_EXPOSED_CUT_COPPER_SLAB));
         this.waxedExposedCopperTrapdoor = this.addDefault(DSBlock.create(Block.WAXED_EXPOSED_COPPER_TRAPDOOR, this.blockHandlers.trapdoor()));
+        this.craftingTable = this.addDefault(DSBlock.create(Block.CRAFTING_TABLE, this.blockHandlers.craftingTable()));
 
         // CUSTOM
         this.debrisCatcher = this.addDefault(DSBlock.create(BlockKeys.DEBRIS_CATCHER, blockBuilder(Block.COBWEB).breakTime(1_000).blockItem(ItemKeys.DEBRIS_CATCHER).build(), this.blockHandlers.debrisCatcher()));

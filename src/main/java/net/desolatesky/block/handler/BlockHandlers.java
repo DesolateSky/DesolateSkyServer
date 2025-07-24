@@ -4,10 +4,12 @@ import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.BlockKeys;
 import net.desolatesky.block.handler.custom.DebrisCatcherBlockHandler;
 import net.desolatesky.block.handler.custom.SifterBlockHandler;
+import net.desolatesky.block.handler.vanilla.CraftingTableHandler;
 import net.desolatesky.block.handler.vanilla.TrapdoorHandler;
 import net.desolatesky.block.loot.BlockLootRegistry;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.item.Material;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,6 +35,7 @@ public final class BlockHandlers {
     }
 
     private BlockHandlerSupplier<DSBlockHandler> defaultHandler;
+    private BlockHandlerSupplier<CraftingTableHandler> craftingTableHandler;
     private BlockHandlerSupplier<TrapdoorHandler> trapdoor;
     private BlockHandlerSupplier<DebrisCatcherBlockHandler> debrisCatcher;
     private BlockHandlerSupplier<SifterBlockHandler> sifter;
@@ -40,6 +43,7 @@ public final class BlockHandlers {
 
     private void initialize() {
         this.defaultHandler = this.register(new TransientBlockHandler(this.server, Key.key("default_handler"), true));
+        this.craftingTableHandler = this.register(new CraftingTableHandler(this.server, Material.CRAFTING_TABLE.key(), true));
         this.trapdoor = this.register(new TrapdoorHandler(this.server));
         this.debrisCatcher = this.register(DebrisCatcherBlockHandler.KEY, () -> new DebrisCatcherBlockHandler(this.server));
         this.sifter = this.register(SifterBlockHandler.KEY, () -> new SifterBlockHandler(this.server));
@@ -48,6 +52,10 @@ public final class BlockHandlers {
 
     public BlockHandlerSupplier<DSBlockHandler> defaultHandler() {
         return this.defaultHandler;
+    }
+
+    public BlockHandlerSupplier<CraftingTableHandler> craftingTable() {
+        return this.craftingTableHandler;
     }
 
     public BlockHandlerSupplier<TrapdoorHandler> trapdoor() {

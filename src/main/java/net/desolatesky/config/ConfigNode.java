@@ -13,6 +13,7 @@ import org.spongepowered.configurate.serialize.SerializationException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ConfigNode implements CommentedConfigurationNodeIntermediary<ConfigNode> {
@@ -222,5 +223,9 @@ public class ConfigNode implements CommentedConfigurationNodeIntermediary<Config
     @Override
     public Map<RepresentationHint<?>, ?> ownHints() {
         return this.internalNode.ownHints();
+    }
+
+    public UUID getUUID() throws SerializationException {
+        return UUID.fromString(this.getNonNull(String.class));
     }
 }

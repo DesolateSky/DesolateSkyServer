@@ -13,6 +13,7 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.LightingChunk;
+import net.minestom.server.instance.WorldBorder;
 import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
@@ -63,6 +64,7 @@ public final class TeamInstance extends DSInstance {
         this.weatherManager = new WeatherManager(server.blocks(), server.entityLootRegistry(), this, this.randomSource);
         this.setGenerator(new StartingIslandGenerator(server.blocks(), this));
         this.setChunkSupplier(LightingChunk::new);
+        this.setWorldBorder(new WorldBorder(50, spawn.x(), spawn.z(), 0, 0, 50));
     }
 
     public CompletableFuture<Void> unload() {
