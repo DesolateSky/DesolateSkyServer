@@ -6,6 +6,7 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.ItemEntity;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.TransactionOption;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 
 import java.time.Duration;
@@ -39,6 +40,14 @@ public final class InventoryUtil {
 
     public static void addItemsToInventory(DSPlayer player, Collection<ItemStack> items, InstancePoint<? extends Point> dropPosition) {
         addItemsToInventory(player.getInventory(), items, dropPosition);
+    }
+
+    public static boolean isLeftClick(Click click) {
+        return click instanceof Click.Left || click instanceof Click.LeftShift;
+    }
+
+    public static boolean isRightClick(Click click) {
+        return click instanceof Click.Right || click instanceof Click.RightShift;
     }
 
 }

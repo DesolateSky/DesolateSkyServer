@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.UnmodifiableView;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -61,6 +62,18 @@ public final class DSItemRegistry {
         return item.itemHandler();
     }
 
+    public @Nullable DSItem getItem(Key key) {
+        return this.items.get(key);
+    }
+
+    public @Nullable DSItem getItem(ItemStack itemStack) {
+        Key id = itemStack.getTag(ItemTags.ID);
+        if (id == null) {
+            id = itemStack.material().key();
+        }
+        return this.items.get(id);
+    }
+
     public @Nullable ItemStack create(Key key, int amount) {
         final DSItem item = this.items.get(key);
         if (item == null) {
@@ -75,6 +88,10 @@ public final class DSItemRegistry {
 
     public @UnmodifiableView Map<Key, DSItem> getItems() {
         return Collections.unmodifiableMap(this.items);
+    }
+
+    public @UnmodifiableView Collection<Key> getKeys() {
+        return Collections.unmodifiableSet(this.items.keySet());
     }
 
 }

@@ -26,7 +26,7 @@ public final class BlockHandlerSupplier<T extends DSBlockHandler> implements Sup
 
     @Override
     public T get() {
-        if (this.cached != null && this.cached.stateless) {
+        if (this.cached != null && this.cached.stateless()) {
             return this.cached;
         }
         this.cached = this.supplier.get();

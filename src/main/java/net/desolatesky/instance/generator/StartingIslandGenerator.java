@@ -20,8 +20,6 @@ import org.jetbrains.annotations.NotNull;
 
 public final class StartingIslandGenerator implements Generator {
 
-    private static final int STARTING_BLOCK_BREAK_MILLIS = 1_000;
-
     private final TeamInstance instance;
 
     private Block bottomBlock;
@@ -37,33 +35,27 @@ public final class StartingIslandGenerator implements Generator {
     }
 
     private void initializeBlocks(DSBlocks blocks) {
-        this.bottomBlock = BlockBuilder.from(blocks.waxedExposedCutCopperSlab())
+        this.bottomBlock = BlockBuilder.from(blocks.unbreakableWaxedExposedCutCopperSlab())
                 .property(BlockProperties.SLAB_TYPE, SlabType.TOP)
-                .tag(BlockTags.UNBREAKABLE, true)
                 .build();
         this.topTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
                 .property(BlockProperties.OPEN, false)
-                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
                 .build();
         this.westTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.WEST)
-                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
                 .build();
         this.eastTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.EAST)
-                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
                 .build();
         this.southTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.SOUTH)
-                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
                 .build();
         this.northTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.NORTH)
-                .tag(BlockTags.BREAK_TIME, STARTING_BLOCK_BREAK_MILLIS)
                 .build();
     }
 

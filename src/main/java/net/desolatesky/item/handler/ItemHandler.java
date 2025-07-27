@@ -1,6 +1,11 @@
 package net.desolatesky.item.handler;
 
+import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
+import net.desolatesky.item.category.ItemCategories;
+import net.desolatesky.item.category.ItemCategory;
+import net.desolatesky.item.handler.breaking.calculator.BreakTimeCalculator;
+import net.desolatesky.item.handler.breaking.MiningLevel;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -11,13 +16,24 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
-public abstract class ItemHandler implements Keyed {
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Set;
 
-    private final Key key;
+public class ItemHandler implements Keyed {
 
-    public ItemHandler(Key key) {
+    protected final Key key;
+    protected final BreakTimeCalculator breakTimeCalculator;
+    protected final @Unmodifiable Collection<ItemCategory> categories;
+    protected final MiningLevel miningLevel;
+
+    public ItemHandler(Key key, BreakTimeCalculator breakTimeCalculator, Collection<ItemCategory> categories, MiningLevel miningLevel) {
         this.key = key;
+        this.breakTimeCalculator = breakTimeCalculator;
+        this.categories = Set.copyOf(categories);
+        this.miningLevel = miningLevel;
     }
 
     public ItemStack onInteractBlock(DSPlayer player, DSInstance instance, ItemStack usedItem, PlayerHand hand, Point blockPoint, Block block, Point cursorPosition, BlockFace blockFace) {
@@ -42,6 +58,22 @@ public abstract class ItemHandler implements Keyed {
 
     public ItemStack onPunchEntity(DSPlayer player, DSInstance instance, ItemStack usedItem, Entity interacted) {
         return usedItem;
+    }
+
+    public Duration calculateBreakTime(ItemStack usedItem, Block block) {
+        return this.breakTimeCalculator.calculateBreakTime(this, usedItem, block);
+    }
+
+    public @Unmodifiable Collection<ItemCategory> categories() {
+        return this.categories;
+    }
+
+    public boolean isCategory(ItemCategory category) {
+        return this.categories.contains(category);
+    }
+
+    public MiningLevel miningLevel() {
+        return this.miningLevel;
     }
 
     @Override

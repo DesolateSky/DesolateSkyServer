@@ -1,21 +1,20 @@
 package net.desolatesky.block.handler;
 
 import net.desolatesky.DesolateSkyServer;
+import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.instance.DSInstance;
-import net.desolatesky.loot.table.LootTable;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
 
 public class TransientBlockHandler extends DSBlockHandler {
 
-    public TransientBlockHandler(DesolateSkyServer server, Key key, LootTable loot, boolean stateless) {
-        super(server, key, loot, stateless);
+    public TransientBlockHandler(DesolateSkyServer server, BlockSettings blockSettings) {
+        super(server, blockSettings);
     }
 
-    public TransientBlockHandler(DesolateSkyServer server, Key key, boolean stateless) {
-        super(server, key, stateless);
+    public TransientBlockHandler(DesolateSkyServer server, BlockSettings.Builder blockSettings) {
+        super(server, blockSettings);
     }
 
     @Override

@@ -1,11 +1,12 @@
 package net.desolatesky.block.handler.custom;
 
 import net.desolatesky.DesolateSkyServer;
-import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.handler.TransientBlockHandler;
+import net.desolatesky.block.settings.BlockSettings;
+import net.desolatesky.block.settings.DSBlockSettings;
 import net.desolatesky.entity.type.DebrisEntity;
 import net.desolatesky.instance.DSInstance;
-import net.desolatesky.instance.team.TeamInstance;
+import net.desolatesky.item.DSItems;
 import net.desolatesky.util.Namespace;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
@@ -24,7 +25,7 @@ public final class DebrisCatcherBlockHandler extends TransientBlockHandler {
     private long tickNum = 0;
 
     public DebrisCatcherBlockHandler(DesolateSkyServer server) {
-        super(server, KEY, false);
+        super(server, DSBlockSettings.DEBRIS_CATCHER);
     }
 
     @Override

@@ -17,9 +17,9 @@ public final class Commands {
 
     public static void register(CommandManager commandManager, DesolateSkyServer server) {
         commandManager.register(
-                new StopCommand(),
+                new StopCommand(server),
                 new IslandCommand(server),
-                new LaunchCommand(),
+                new LaunchCommand(server.messageHandler()),
                 new SpawnCommand(server),
                 new CraftCommand(),
                 new GiveCommand(server.itemRegistry()),

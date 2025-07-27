@@ -1,12 +1,15 @@
 package net.desolatesky.item;
 
 import net.desolatesky.block.BlockKeys;
+import net.desolatesky.item.handler.ItemHandler;
 import net.desolatesky.util.ComponentUtil;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import org.jetbrains.annotations.UnmodifiableView;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,9 +53,12 @@ public final class DSItems {
             .build()));
 
     // vanilla
-    public static final DSItem STICK = addDefault(DSItem.create(ItemStack.builder(Material.STICK).set(ItemTags.BLOCK_ID, Material.CRAFTING_TABLE.key()).build()));
-    public static final DSItem OAK_PLANKS = addDefault(DSItem.create(ItemStack.builder(Material.OAK_PLANKS).set(ItemTags.BLOCK_ID, Material.OAK_PLANKS.key()).build()));
-    public static final DSItem CRAFTING_TABLE = addDefault(DSItem.create(ItemStack.builder(Material.CRAFTING_TABLE).set(ItemTags.BLOCK_ID, Material.CRAFTING_TABLE.key()).build()));
+    public static final DSItem STICK = addDefault(DSItem.create(ItemStack.builder(Material.STICK).build()));
+    public static final DSItem OAK_PLANKS = addDefault(DSItem.create(ItemStack.builder(Material.OAK_PLANKS).set(ItemTags.BLOCK_ID, BlockKeys.OAK_PLANKS.key()).build()));
+    public static final DSItem CRAFTING_TABLE = addDefault(DSItem.create(ItemStack.builder(Material.CRAFTING_TABLE).set(ItemTags.BLOCK_ID, BlockKeys.CRAFTING_TABLE).build()));
+    public static final DSItem WOODEN_AXE = addDefault(DSItem.create(ItemKeys.WOODEN_AXE, ItemHandlers.WOODEN_AXE, ItemStack.builder(Material.WOODEN_AXE)
+            .customName(ComponentUtil.noItalics("Wooden Axe"))
+            .build()));
 
 
     public static void register(DSItemRegistry itemRegistry) {
@@ -63,7 +69,6 @@ public final class DSItems {
         defaultItems.putIfAbsent(dsItem.key(), dsItem);
         return dsItem;
     }
-
 
     public static boolean isBlock(ItemStack itemStack) {
         final Key id = itemStack.getTag(ItemTags.BLOCK_ID);

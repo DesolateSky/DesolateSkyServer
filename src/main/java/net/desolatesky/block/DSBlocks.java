@@ -1,9 +1,10 @@
 package net.desolatesky.block;
 
 import net.desolatesky.block.handler.BlockHandlers;
+import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.property.NoteBlockInstrument;
+import net.desolatesky.block.settings.DSBlockSettings;
 import net.desolatesky.item.ItemKeys;
-import net.desolatesky.util.Namespace;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
@@ -31,7 +32,9 @@ public final class DSBlocks {
     private DSBlock leafLitter;
     private DSBlock waxedExposedCutCopperSlab;
     private DSBlock waxedExposedCopperTrapdoor;
+    private DSBlock unbreakableWaxedExposedCutCopperSlab;
     private DSBlock craftingTable;
+    private DSBlock oakPlanks;
 
     // CUSTOM
     private DSBlock debrisCatcher;
@@ -41,14 +44,16 @@ public final class DSBlocks {
     private void initialize() {
         // VANILLA
         this.leafLitter = this.addDefault(DSBlock.create(Block.LEAF_LITTER));
-        this.waxedExposedCutCopperSlab = this.addDefault(DSBlock.create(Block.WAXED_EXPOSED_CUT_COPPER_SLAB));
-        this.waxedExposedCopperTrapdoor = this.addDefault(DSBlock.create(Block.WAXED_EXPOSED_COPPER_TRAPDOOR, this.blockHandlers.trapdoor()));
+        this.waxedExposedCutCopperSlab = this.addDefault(DSBlock.create(Block.WAXED_EXPOSED_CUT_COPPER_SLAB, this.blockHandlers.waxedExposedCutCopperSlab()));
+        this.unbreakableWaxedExposedCutCopperSlab = this.addDefault(DSBlock.create(Block.WAXED_EXPOSED_CUT_COPPER_SLAB, this.blockHandlers.unbreakableWaxedExposedCutCopperSlab()));
+        this.waxedExposedCopperTrapdoor = this.addDefault(DSBlock.create(Block.WAXED_EXPOSED_COPPER_TRAPDOOR, this.blockHandlers.getTrapdoor(Block.WAXED_EXPOSED_COPPER_TRAPDOOR.key())));
         this.craftingTable = this.addDefault(DSBlock.create(Block.CRAFTING_TABLE, this.blockHandlers.craftingTable()));
+        this.oakPlanks = this.addDefault(DSBlock.create(Block.OAK_PLANKS, this.blockHandlers.oakPlanks()));
 
         // CUSTOM
-        this.debrisCatcher = this.addDefault(DSBlock.create(BlockKeys.DEBRIS_CATCHER, blockBuilder(Block.COBWEB).breakTime(1_000).blockItem(ItemKeys.DEBRIS_CATCHER).build(), this.blockHandlers.debrisCatcher()));
-        this.dustBlock = this.addDefault(DSBlock.create(BlockKeys.DUST_BLOCK, blockBuilder(Block.NOTE_BLOCK).property(BlockProperties.INSTRUMENT, NoteBlockInstrument.HARP).property(BlockProperties.NOTE, 1).breakTime(1_000).blockItem(ItemKeys.DUST_BLOCK).build(), this.blockHandlers.dustBlock()));
-        this.sifter = this.addDefault(DSBlock.create(BlockKeys.SIFTER, blockBuilder(Block.SCAFFOLDING).breakTime(1_000).blockItem(ItemKeys.SIFTER).build(), this.blockHandlers.sifter()));
+        this.debrisCatcher = this.addDefault(DSBlock.create(BlockKeys.DEBRIS_CATCHER, blockBuilder(Block.COBWEB).build(), this.blockHandlers.debrisCatcher()));
+        this.dustBlock = this.addDefault(DSBlock.create(BlockKeys.DUST_BLOCK, blockBuilder(Block.NOTE_BLOCK).property(BlockProperties.INSTRUMENT, NoteBlockInstrument.HARP).property(BlockProperties.NOTE, 1).build(), this.blockHandlers.dustBlock()));
+        this.sifter = this.addDefault(DSBlock.create(BlockKeys.SIFTER, blockBuilder(Block.SCAFFOLDING).build(), this.blockHandlers.sifter()));
     }
 
     public DSBlock leafLitter() {
@@ -57,6 +62,10 @@ public final class DSBlocks {
 
     public DSBlock waxedExposedCutCopperSlab() {
         return this.waxedExposedCutCopperSlab;
+    }
+
+    public DSBlock unbreakableWaxedExposedCutCopperSlab() {
+        return this.unbreakableWaxedExposedCutCopperSlab;
     }
 
     public DSBlock waxedExposedCopperTrapdoor() {
@@ -73,6 +82,14 @@ public final class DSBlocks {
 
     public DSBlock sifter() {
         return this.sifter;
+    }
+
+    public DSBlock craftingTable() {
+        return this.craftingTable;
+    }
+
+    public DSBlock oakPlanks() {
+        return this.oakPlanks;
     }
 
     public void register(DSBlockRegistry registry) {

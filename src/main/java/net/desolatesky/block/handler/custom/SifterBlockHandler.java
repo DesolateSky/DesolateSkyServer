@@ -2,6 +2,7 @@ package net.desolatesky.block.handler.custom;
 
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.handler.DSBlockHandler;
+import net.desolatesky.block.settings.DSBlockSettings;
 import net.desolatesky.entity.type.SifterBlockEntity;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
@@ -39,7 +40,7 @@ public class SifterBlockHandler extends DSBlockHandler {
     private SifterBlockEntity entity;
 
     public SifterBlockHandler(DesolateSkyServer server) {
-        super(server, KEY, false);
+        super(server, DSBlockSettings.SIFTER);
     }
 
     @Override
@@ -115,7 +116,7 @@ public class SifterBlockHandler extends DSBlockHandler {
         if (!(this.entity.displayedBlock().handler() instanceof final DSBlockHandler displayBlockHandler)) {
             return;
         }
-        final LootTable loot = displayBlockHandler.loot();
+        final LootTable loot = displayBlockHandler.getLoot();
         final LootGenerator lootGenerator = loot.getGenerator(LOOT_GENERATOR_TYPE);
         if (lootGenerator != null) {
             final Collection<ItemStack> generated = lootGenerator.generateLoot(LootContext.create(loot.randomSource()));

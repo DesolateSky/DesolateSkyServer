@@ -8,6 +8,8 @@ import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.instance.generator.StartingIslandGenerator;
 import net.desolatesky.instance.weather.WeatherManager;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.team.IslandTeam;
+import net.desolatesky.team.role.RolePermissionType;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -35,31 +37,31 @@ public final class TeamInstance extends DSInstance {
     private final RandomGenerator randomSource = new SplittableRandom();
     private final BreakingManager breakingManager = new BreakingManager(new HashMap<>());
     private final WeatherManager weatherManager;
-    private UUID owner;
+    private final IslandTeam team;
     private InstancePoint<Pos> spawnPoint;
     private Task tickTask;
 
-    public static @Nullable TeamInstance load(DesolateSkyServer server, InstanceManager instanceManager, UUID ownerUUID, Path worldFolderPath) {
-        final Path worldPath = worldFolderPath.resolve(ownerUUID.toString()).resolve("world");
+    public static @Nullable TeamInstance load(DesolateSkyServer server, InstanceManager instanceManager, IslandTeam team, Path worldFolderPath) {
+        final Path worldPath = worldFolderPath.resolve(team.id().toString()).resolve("world");
         if (!worldPath.toFile().exists()) {
             return null;
         }
-        final TeamInstance teamInstance = new TeamInstance(server, ownerUUID, worldPath, initialSpawnPoint);
+        final TeamInstance teamInstance = new TeamInstance(server, team, worldPath, initialSpawnPoint);
         instanceManager.registerInstance(teamInstance);
         teamInstance.load();
         return teamInstance;
     }
 
-    public static TeamInstance create(DesolateSkyServer server, InstanceManager instanceManager, UUID ownerUUID, Path worldFolderPath) {
-        final TeamInstance teamInstance = new TeamInstance(server, ownerUUID, worldFolderPath.resolve(ownerUUID.toString()).resolve("world"), initialSpawnPoint);
+    public static TeamInstance create(DesolateSkyServer server, InstanceManager instanceManager, IslandTeam team, Path worldFolderPath) {
+        final TeamInstance teamInstance = new TeamInstance(server, team, worldFolderPath.resolve(team.id().toString()).resolve("world"), initialSpawnPoint);
         instanceManager.registerInstance(teamInstance);
         teamInstance.load();
         return teamInstance;
     }
 
-    private TeamInstance(DesolateSkyServer server, UUID ownerUUID, Path worldFolderPath, Pos spawn) {
-        super(ownerUUID, DimensionType.OVERWORLD, new AnvilLoader(worldFolderPath));
-        this.owner = ownerUUID;
+    private TeamInstance(DesolateSkyServer server, IslandTeam team, Path worldFolderPath, Pos spawn) {
+        super(team.id(), worldFolderPath, DimensionType.OVERWORLD, new AnvilLoader(worldFolderPath));
+        this.team = team;
         this.spawnPoint = new InstancePoint<>(this, spawn);
         this.weatherManager = new WeatherManager(server.blocks(), server.entityLootRegistry(), this, this.randomSource);
         this.setGenerator(new StartingIslandGenerator(server.blocks(), this));
@@ -107,7 +109,7 @@ public final class TeamInstance extends DSInstance {
 
     @Override
     public boolean canBreakBlock(DSPlayer player, BlockVec pos, Block block) {
-        return !block.hasTag(BlockTags.UNBREAKABLE);
+        return this.team.hasPermission(player, RolePermissionType.BREAK_BLOCK, block.key());
     }
 
     @Override
@@ -120,8 +122,12 @@ public final class TeamInstance extends DSInstance {
         return this.randomSource;
     }
 
-    public UUID owner() {
-        return this.owner;
+    public UUID getOwner() {
+        return this.team.getOwnerId();
+    }
+
+    public IslandTeam getTeam() {
+        return this.team;
     }
 
 }

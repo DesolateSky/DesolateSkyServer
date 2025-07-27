@@ -29,7 +29,6 @@ public final class ComponentUtil {
             .postProcessor(component -> component.decoration(TextDecoration.ITALIC, false))
             .build();
 
-
     private static Tag createTag(TextColor color, ArgumentQueue args, Context context) {
         return Tag.styling(color);
     }

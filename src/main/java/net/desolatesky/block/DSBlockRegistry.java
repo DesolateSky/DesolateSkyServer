@@ -6,7 +6,9 @@ import net.desolatesky.block.loot.BlockLootRegistry;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.UnknownNullability;
+import org.jetbrains.annotations.UnmodifiableView;
 
+import java.util.Collection;
 import java.util.Map;
 
 public final class DSBlockRegistry {
@@ -63,6 +65,10 @@ public final class DSBlockRegistry {
             return block.withHandler(handler);
         }
         return dsBlock.create().withHandler(handler);
+    }
+
+    public @UnmodifiableView Collection<Key> getKeys() {
+        return this.blocksByKey.keySet();
     }
 
     public BlockLootRegistry blockLootRegistry() {

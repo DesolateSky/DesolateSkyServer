@@ -5,11 +5,13 @@ import net.desolatesky.cooldown.CooldownConfig;
 import net.desolatesky.cooldown.PlayerCooldowns;
 import net.desolatesky.database.MongoCodec;
 import net.desolatesky.entity.DSEntity;
+import net.desolatesky.entity.EntityKey;
 import net.desolatesky.entity.EntityKeys;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.instance.team.TeamInstance;
 import net.desolatesky.inventory.InventoryHolder;
+import net.desolatesky.message.MessageKey;
 import net.desolatesky.player.database.PlayerData;
 import net.desolatesky.util.Namespace;
 import net.kyori.adventure.key.Key;
@@ -34,8 +36,13 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class DSPlayer extends Player implements DSEntity, InventoryHolder {
+
+    public static void acquireAndSync(Player player, Consumer<DSPlayer> consumer) {
+        player.acquirable().sync(p -> consumer.accept((DSPlayer) p));
+    }
 
     public static final MongoCodec<DSPlayer, PlayerData, MongoContext> MONGO_CODEC = new MongoCodec<>() {
         @Override
@@ -54,12 +61,14 @@ public class DSPlayer extends Player implements DSEntity, InventoryHolder {
 
     private final DesolateSkyServer server;
     private final PlayerData playerData;
+    private final PlayerProfile profile;
     private User user;
 
     public DSPlayer(@NotNull PlayerConnection playerConnection, @NotNull GameProfile gameProfile, DesolateSkyServer server, PlayerData playerData) {
         super(playerConnection, gameProfile);
         this.server = server;
         this.playerData = playerData;
+        this.profile = new PlayerProfile(this.getUuid(), this.getUsername());
         this.getAttribute(Attribute.BLOCK_BREAK_SPEED).setBaseValue(0);
         this.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(5);
     }
@@ -94,7 +103,7 @@ public class DSPlayer extends Player implements DSEntity, InventoryHolder {
         return this.user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
     }
 
-    public void sendIdMessage(String message) {
+    public void sendIdMessage(MessageKey message) {
         this.server.messageHandler().sendMessage(this, message);
     }
 
@@ -144,12 +153,16 @@ public class DSPlayer extends Player implements DSEntity, InventoryHolder {
     }
 
     @Override
-    public @NotNull Key key() {
+    public EntityKey key() {
         return EntityKeys.PLAYER_ENTITY;
     }
 
     public PlayerData playerData() {
         return this.playerData;
+    }
+
+    public PlayerProfile profile() {
+        return this.profile;
     }
 
 }

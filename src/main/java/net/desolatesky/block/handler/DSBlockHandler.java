@@ -1,10 +1,14 @@
 package net.desolatesky.block.handler;
 
 import net.desolatesky.DesolateSkyServer;
-import net.desolatesky.block.BlockTags;
+import net.desolatesky.block.loot.BlockLootRegistry;
+import net.desolatesky.block.settings.BlockSettings;
+import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.item.DSItemRegistry;
+import net.desolatesky.item.handler.ItemHandler;
+import net.desolatesky.item.handler.breaking.MiningLevel;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
@@ -17,29 +21,31 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.packet.server.play.WorldEventPacket;
+import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public  abstract class DSBlockHandler implements BlockHandler {
+public abstract class DSBlockHandler implements BlockHandler {
+
+    public static final Duration UNBREAKABLE_BREAK_TIME = Duration.ofMillis(-1);
 
     protected final DesolateSkyServer server;
-    protected final Key key;
-    protected final LootTable loot;
-    protected final boolean stateless;
+    protected final BlockSettings settings;
 
-    public DSBlockHandler(DesolateSkyServer server, Key key, LootTable loot, boolean stateless) {
+    protected LootTable cachedLootTable = null;
+
+    public DSBlockHandler(DesolateSkyServer server, BlockSettings blockSettings) {
         this.server = server;
-        this.key = key;
-        this.loot = loot;
-        this.stateless = stateless;
+        this.settings = blockSettings;
     }
 
-    public DSBlockHandler(DesolateSkyServer server, Key key, boolean stateless) {
-        this(server, key, LootTable.EMPTY, stateless);
+    public DSBlockHandler(DesolateSkyServer server, BlockSettings.Builder blockSettings) {
+        this(server, blockSettings.build());
     }
 
     @Override
@@ -125,30 +131,87 @@ public  abstract class DSBlockHandler implements BlockHandler {
     }
 
     public Collection<ItemStack> generateDrops(DSItemRegistry itemRegistry, ItemStack toolUsed, Point point, Block block) {
-        final Key blockId = block.getTag(BlockTags.BLOCK_ITEM);
-        if (blockId == null) {
+        final Key itemId = this.settings.blockItemKey();
+        if (itemId == null) {
             return Collections.emptyList();
         }
-        final ItemStack itemStack = itemRegistry.create(blockId);
+        final ItemStack itemStack = itemRegistry.create(itemId);
         if (itemStack == null) {
             return Collections.emptyList();
         }
         return List.of(itemStack);
     }
 
-    @Override
-    public @NotNull Key getKey() {
-        return this.key;
+    public Duration calculateBlockBreakTime(DSPlayer player, Block block) {
+        final ItemStack itemInHand = player.getItemInMainHand();
+        if (itemInHand.isAir()) {
+            return Duration.ofMillis(this.breakTime());
+        }
+        final ItemHandler itemHandler = this.server.itemRegistry().getItemHandler(itemInHand);
+        if (itemHandler == null) {
+            return Duration.ofMillis(this.breakTime());
+        }
+        return itemHandler.calculateBreakTime(itemInHand, block);
     }
 
-    public LootTable loot() {
-        return this.loot;
+    public boolean isCategory(Category category) {
+        return this.settings.isCategory(category);
+    }
+
+    @Override
+    public @NotNull Key getKey() {
+        return this.settings.key();
+    }
+
+    public LootTable getLoot() {
+        if (this.cachedLootTable != null) {
+            return this.cachedLootTable;
+        }
+        final Key key = this.settings.lootTableKey();
+        if (key == null) {
+            this.cachedLootTable = LootTable.EMPTY;
+            return this.cachedLootTable;
+        }
+        final LootTable loot = this.server.blockLootRegistry().getLootTable(key);
+        if (loot == null) {
+            this.cachedLootTable = LootTable.EMPTY;
+            return this.cachedLootTable;
+        }
+        this.cachedLootTable = loot;
+        return loot;
     }
 
     public boolean stateless() {
-        return this.stateless;
+        return this.settings.stateless();
     }
 
+    public int breakTime() {
+        return this.settings.breakTime();
+    }
+
+    public boolean isUnbreakable() {
+        return this.settings.breakTime() < 0;
+    }
+
+    public @Nullable Key blockItemKey() {
+        return this.settings.blockItemKey();
+    }
+
+    public MiningLevel miningLevel() {
+        return this.settings.miningLevel();
+    }
+
+    public ItemStack menuItem() {
+        return this.settings.menuItem();
+    }
+
+    public <T> T getSetting(Tag<T> tag) {
+        return this.settings.getSetting(tag);
+    }
+
+    public BlockSettings settings() {
+        return this.settings;
+    }
 
     public abstract void save(DSInstance instance, Point point, Block block);
 

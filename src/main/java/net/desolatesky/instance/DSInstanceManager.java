@@ -4,8 +4,8 @@ import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.instance.lobby.LobbyInstance;
 import net.desolatesky.instance.region.Region;
 import net.desolatesky.instance.team.TeamInstance;
-import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.team.IslandTeam;
 import net.desolatesky.teleport.TeleportLocations;
 import net.desolatesky.teleport.TeleportManager;
 import net.minestom.server.MinecraftServer;
@@ -14,11 +14,17 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.WorldBorder;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.UUID;
 
 public final class DSInstanceManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DSInstanceManager.class);
+
     public static final UUID LOBBY_WORLD_ID = new UUID(0, 0);
 
     private static final double DIAMETER = 100;
@@ -42,22 +48,47 @@ public final class DSInstanceManager {
         MinecraftServer.getInstanceManager().registerInstance(this.lobbyInstance);
     }
 
-    public @Nullable TeamInstance getPlayerIsland(DSPlayer player, boolean load) {
+    public @Nullable TeamInstance getIslandInstance(IslandTeam team, boolean load) {
         if (load) {
-            return this.tryLoadPlayerIsland(player);
+            return this.tryLoadIsland(team);
         }
-        final UUID islandId = player.islandId();
-        if (islandId == null) {
-            return null;
-        }
-        final Instance instance = this.instanceManager.getInstance(islandId);
+        final Instance instance = this.instanceManager.getInstance(team.id());
         if (!(instance instanceof final TeamInstance teamInstance)) {
-            return this.tryLoadPlayerIsland(player);
+            return this.tryLoadIsland(team);
         }
         return teamInstance;
     }
 
-    public Instance getOrLoadInstance(UUID worldId) {
+    public void archiveTeamInstance(UUID islandId) {
+        final Instance instance = this.instanceManager.getInstance(islandId);
+        if (instance instanceof TeamInstance teamInstance) {
+            teamInstance.getPlayers().forEach(player -> player.setInstance(this.lobbyInstance));
+            teamInstance.saveChunksToStorage();
+            teamInstance.saveChunksToStorage();
+            final File file = teamInstance.worldFilePath().toFile();
+            if (file.exists()) {
+                final File archiveFolder = new File(this.worldFolderPath.toFile(), "archive");
+                if (!archiveFolder.exists()) {
+                    archiveFolder.mkdirs();
+                }
+                final File archivedWorld = new File(archiveFolder, islandId.toString());
+                file.renameTo(archivedWorld);
+                this.instanceManager.unregisterInstance(teamInstance);
+            } else {
+                LOGGER.warn("Attempted to archive non-existent island instance: {}", islandId);
+            }
+        }
+    }
+
+    public @Nullable TeamInstance getIslandInstance(UUID islandId) {
+        final Instance instance = this.instanceManager.getInstance(islandId);
+        if (!(instance instanceof final TeamInstance teamInstance)) {
+            return null;
+        }
+        return teamInstance;
+    }
+
+    public Instance getOrLoadInstance(UUID worldId, @Nullable IslandTeam islandTeam) {
         final Instance instance = this.instanceManager.getInstance(worldId);
         if (instance != null) {
             return instance;
@@ -65,21 +96,31 @@ public final class DSInstanceManager {
         if (worldId.equals(LOBBY_WORLD_ID)) {
             return this.lobbyInstance;
         }
-        final TeamInstance teamInstance = TeamInstance.load(this.server, this.instanceManager, worldId, this.worldFolderPath);
+        if (islandTeam == null) {
+            return this.lobbyInstance;
+        }
+        final TeamInstance teamInstance = TeamInstance.load(this.server, this.instanceManager, islandTeam, this.worldFolderPath);
         if (teamInstance == null) {
             return this.lobbyInstance;
         }
         return teamInstance;
     }
 
+    public Instance getOrLoadInstance(IslandTeam islandTeam) {
+        return this.getOrLoadInstance(islandTeam.id(), islandTeam);
+    }
+
     public void handlePlayerLeaver(DSPlayer player) {
         if (!player.hasIsland()) {
             return;
         }
-        final TeamInstance teamInstance = this.getPlayerIsland(player, false);
+        final UUID islandId = player.islandId();
+        if (islandId == null) {
+            return;
+        }
+        final TeamInstance teamInstance = this.getIslandInstance(islandId);
         if (teamInstance != null) {
             teamInstance.onLeave(player);
-            final UUID islandId = teamInstance.getUuid();
             if (MinecraftServer.getConnectionManager().getOnlinePlayers().stream().noneMatch(p -> islandId.equals(((DSPlayer) p).islandId()) && !p.equals(player))) {
                 teamInstance.unload().whenComplete((result, error) -> MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
                     if (!teamInstance.getPlayers().isEmpty()) {
@@ -93,41 +134,25 @@ public final class DSInstanceManager {
         }
     }
 
-    public TeamInstance createIslandInstance(DSPlayer player) {
-        if (player.hasIsland()) {
-            final Instance instance = this.instanceManager.getInstance(player.getUuid());
-            if (instance instanceof final TeamInstance teamInstance) {
-                return teamInstance;
-            }
-            throw new IllegalStateException("Player has an island instance but it could not be found: " + player.getUuid());
-        }
-        final UUID playerUuid = player.getUuid();
-        final TeamInstance teamInstance = TeamInstance.create(this.server, this.instanceManager, playerUuid, this.worldFolderPath);
-        player.setIsland(teamInstance);
-        player.sendIdMessage(Messages.CREATED_ISLAND);
-        return teamInstance;
-    }
-
-    public @Nullable TeamInstance tryLoadPlayerIsland(DSPlayer player) {
-        final UUID islandId = player.islandId();
-        if (islandId == null) {
-            return null;
-        }
-        final Instance loadedInstance = this.instanceManager.getInstance(islandId);
+    public TeamInstance createIslandInstance(IslandTeam team) {
+        final Instance loadedInstance = this.getOrLoadInstance(team);
         if (loadedInstance instanceof final TeamInstance teamInstance) {
-            player.setIsland(teamInstance);
             return teamInstance;
         }
-        final TeamInstance instance = TeamInstance.load(this.server, this.instanceManager, islandId, this.worldFolderPath);
-        if (instance == null) {
-            return null;
-        }
-        player.setIsland(instance);
-        return instance;
+        return TeamInstance.create(this.server, this.instanceManager, team, this.worldFolderPath);
     }
 
-    public void teleportToIsland(TeleportManager teleportManager, DSPlayer player) {
-        final TeamInstance teamInstance = this.getPlayerIsland(player, true);
+    public @Nullable TeamInstance tryLoadIsland(IslandTeam islandTeam) {
+        final UUID islandId = islandTeam.id();
+        final Instance loadedInstance = this.instanceManager.getInstance(islandId);
+        if (loadedInstance instanceof final TeamInstance teamInstance) {
+            return teamInstance;
+        }
+        return TeamInstance.load(this.server, this.instanceManager, islandTeam, this.worldFolderPath);
+    }
+
+    public void teleportToIsland(TeleportManager teleportManager, IslandTeam team, DSPlayer player) {
+        final TeamInstance teamInstance = this.getIslandInstance(team, true);
         if (teamInstance == null) {
             return;
         }

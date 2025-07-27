@@ -2,21 +2,18 @@ package net.desolatesky.block.handler.vanilla;
 
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.handler.TransientBlockHandler;
+import net.desolatesky.block.settings.BlockSettings;
+import net.desolatesky.block.settings.DSBlockSettings;
 import net.desolatesky.crafting.menu.CraftingMenu;
 import net.desolatesky.instance.DSInstance;
-import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
-import net.kyori.adventure.key.Key;
+import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftingTableHandler extends TransientBlockHandler {
 
-    public CraftingTableHandler(DesolateSkyServer server, Key key, LootTable loot, boolean stateless) {
-        super(server, key, loot, stateless);
-    }
-
-    public CraftingTableHandler(DesolateSkyServer server, Key key, boolean stateless) {
-        super(server, key, stateless);
+    public CraftingTableHandler(DesolateSkyServer server) {
+        super(server, DSBlockSettings.CRAFTING_TABLE);
     }
 
     @Override

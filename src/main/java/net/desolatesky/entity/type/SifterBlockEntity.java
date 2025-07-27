@@ -2,6 +2,7 @@ package net.desolatesky.entity.type;
 
 import net.desolatesky.block.handler.custom.SifterBlockHandler;
 import net.desolatesky.entity.DSEntity;
+import net.desolatesky.entity.EntityKey;
 import net.desolatesky.entity.EntityKeys;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
@@ -140,13 +141,11 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
     }
 
     @Override
-    public @NotNull Key key() {
+    public @NotNull EntityKey key() {
         return EntityKeys.SIFTER_BLOCK_ENTITY;
     }
 
     private class Interaction extends Entity implements DSEntity {
-
-        private static final Key ENTITY_KEY = Namespace.key("sifter_entity", "interaction");
 
         public Interaction() {
             super(EntityType.INTERACTION);
@@ -198,8 +197,8 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
         }
 
         @Override
-        public @NotNull Key key() {
-            return ENTITY_KEY;
+        public @NotNull EntityKey key() {
+            return SifterBlockEntity.this.key();
         }
 
     }

@@ -1,16 +1,12 @@
 package net.desolatesky.instance.listener;
 
-import net.desolatesky.block.BlockTags;
-import net.desolatesky.instance.DSInstance;
+import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.instance.lobby.LobbyInstance;
-import net.desolatesky.player.DSPlayer;
-import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
-import net.minestom.server.event.player.PlayerMoveEvent;
 import net.minestom.server.instance.block.Block;
 
 public final class InstanceListener {
@@ -22,10 +18,9 @@ public final class InstanceListener {
     public static final EventNode<Event> ROOT = EventNode.all("instance-listener")
             .addChild(EventNode.type("player-join", EventFilter.PLAYER)
                     .addListener(PlayerBlockBreakEvent.class, event -> {
-                        final Player player = event.getPlayer();
                         final Block block = event.getBlock();
-                        final Boolean unbreakable = block.getTag(BlockTags.UNBREAKABLE);
-                        if (unbreakable != null && unbreakable) {
+                        final DSBlockHandler blockHandler = (DSBlockHandler) block.handler();
+                        if (blockHandler == null || blockHandler.isUnbreakable()) {
                             event.setCancelled(true);
                             return;
                         }

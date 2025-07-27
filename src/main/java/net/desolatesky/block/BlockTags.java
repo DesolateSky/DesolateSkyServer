@@ -11,8 +11,7 @@ public final class BlockTags {
     }
 
     public static final Tag<Key> ID = Tag.String("id").map(Namespace::key, Key::asString);
-    public static final Tag<Boolean> UNBREAKABLE = Tag.Boolean("unbreakable");
-    public static final Tag<Integer> BREAK_TIME = Tag.Integer("break_time"); // in milliseconds
-    public static final Tag<Key> BLOCK_ITEM = Tag.String("block_item").map(Namespace::key, Key::asString);
+//    public static final Tag<Boolean> UNBREAKABLE = Tag.Boolean("unbreakable");
+//    public static final Tag<Key> BLOCK_ITEM = Tag.String("block_item").map(Namespace::key, Key::asString);
 
 }

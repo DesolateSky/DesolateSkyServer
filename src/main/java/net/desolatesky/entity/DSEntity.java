@@ -2,11 +2,10 @@ package net.desolatesky.entity;
 
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
-import net.kyori.adventure.key.Keyed;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.PlayerHand;
 
-public interface DSEntity extends Keyed {
+public interface DSEntity {
 
     DSInstance getDSInstance();
 
@@ -15,5 +14,7 @@ public interface DSEntity extends Keyed {
     void onPunch(DSEntity attacker);
 
     InstancePoint<? extends Point> getInstancePosition();
+
+    EntityKey key();
 
 }

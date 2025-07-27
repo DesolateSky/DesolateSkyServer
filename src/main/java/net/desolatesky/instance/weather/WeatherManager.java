@@ -134,7 +134,7 @@ public final class WeatherManager {
                     this.playerItems.put(playerId, playerDebris);
                 }
                 if (this.random.nextDouble(100.0) <= SPAWN_ITEM_CHANCE) {
-                    final LootTable lootTable = this.entityLootRegistry.getLootTable(EntityKeys.DEBRIS_ENTITY);
+                    final LootTable lootTable = this.entityLootRegistry.getLootTable(EntityKeys.DEBRIS_ENTITY.key());
                     if (lootTable == null) {
                         continue;
                     }

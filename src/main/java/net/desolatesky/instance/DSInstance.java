@@ -16,6 +16,7 @@ import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -23,29 +24,35 @@ import java.util.random.RandomGenerator;
 
 public abstract class DSInstance extends InstanceContainer {
 
+    protected final Path worldFilePath;
     protected final Map<UUID, InstancePoint<Pos>> playerSpawnPoints = new HashMap<>();
 
-    public DSInstance(@NotNull UUID uuid, @NotNull RegistryKey<DimensionType> dimensionType) {
+    public DSInstance(@NotNull UUID uuid, Path worldFilePath, @NotNull RegistryKey<DimensionType> dimensionType) {
         super(uuid, dimensionType);
+        this.worldFilePath = worldFilePath;
     }
 
-    public DSInstance(@NotNull UUID uuid, @NotNull RegistryKey<DimensionType> dimensionType, @NotNull Key dimensionName) {
+    public DSInstance(@NotNull UUID uuid, Path worldFilePath, @NotNull RegistryKey<DimensionType> dimensionType, @NotNull Key dimensionName) {
         super(uuid, dimensionType, dimensionName);
+        this.worldFilePath = worldFilePath;
     }
 
-    public DSInstance(@NotNull UUID uuid, @NotNull RegistryKey<DimensionType> dimensionType, @Nullable IChunkLoader loader) {
+    public DSInstance(@NotNull UUID uuid, Path worldFilePath, @NotNull RegistryKey<DimensionType> dimensionType, @Nullable IChunkLoader loader) {
         super(uuid, dimensionType, loader);
+        this.worldFilePath = worldFilePath;
     }
 
-    public DSInstance(@NotNull UUID uuid, @NotNull RegistryKey<DimensionType> dimensionType, @Nullable IChunkLoader loader, @NotNull Key dimensionName) {
+    public DSInstance(@NotNull UUID uuid, Path worldFilePath, @NotNull RegistryKey<DimensionType> dimensionType, @Nullable IChunkLoader loader, @NotNull Key dimensionName) {
         super(uuid, dimensionType, loader, dimensionName);
+        this.worldFilePath = worldFilePath;
     }
 
-    public DSInstance(@NotNull DynamicRegistry<DimensionType> dimensionTypeRegistry, @NotNull UUID uuid, @NotNull RegistryKey<DimensionType> dimensionType, @Nullable IChunkLoader loader, @NotNull Key dimensionName) {
+    public DSInstance(@NotNull DynamicRegistry<DimensionType> dimensionTypeRegistry, Path worldFilePath, @NotNull UUID uuid, @NotNull RegistryKey<DimensionType> dimensionType, @Nullable IChunkLoader loader, @NotNull Key dimensionName) {
         super(dimensionTypeRegistry, uuid, dimensionType, loader, dimensionName);
+        this.worldFilePath = worldFilePath;
     }
 
-    public abstract  InstancePoint<Pos> getDefaultSpawnPoint();
+    public abstract InstancePoint<Pos> getDefaultSpawnPoint();
 
     public InstancePoint<Pos> getSpawnPointFor(DSPlayer player) {
         return this.playerSpawnPoints.getOrDefault(player.getUuid(), this.getDefaultSpawnPoint());
@@ -66,5 +73,9 @@ public abstract class DSInstance extends InstanceContainer {
     public abstract WeatherManager weatherManager();
 
     public abstract RandomGenerator randomSource();
+
+    public Path worldFilePath() {
+        return this.worldFilePath;
+    }
 
 }

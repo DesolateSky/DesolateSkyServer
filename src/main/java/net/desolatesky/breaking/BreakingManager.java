@@ -1,6 +1,7 @@
 package net.desolatesky.breaking;
 
 import net.desolatesky.block.BlockTags;
+import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.player.DSPlayer;
 import net.minestom.server.adventure.audience.PacketGroupingAudience;
@@ -56,15 +57,19 @@ public final class BreakingManager {
                 resetBreakProgress(instance, breakingData.id(), blockPos);
                 return true;
             }
-            final Integer breakTime = block.getTag(BlockTags.BREAK_TIME);
-            if (breakTime == null || breakTime <= 0) {
+            if (!(block.handler() instanceof final DSBlockHandler blockHandler)) {
+                resetBreakProgress(instance, breakingData.id(), blockPos);
+                return false;
+            }
+            final Duration breakTime = blockHandler.calculateBlockBreakTime(player, block);
+            if (breakTime == null || breakTime.isNegative()) {
                 resetBreakProgress(instance, breakingData.id(), blockPos);
                 return false;
             }
             breakingData.hit();
             final Duration currentBreakDuration = breakingData.currentBreakingTime();
-            if (currentBreakDuration.toMillis() < breakTime) {
-                final byte progress = calculateCrackProgress((int) currentBreakDuration.toMillis(), breakTime);
+            if (currentBreakDuration.compareTo(breakTime) < 0) {
+                final byte progress = calculateCrackProgress(currentBreakDuration, breakTime);
                 sendBreakProgress(instance, breakingData.id(), blockPos, progress);
                 return false;
             }
@@ -135,8 +140,8 @@ public final class BreakingManager {
         );
     }
 
-    private static byte calculateCrackProgress(int progress, int required) {
-        final double percentage = (double) progress / required;
+    private static byte calculateCrackProgress(Duration progress, Duration required) {
+        final double percentage = (double) progress.toMillis() / required.toMillis();
         if (percentage >= 1) {
             return MAX_CRACK_PROGRESS;
         }

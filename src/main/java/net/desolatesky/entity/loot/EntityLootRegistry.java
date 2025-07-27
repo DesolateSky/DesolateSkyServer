@@ -26,11 +26,11 @@ public final class EntityLootRegistry extends LootTableRegistry {
     }
 
     private void load() {
-        this.register(EntityKeys.DEBRIS_ENTITY, LootTable.create(Map.of(
+        this.register(EntityKeys.DEBRIS_ENTITY.key(), LootTable.create(Map.of(
                 DebrisEntity.LOOT_GENERATOR_TYPE,
                 ItemStackLootGenerator.create(
                         DebrisEntity.LOOT_GENERATOR_TYPE,
-                        EntityKeys.DEBRIS_ENTITY,
+                        EntityKeys.DEBRIS_ENTITY.key(),
                         List.of(new ItemStackLoot(DSItems.DUST, 1, 2, 5), new ItemStackLoot(DSItems.STICK, 1, 2, 5), new ItemStackLoot(DSItems.FIBER, 1, 2, 5)),
                         1,
                         2

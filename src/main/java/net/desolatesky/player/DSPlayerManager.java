@@ -27,8 +27,14 @@ public final class DSPlayerManager {
 
     public void savePlayer(DSPlayer player) {
         final PlayerData playerData = player.playerData();
-        playerData.prepareForSave(player);
+        DSPlayer.acquireAndSync(player, playerData::prepareForSave);
         this.playerDatabase.save(player.getUuid(), player);
+    }
+
+    public void queueSave(DSPlayer player) {
+        final PlayerData playerData = player.playerData();
+        DSPlayer.acquireAndSync(player, playerData::prepareForSave);
+        this.playerDatabase.queueSave(player.getUuid(), player);
     }
 
     public static DSPlayerManager create(PlayerDatabaseAccessor playerDatabase) {

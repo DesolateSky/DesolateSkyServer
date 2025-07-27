@@ -4,6 +4,7 @@ import net.desolatesky.block.BlockBuilder;
 import net.desolatesky.block.BlockProperties;
 import net.desolatesky.block.DSBlocks;
 import net.desolatesky.entity.DSEntity;
+import net.desolatesky.entity.EntityKey;
 import net.desolatesky.entity.EntityKeys;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
@@ -181,7 +182,7 @@ public class DebrisEntity extends Entity implements DSEntity {
     }
 
     @Override
-    public @NotNull Key key() {
+    public @NotNull EntityKey key() {
         return EntityKeys.DEBRIS_ENTITY;
     }
 
@@ -191,8 +192,6 @@ public class DebrisEntity extends Entity implements DSEntity {
     }
 
     private class Display extends Entity implements DSEntity {
-
-        private static final Key ENTITY_KEY = Namespace.key("debris_entity", "display");
 
         public Display(Direction direction, float[] rotation, Point translation) {
             super(EntityType.BLOCK_DISPLAY);
@@ -227,8 +226,8 @@ public class DebrisEntity extends Entity implements DSEntity {
         }
 
         @Override
-        public @NotNull Key key() {
-            return ENTITY_KEY;
+        public @NotNull EntityKey key() {
+            return DebrisEntity.this.key();
         }
 
         @Override

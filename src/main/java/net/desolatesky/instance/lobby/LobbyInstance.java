@@ -40,7 +40,7 @@ public final class LobbyInstance extends DSInstance {
     private final WeatherManager weatherManager;
 
     private LobbyInstance(DesolateSkyServer server, UUID uuid, Path worldPath, Pos spawnPoint, Region region) {
-        super(uuid, DimensionType.OVERWORLD);
+        super(uuid, worldPath, DimensionType.OVERWORLD);
         this.worldPath = worldPath;
         this.spawnPoint = new InstancePoint<>(this, spawnPoint);
         this.region = region;

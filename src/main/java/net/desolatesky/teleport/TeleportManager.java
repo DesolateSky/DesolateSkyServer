@@ -2,6 +2,7 @@ package net.desolatesky.teleport;
 
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.message.MessageHandler;
+import net.desolatesky.message.MessageKey;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.TimeUtil;
@@ -46,11 +47,11 @@ public final class TeleportManager {
         this.queue(locationKey, player, totalTicks, target);
     }
 
-    private void sendSuccessMessage(TeleportData teleportData, String message) {
+    private void sendSuccessMessage(TeleportData teleportData, MessageKey messageKey) {
         final InstancePoint target = teleportData.destination();
         this.messageHandler.sendMessage(
                 teleportData.player(),
-                message,
+                messageKey,
                 Map.of("x", target.blockX(),
                         "y", target.blockY(),
                         "z", target.blockZ()

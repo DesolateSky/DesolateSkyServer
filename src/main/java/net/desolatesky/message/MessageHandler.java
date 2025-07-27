@@ -61,7 +61,7 @@ public class MessageHandler {
         return this.messages.getOrDefault(id, Message.EMPTY);
     }
 
-    public void sendMessage(Player player, String messageId, Map<String, Object> placeholders) {
+    public void sendMessage(Player player, MessageKey messageKey, Map<String, Object> placeholders) {
         final Function<Component, Component> placeholderFunction = component -> {
             Component current = component;
             for (Map.Entry<String, Object> entry : placeholders.entrySet()) {
@@ -69,15 +69,15 @@ public class MessageHandler {
             }
             return current;
         };
-        this.getNonNullMessage(messageId).sendTo(player, placeholderFunction);
+        this.getNonNullMessage(messageKey.key()).sendTo(player, placeholderFunction);
     }
 
-    public void sendMessage(Player player, String messageId, Function<Component, Component> placeholderFunction) {
-        this.getNonNullMessage(messageId).sendTo(player, placeholderFunction);
+    public void sendMessage(Player player, MessageKey messageKey, Function<Component, Component> placeholderFunction) {
+        this.getNonNullMessage(messageKey.key()).sendTo(player, placeholderFunction);
     }
 
-    public void sendMessage(Player player, String messageId) {
-        this.getNonNullMessage(messageId).sendTo(player);
+    public void sendMessage(Player player, MessageKey messageKey) {
+        this.getNonNullMessage(messageKey.key()).sendTo(player);
     }
 
     public static String replacePlaceholders(String message, Map<String, String> placeholders) {

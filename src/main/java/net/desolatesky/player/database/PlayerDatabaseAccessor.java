@@ -1,10 +1,6 @@
 package net.desolatesky.player.database;
 
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
@@ -12,15 +8,13 @@ import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.database.DatabaseAccessor;
 import net.desolatesky.database.MongoConnection;
 import net.desolatesky.player.DSPlayer;
-import net.minestom.server.codec.Transcoder;
-import net.minestom.server.inventory.PlayerInventory;
-import net.minestom.server.item.ItemStack;
 import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public final class PlayerDatabaseAccessor implements DatabaseAccessor<DSPlayer, PlayerData, UUID> {
@@ -40,10 +34,12 @@ public final class PlayerDatabaseAccessor implements DatabaseAccessor<DSPlayer, 
 
     private final DesolateSkyServer server;
     private final MongoConnection connection;
+    private final ExecutorService executorService;
 
     private PlayerDatabaseAccessor(DesolateSkyServer server, MongoConnection connection) {
         this.server = server;
         this.connection = connection;
+        this.executorService = Executors.newSingleThreadExecutor();
     }
 
     @Override
@@ -60,9 +56,11 @@ public final class PlayerDatabaseAccessor implements DatabaseAccessor<DSPlayer, 
     }
 
     @Override
-    public void delete(UUID id, DSPlayer data) {
-        final MongoCollection<Document> collection = this.getCollection();
-        collection.deleteOne(new Document(ID_FIELD, id.toString()));
+    public CompletableFuture<Void> delete(UUID id, DSPlayer data) {
+        return CompletableFuture.runAsync(() -> {
+            final MongoCollection<Document> collection = this.getCollection();
+            collection.deleteOne(new Document(ID_FIELD, id.toString()));
+        }, Thread::startVirtualThread);
     }
 
     @Override
@@ -73,6 +71,21 @@ public final class PlayerDatabaseAccessor implements DatabaseAccessor<DSPlayer, 
             return null;
         }
         return DSPlayer.MONGO_CODEC.read(playerDocument, new DSPlayer.MongoContext(this.server.cooldownConfig()));
+    }
+
+    @Override
+    public void queueSave(UUID uuid, DSPlayer data) {
+        this.executorService.submit(() -> this.save(uuid, data));
+    }
+
+    @Override
+    public CompletableFuture<@Nullable PlayerData> loadAsync(UUID identifier) {
+        return CompletableFuture.supplyAsync(() -> this.load(identifier), Thread::startVirtualThread);
+    }
+
+    @Override
+    public void shutdown() {
+
     }
 
     private MongoCollection<Document> getCollection() {

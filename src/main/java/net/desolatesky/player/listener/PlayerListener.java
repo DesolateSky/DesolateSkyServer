@@ -10,6 +10,7 @@ import net.desolatesky.listener.DSListener;
 import net.desolatesky.pack.ResourcePackSettings;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.database.PlayerData;
+import net.desolatesky.team.IslandTeam;
 import net.desolatesky.util.Constants;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
@@ -80,7 +81,8 @@ public final class PlayerListener implements DSListener {
                         event.setSpawningInstance(lobbyInstance);
                         return;
                     }
-                    final Instance instance = instanceManager.getOrLoadInstance(logoutInstanceId);
+                    final IslandTeam islandTeam = this.server.islandTeamManager().getOrLoadTeam(player);
+                    final Instance instance = instanceManager.getOrLoadInstance(logoutInstanceId, islandTeam);
                     if (!(instance instanceof final DSInstance dsInstance)) {
                         event.setSpawningInstance(lobbyInstance);
                         return;

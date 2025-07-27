@@ -33,31 +33,6 @@ public class BlockBuilder {
         return this;
     }
 
-    public BlockBuilder breakTime(int millis) {
-        this.current = this.current.withTag(BlockTags.BREAK_TIME, millis);
-        return this;
-    }
-
-    public BlockBuilder blockItem(DSItem item) {
-        this.current = this.current.withTag(BlockTags.BLOCK_ITEM, item.key());
-        return this;
-    }
-
-    public BlockBuilder blockItem(Key key) {
-        this.current = this.current.withTag(BlockTags.BLOCK_ITEM, key);
-        return this;
-
-    }
-
-    public BlockBuilder blockItem() {
-        Key blockId = this.current.getTag(BlockTags.ID);
-        if (blockId == null) {
-            blockId = this.current.key();
-        }
-        this.current = this.current.withTag(BlockTags.BLOCK_ITEM, blockId);
-        return this;
-    }
-
     public Block build() {
         return this.current;
     }

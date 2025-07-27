@@ -3,7 +3,6 @@ package net.desolatesky.cooldown;
 import net.desolatesky.database.MongoCodec;
 import net.kyori.adventure.key.Key;
 import org.bson.Document;
-import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.time.Duration;
@@ -21,7 +20,6 @@ public record CooldownData(Cooldown cooldown, Instant start) {
 
         @Override
         public @UnknownNullability CooldownData read(Document document, Void context) {
-            @Subst("suppress")
             final String keyString = document.getString("key");
             final Key key = Key.key(keyString);
             final Duration duration = Duration.ofMillis(document.getLong("duration"));
