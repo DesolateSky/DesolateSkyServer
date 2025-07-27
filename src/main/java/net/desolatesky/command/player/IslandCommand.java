@@ -35,26 +35,22 @@ public final class IslandCommand extends Command {
 
         this.setCondition((sender, _) -> sender instanceof DSPlayer);
 
-        this.addConditionalSyntax(
-                (sender, _) -> !((DSPlayer) sender).hasIsland(),
+        this.addSyntax(
                 (sender, _) -> this.createIsland((DSPlayer) sender),
                 ArgumentType.Literal("create")
         );
 
-        this.addConditionalSyntax(
-                (sender, _) -> ((DSPlayer) sender).hasIsland(),
+        this.addSyntax(
                 (sender, _) -> this.goToIsland((DSPlayer) sender),
                 ArgumentType.Literal("go")
         );
 
-        this.addConditionalSyntax(
-                (sender, _) -> ((DSPlayer) sender).hasIsland(),
+        this.addSyntax(
                 (sender, _) -> this.deleteIsland((DSPlayer) sender),
                 ArgumentType.Literal("delete")
         );
 
-        this.addConditionalSyntax(
-                (sender, _) -> ((DSPlayer) sender).hasIsland(),
+        this.addSyntax(
                 (sender, _) -> this.permissions((DSPlayer) sender),
                 ArgumentType.Literal("permissions")
         );
@@ -70,15 +66,13 @@ public final class IslandCommand extends Command {
         );
 
         final Argument<String> islandArgument = ArgumentType.String("island");
-        this.addConditionalSyntax(
-                (sender, _) -> !((DSPlayer) sender).hasIsland(),
+        this.addSyntax(
                 (sender, context) -> this.acceptInvite((DSPlayer) sender, context, islandArgument),
-                ArgumentType.Literal("accept"),
+                ArgumentType.Literal("join"),
                 islandArgument
         );
 
-        this.addConditionalSyntax(
-                (sender, _) -> ((DSPlayer) sender).hasIsland(),
+        this.addSyntax(
                 (sender, _) -> this.leaveIsland((DSPlayer) sender),
                 ArgumentType.Literal("leave")
         );

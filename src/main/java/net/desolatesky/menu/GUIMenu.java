@@ -104,7 +104,6 @@ public class GUIMenu implements Menu {
         }
         for (final Map.Entry<Integer, MenuButton> entry : this.menuItems.entrySet()) {
             this.inventory.setItemStack(entry.getKey(), entry.getValue().getItemStack());
-            System.out.println("Setting item in slot " + entry.getKey() + ": " + entry.getValue().getItemStack());
         }
     }
 
