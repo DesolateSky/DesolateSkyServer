@@ -1,7 +1,10 @@
 package net.desolatesky.crafting.ingredient;
 
 import net.desolatesky.item.DSItem;
+import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.ItemTags;
+import net.desolatesky.item.category.ItemCategory;
+import net.desolatesky.item.handler.ItemHandler;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -40,6 +43,20 @@ public final class ItemIngredient implements RecipeIngredient {
         final List<Material> materials = new ArrayList<>();
         tag.iterator().forEachRemaining(key -> materials.add(Material.fromKey(key.key())));
         return new ItemIngredient(tagKey.key(), 1, itemStack -> tag.contains(itemStack.material()), new SlotDisplay.Tag(tagKey), materials.isEmpty() ? null : new Ingredient(materials));
+    }
+
+    public static ItemIngredient category(ItemCategory category, DSItemRegistry itemRegistry) {
+        final Key key = category.key();
+        final List<SlotDisplay> all = itemRegistry.getItemsByCategory(category).stream().map(DSItem::create)
+                .map(itemStack -> (SlotDisplay) new SlotDisplay.ItemStack(itemStack))
+                .toList();
+        return new ItemIngredient(key, 1, itemStack -> {
+            final ItemHandler itemHandler = itemRegistry.getItemHandler(itemStack);
+            if (itemHandler == null) {
+                return false;
+            }
+            return itemHandler.isCategory(category);
+        }, new SlotDisplay.Composite(all), null);
     }
 
     private final Key key;
@@ -81,6 +98,10 @@ public final class ItemIngredient implements RecipeIngredient {
     @Override
     public SlotDisplay display() {
         return this.display;
+    }
+
+    public int amount() {
+        return this.amount;
     }
 
     public @Nullable Ingredient toMinestomIngredient() {

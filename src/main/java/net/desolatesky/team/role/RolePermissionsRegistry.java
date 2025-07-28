@@ -22,9 +22,7 @@ import java.util.Map;
 public final class RolePermissionsRegistry {
 
     public static RolePermissionsRegistry load(DSBlockRegistry blockRegistry, DSItemRegistry itemRegistry) {
-        final RolePermissionsRegistry registry = new RolePermissionsRegistry(blockRegistry, itemRegistry);
-        registry.initialize();
-        return registry;
+        return new RolePermissionsRegistry(blockRegistry, itemRegistry);
     }
 
     private final Map<RolePermissionType, RolePermissionDefinition> definitions = new HashMap<>();
@@ -46,7 +44,7 @@ public final class RolePermissionsRegistry {
         this.itemRegistry = itemRegistry;
     }
 
-    private void initialize() {
+    public void initialize() {
         this.breakBlock = this.register(new RolePermissionDefinition(RolePermissionType.BREAK_BLOCK, this.blockRegistry.getKeys(), HashSet::new, this::itemStackFromBlock, RolePermissionSetting.WHITELIST));
         this.placeBlock = this.register(new RolePermissionDefinition(RolePermissionType.PLACE_BLOCK, this.blockRegistry.getKeys(), HashSet::new, this::itemStackFromBlock, RolePermissionSetting.WHITELIST));
         this.interactBlock = this.register(new RolePermissionDefinition(RolePermissionType.INTERACT_BLOCK, this.blockRegistry.getKeys(), HashSet::new, this::itemStackFromBlock, RolePermissionSetting.WHITELIST));

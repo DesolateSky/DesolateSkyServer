@@ -1,5 +1,9 @@
 package net.desolatesky.item;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import net.desolatesky.item.category.ItemCategory;
 import net.desolatesky.item.handler.ItemHandler;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.item.ItemStack;
@@ -10,24 +14,33 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public final class DSItemRegistry {
 
     private final Map<Key, DSItem> items;
+    private final Multimap<ItemCategory, DSItem> itemsByCategory;
 
     public static DSItemRegistry create(Map<Key, DSItem> items) {
-        final DSItemRegistry registry = new DSItemRegistry(items);
-        DSItems.register(registry);
-        return registry;
+        return new DSItemRegistry(items);
     }
 
     private DSItemRegistry(Map<Key, DSItem> items) {
+        Preconditions.checkArgument(items.isEmpty(), "Items map must be empty when creating DSItemRegistry");
         this.items = items;
+        this.itemsByCategory = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
     }
 
     public void register(DSItem dsItem) {
         this.items.put(dsItem.key(), dsItem);
+        final ItemHandler itemHandler = dsItem.itemHandler();
+        if (itemHandler != null) {
+            for (final ItemCategory category : itemHandler.categories()) {
+                this.itemsByCategory.put(category, dsItem);
+            }
+        }
     }
 
     public @UnknownNullability ItemStack create(Key key) {
@@ -92,6 +105,10 @@ public final class DSItemRegistry {
 
     public @UnmodifiableView Collection<Key> getKeys() {
         return Collections.unmodifiableSet(this.items.keySet());
+    }
+
+    public @UnmodifiableView Collection<DSItem> getItemsByCategory(ItemCategory category) {
+        return Collections.unmodifiableCollection(this.itemsByCategory.get(category));
     }
 
 }

@@ -26,6 +26,7 @@ import net.desolatesky.instance.biome.Biomes;
 import net.desolatesky.instance.listener.InstanceListener;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.listener.ItemListeners;
+import net.desolatesky.item.loot.ItemLootRegistry;
 import net.desolatesky.menu.listener.MenuListener;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.pack.ResourcePackSettings;
@@ -121,6 +122,10 @@ public final class DesolateSkyServer {
         return this.registries.blockLootRegistry();
     }
 
+    public ItemLootRegistry itemLootRegistry() {
+        return this.registries.itemLootRegistry();
+    }
+
     public EntityLootRegistry entityLootRegistry() {
         return this.registries.entityLootRegistry();
     }
@@ -172,7 +177,7 @@ public final class DesolateSkyServer {
                 )
                 .forEach(CompletableFuture::join);
         LuckPermsMinestom.disable();
-       this.databaseTimer.saveAll(false);
+        this.databaseTimer.saveAll(false);
         final Map<Thread, StackTraceElement[]> allThreads = Thread.getAllStackTraces();
         for (final Thread thread : allThreads.keySet()) {
             System.out.println("Thread: " + thread.getName() + " | State: " + thread.getState());
@@ -223,8 +228,11 @@ public final class DesolateSkyServer {
     private void registerStuff() {
         Commands.register(MinecraftServer.getCommandManager(), this);
         Biomes.registerBiomes();
+        this.registries.registerAll(this);
+        this.rolePermissionsRegistry.initialize();
 
-        Recipes.registerCrafting(this.craftingManager);
+        Recipes.registerCrafting(this.craftingManager, this.itemRegistry());
+
 
         this.registerListeners();
 
@@ -280,13 +288,14 @@ public final class DesolateSkyServer {
         final BlockLootRegistry blockLootRegistry = BlockLootRegistry.create();
         final DSBlockRegistry blockRegistry = this.loadBlockRegistry(blockLootRegistry);
         final DSItemRegistry itemRegistry = DSItemRegistry.create(new HashMap<>());
+        final ItemLootRegistry itemLootRegistry = ItemLootRegistry.create();
         final EntityLootRegistry entityLootRegistry = EntityLootRegistry.create();
-        return new DSRegistries(blockRegistry, itemRegistry, blockLootRegistry, entityLootRegistry);
+        return new DSRegistries(blockRegistry, itemRegistry, blockLootRegistry, itemLootRegistry, entityLootRegistry);
     }
 
     private DSBlockRegistry loadBlockRegistry(BlockLootRegistry blockLootRegistry) {
         final BlockHandlers blockHandlers = BlockHandlers.load(this, blockLootRegistry);
-        final DSBlocks blocks = DSBlocks.load(blockHandlers);
+        final DSBlocks blocks = DSBlocks.load();
         return DSBlockRegistry.create(new HashMap<>(), blockHandlers, blocks, blockLootRegistry);
     }
 

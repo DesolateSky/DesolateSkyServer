@@ -1,6 +1,7 @@
 package net.desolatesky.util;
 
 import net.minestom.server.coordinate.Pos;
+import org.joml.Quaterniond;
 import org.joml.Quaternionf;
 
 import java.util.Collection;
@@ -23,12 +24,12 @@ public final class RandomUtil {
         return new Pos(x, y, z, yaw, pitch);
     }
 
-    public static Quaternionf randomRotation(RandomGenerator random) {
+    public static Quaterniond randomRotation(RandomGenerator random) {
         final float x = random.nextFloat() * 2.0f - 1.0f;
         final float y = random.nextFloat() * 2.0f - 1.0f;
         final float z = random.nextFloat() * 2.0f - 1.0f;
         final float w = random.nextFloat() * 2.0f - 1.0f;
-        return new Quaternionf(x, y, z, w).normalize();
+        return new Quaterniond(x, y, z, w).normalize();
     }
 
     public static <E extends Enum<E>> E randomEnum(RandomGenerator random, Class<E> enumClass) {

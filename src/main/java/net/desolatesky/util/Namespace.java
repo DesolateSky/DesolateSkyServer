@@ -9,7 +9,7 @@ public final class Namespace {
         throw new UnsupportedOperationException();
     }
 
-    private static final String KEY_SEPARATOR = ":";
+    public static final String KEY_SEPARATOR = ":";
     private static final String PATH_SEPARATOR = "/";
 
     public static final String NAMESPACE = "desolatesky";

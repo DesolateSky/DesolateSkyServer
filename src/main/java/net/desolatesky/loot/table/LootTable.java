@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
 
+/**
+ * This is associated with the class that is being consumed for the loot, not the class that generates the loot
+ */
 public final class LootTable {
 
     public static final RandomGenerator DEFAULT_RANDOM_SOURCE = new SplittableRandom();

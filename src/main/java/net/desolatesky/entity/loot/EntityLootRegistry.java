@@ -16,24 +16,26 @@ import java.util.Map;
 public final class EntityLootRegistry extends LootTableRegistry {
 
     public static EntityLootRegistry create() {
-        final EntityLootRegistry entityLootRegistry = new EntityLootRegistry(new HashMap<>());
-        entityLootRegistry.load();
-        return entityLootRegistry;
+        return new EntityLootRegistry(new HashMap<>());
     }
 
     private EntityLootRegistry(Map<Key, LootTable> entityLoots) {
         super(entityLoots);
     }
 
-    private void load() {
+    public void load() {
         this.register(EntityKeys.DEBRIS_ENTITY.key(), LootTable.create(Map.of(
                 DebrisEntity.LOOT_GENERATOR_TYPE,
                 ItemStackLootGenerator.create(
                         DebrisEntity.LOOT_GENERATOR_TYPE,
-                        EntityKeys.DEBRIS_ENTITY.key(),
-                        List.of(new ItemStackLoot(DSItems.DUST, 1, 2, 5), new ItemStackLoot(DSItems.STICK, 1, 2, 5), new ItemStackLoot(DSItems.FIBER, 1, 2, 5)),
+                        List.of(
+                                new ItemStackLoot(DSItems.DUST, 1, 2, 3),
+                                new ItemStackLoot(DSItems.PETRIFIED_STICK, 1, 2, 3),
+                                new ItemStackLoot(DSItems.FIBER, 1, 2, 3),
+                                new ItemStackLoot(DSItems.DEAD_LEAVES, 1, 2, 3)
+                                ),
                         1,
-                        2
+                        3
                 ))));
     }
 

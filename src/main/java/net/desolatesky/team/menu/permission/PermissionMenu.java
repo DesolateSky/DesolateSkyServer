@@ -67,7 +67,7 @@ public final class PermissionMenu extends PaginatedMenu {
 
     private static List<? extends MenuButton> createPermissionButtons(MessageHandler messageHandler, IslandTeam team, TeamRole role) {
         final RolePermissions permissions = role.permissions();
-        return permissions.getPermissions().entrySet().stream().map(entry -> {
+        return role.getPermissions().entrySet().stream().map(entry -> {
             final RolePermissionType type = entry.getKey();
             final RolePermission permission = entry.getValue();
             final ItemStack icon = createPermissionButtonIcon(permission);

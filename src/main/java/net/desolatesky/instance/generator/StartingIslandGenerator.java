@@ -29,31 +29,31 @@ public final class StartingIslandGenerator implements Generator {
     private Block southTrapdoor;
     private Block northTrapdoor;
 
-    public StartingIslandGenerator(DSBlocks blocks, TeamInstance instance) {
+    public StartingIslandGenerator(BlockHandlers blocks, TeamInstance instance) {
         this.instance = instance;
         this.initializeBlocks(blocks);
     }
 
-    private void initializeBlocks(DSBlocks blocks) {
-        this.bottomBlock = BlockBuilder.from(blocks.unbreakableWaxedExposedCutCopperSlab())
+    private void initializeBlocks(BlockHandlers blockHandlers) {
+        this.bottomBlock = DSBlocks.UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB.createBuilder(blockHandlers)
                 .property(BlockProperties.SLAB_TYPE, SlabType.TOP)
                 .build();
-        this.topTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+        this.topTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
                 .property(BlockProperties.OPEN, false)
                 .build();
-        this.westTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+        this.westTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.WEST)
                 .build();
-        this.eastTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+        this.eastTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.EAST)
                 .build();
-        this.southTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+        this.southTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.SOUTH)
                 .build();
-        this.northTrapdoor = BlockBuilder.from(blocks.waxedExposedCopperTrapdoor())
+        this.northTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.NORTH)
                 .build();

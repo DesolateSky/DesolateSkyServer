@@ -1,10 +1,12 @@
 package net.desolatesky.block;
 
+import com.google.common.base.Preconditions;
 import net.desolatesky.block.handler.BlockHandlers;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.loot.BlockLootRegistry;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.instance.block.Block;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -19,9 +21,7 @@ public final class DSBlockRegistry {
     private final BlockLootRegistry blockLootRegistry;
 
     public static DSBlockRegistry create(Map<Key, DSBlock> blocksByKey, BlockHandlers blockHandlers, DSBlocks blocks, BlockLootRegistry blockLootRegistry) {
-        final DSBlockRegistry registry = new DSBlockRegistry(blocksByKey, blockHandlers, blocks, blockLootRegistry);
-        blocks.register(registry);
-        return registry;
+        return new DSBlockRegistry(blocksByKey, blockHandlers, blocks, blockLootRegistry);
     }
 
     private DSBlockRegistry(Map<Key, DSBlock> blocksByKey, BlockHandlers blockHandlers, DSBlocks blocks, BlockLootRegistry blockLootRegistry) {
@@ -40,6 +40,7 @@ public final class DSBlockRegistry {
     }
 
     public void register(DSBlock block) {
+        Preconditions.checkArgument(this.blockHandlers.getHandlerForBlock(block) != null, "Block handler for block %s is not registered", block.key());
         this.blocksByKey.put(block.key(), block);
     }
 
@@ -48,7 +49,7 @@ public final class DSBlockRegistry {
         if (block == null) {
             return Block.fromKey(key);
         }
-        return block.create();
+        return block.create(this.blockHandlers);
     }
 
     public Block create(Block block) {
@@ -56,15 +57,11 @@ public final class DSBlockRegistry {
         if (dsBlock == null) {
             return block;
         }
-        return dsBlock.create();
+        return dsBlock.create(this.blockHandlers);
     }
 
-    public Block create(Block block, DSBlockHandler handler) {
-        final DSBlock dsBlock = this.blocksByKey.get(block.key());
-        if (dsBlock == null) {
-            return block.withHandler(handler);
-        }
-        return dsBlock.create().withHandler(handler);
+    public @Nullable DSBlock getBlock(Key key) {
+        return this.blocksByKey.get(key);
     }
 
     public @UnmodifiableView Collection<Key> getKeys() {

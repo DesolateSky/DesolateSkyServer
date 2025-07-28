@@ -3,13 +3,14 @@ package net.desolatesky.team;
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.database.MongoCodec;
 import net.desolatesky.database.Saveable;
+import net.desolatesky.instance.team.TeamInstance;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.team.invite.InviteManager;
+import net.desolatesky.team.player.PlayerIslandData;
 import net.desolatesky.team.role.RolePermissionType;
 import net.desolatesky.team.role.RolePermissionsRegistry;
-import net.desolatesky.team.player.PlayerIslandData;
 import net.desolatesky.team.role.TeamRole;
 import net.desolatesky.team.role.TeamRoles;
 import net.kyori.adventure.key.Key;
@@ -25,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
@@ -110,7 +110,7 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
         } else {
             role = this.teamRoles.getRole(data.roleId());
         }
-        return role.permissions().hasPermission(type, value);
+        return role.hasPermission(type, value);
     }
 
     public boolean hasTogglePermission(DSPlayer player, RolePermissionType type) {
@@ -121,7 +121,7 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
         } else {
             role = this.teamRoles.getRole(data.roleId());
         }
-        return role.permissions().hasTogglePermission(type);
+        return role.hasTogglePermission(type);
     }
 
     public void invite(MessageHandler messageHandler, DSPlayer inviter, DSPlayer toAdd) {

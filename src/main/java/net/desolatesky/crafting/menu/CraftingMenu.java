@@ -28,11 +28,6 @@ public final class CraftingMenu extends Inventory {
         this.craftingHandler.fillRecipe(craftingManager);
     }
 
-    public void collectRecipe(CraftingManager craftingManager, ClickType clickType) {
-        this.craftingHandler.collectRecipe(craftingManager, clickType);
-    }
-
-
     public ItemStack[][] getInputItems() {
         return this.craftingHandler.getInputItems();
     }

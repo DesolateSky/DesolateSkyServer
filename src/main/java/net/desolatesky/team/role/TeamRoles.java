@@ -9,7 +9,12 @@ import org.jetbrains.annotations.UnknownNullability;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * This class is thread safe
+ */
 public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
 
     public static final MongoCodec<SaveData, TeamRoles, MongoContext> MONGO_CODEC = new MongoCodec<>() {
@@ -65,6 +70,8 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
         return new TeamRoles(rolePermissionsRegistry, roles);
     }
 
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
     private final RolePermissionsRegistry rolePermissionsRegistry;
     private final Map<String, TeamRole> roles;
 
@@ -77,13 +84,24 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
     }
 
     public @UnknownNullability TeamRole getRole(String id) {
-        return this.roles.get(id);
+        try {
+            this.lock.readLock().lock();
+            return this.roles.get(id);
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public void addRole(TeamRole role) {
-        this.roles.put(role.id(), role);
+        try {
+            this.lock.writeLock().lock();
+            this.roles.put(role.id(), role);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
     }
 
+    // no need to synchronize this method as it is only called during initialization
     private void registerDefaults() {
         this.addRole(this.createOwner());
         this.addRole(this.createOfficer());
@@ -91,6 +109,7 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
         this.addRole(this.createVisitor());
     }
 
+    // no need to synchronize this method as it is only called during initialization
     private TeamRole createOwner() {
         final Map<RolePermissionType, RolePermission> permissions = new HashMap<>();
         final Collection<RolePermissionDefinition> definitions = this.rolePermissionsRegistry.getDefinitions();
@@ -100,6 +119,7 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
         return new TeamRole(OWNER_ID, new RolePermissions(permissions), Component.text("owner"), OWNER_PRIORITY);
     }
 
+    // no need to synchronize this method as it is only called during initialization
     private TeamRole createOfficer() {
         final Map<RolePermissionType, RolePermission> permissions = new HashMap<>();
         final Collection<RolePermissionDefinition> definitions = this.rolePermissionsRegistry.getDefinitions();
@@ -111,6 +131,7 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
         return new TeamRole(OFFICER_ID, teamPermissions, Component.text("officer"), OFFICER_PRIORITY);
     }
 
+    // no need to synchronize this method as it is only called during initialization
     private TeamRole createMember() {
         final Map<RolePermissionType, RolePermission> permissions = new HashMap<>();
         final Collection<RolePermissionDefinition> definitions = this.rolePermissionsRegistry.getDefinitions();
@@ -123,6 +144,7 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
         return new TeamRole(MEMBER_ID, teamPermissions, Component.text("member"), MEMBER_PRIORITY);
     }
 
+    // no need to synchronize this method as it is only called during initialization
     private TeamRole createVisitor() {
         final Map<RolePermissionType, RolePermission> permissions = new HashMap<>();
         final Collection<RolePermissionDefinition> definitions = this.rolePermissionsRegistry.getDefinitions();
@@ -139,13 +161,18 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
 
     @Override
     public SaveData createSnapshot() {
-        final Map<String, TeamRole.SaveData> rolesData = new HashMap<>();
-        for (final Map.Entry<String, TeamRole> entry : this.roles.entrySet()) {
-            final String roleId = entry.getKey();
-            final TeamRole role = entry.getValue();
-            rolesData.put(roleId, role.createSnapshot());
+        try {
+            this.lock.readLock().lock();
+            final Map<String, TeamRole.SaveData> rolesData = new HashMap<>();
+            for (final Map.Entry<String, TeamRole> entry : this.roles.entrySet()) {
+                final String roleId = entry.getKey();
+                final TeamRole role = entry.getValue();
+                rolesData.put(roleId, role.createSnapshot());
+            }
+            return new SaveData(rolesData);
+        } finally {
+            this.lock.readLock().unlock();
         }
-        return new SaveData(rolesData);
     }
 
 }

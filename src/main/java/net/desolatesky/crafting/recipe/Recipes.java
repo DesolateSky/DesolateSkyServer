@@ -3,7 +3,10 @@ package net.desolatesky.crafting.recipe;
 import net.desolatesky.block.MaterialTags;
 import net.desolatesky.crafting.CraftingManager;
 import net.desolatesky.crafting.ingredient.ItemIngredient;
+import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.DSItems;
+import net.desolatesky.item.category.ItemCategories;
+import net.desolatesky.item.category.ItemCategory;
 
 public final class Recipes {
 
@@ -11,12 +14,17 @@ public final class Recipes {
         throw new IllegalStateException();
     }
 
-    public static void registerCrafting(CraftingManager craftingManager) {
+    public static void registerCrafting(CraftingManager craftingManager, DSItemRegistry itemRegistry) {
         craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
-                {ItemIngredient.exact(DSItems.STICK), ItemIngredient.exact(DSItems.STICK), ItemIngredient.EMPTY},
-                {ItemIngredient.exact(DSItems.STICK), ItemIngredient.exact(DSItems.STICK), ItemIngredient.EMPTY},
+                {ItemIngredient.exact(DSItems.PETRIFIED_STICK), ItemIngredient.exact(DSItems.PETRIFIED_STICK), ItemIngredient.EMPTY},
+                {ItemIngredient.exact(DSItems.PETRIFIED_STICK), ItemIngredient.exact(DSItems.PETRIFIED_STICK), ItemIngredient.EMPTY},
                 {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
-        }, DSItems.OAK_PLANKS::create));
+        }, DSItems.PETRIFIED_PLANKS::create));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.exact(DSItems.PETRIFIED_PLANKS), ItemIngredient.exact(DSItems.PETRIFIED_PLANKS), ItemIngredient.exact(DSItems.PETRIFIED_PLANKS)},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
+        }, DSItems.PETRIFIED_SLAB::create, 6));
         craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
                 {ItemIngredient.exact(DSItems.DUST), ItemIngredient.exact(DSItems.DUST), ItemIngredient.EMPTY},
                 {ItemIngredient.exact(DSItems.DUST), ItemIngredient.exact(DSItems.DUST), ItemIngredient.EMPTY},
@@ -33,10 +41,15 @@ public final class Recipes {
                 {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
         }, DSItems.FIBER_MESH::create));
         craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
-                {ItemIngredient.exact(DSItems.OAK_PLANKS), ItemIngredient.exact(DSItems.OAK_PLANKS), ItemIngredient.exact(DSItems.OAK_PLANKS)},
-                {ItemIngredient.exact(DSItems.OAK_PLANKS), ItemIngredient.exact(DSItems.FIBER_MESH), ItemIngredient.exact(DSItems.OAK_PLANKS)},
-                {ItemIngredient.exact(DSItems.OAK_PLANKS), ItemIngredient.exact(DSItems.OAK_PLANKS), ItemIngredient.exact(DSItems.OAK_PLANKS)}
+                {ItemIngredient.category(ItemCategories.PLANKS, itemRegistry), ItemIngredient.category(ItemCategories.PLANKS, itemRegistry), ItemIngredient.category(ItemCategories.PLANKS, itemRegistry)},
+                {ItemIngredient.category(ItemCategories.PLANKS, itemRegistry), ItemIngredient.exact(DSItems.FIBER_MESH), ItemIngredient.category(ItemCategories.PLANKS, itemRegistry)},
+                {ItemIngredient.category(ItemCategories.PLANKS, itemRegistry), ItemIngredient.category(ItemCategories.PLANKS, itemRegistry), ItemIngredient.category(ItemCategories.PLANKS, itemRegistry)}
         }, DSItems.SIFTER::create));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry), ItemIngredient.EMPTY, ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry)},
+                {ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry), ItemIngredient.EMPTY, ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry)},
+                {ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry), ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry), ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry)}
+        }, DSItems.COMPOSTER::create));
     }
 
 }

@@ -21,5 +21,6 @@ public final class BlockProperties {
     public static final EnumBlockProperty<NoteBlockInstrument> INSTRUMENT = new EnumBlockProperty<>("instrument", NoteBlockInstrument.class);
     public static final IntegerBlockProperty NOTE = new IntegerBlockProperty("note");
     public static final BooleanBlockProperty POWERED = new BooleanBlockProperty("powered");
+    public static final IntegerBlockProperty LEVEL = new IntegerBlockProperty("level");
 
 }

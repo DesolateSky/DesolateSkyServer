@@ -1,10 +1,15 @@
 package net.desolatesky.item;
 
 import net.desolatesky.item.handler.ItemHandler;
+import net.desolatesky.item.loot.ItemLootRegistry;
+import net.desolatesky.loot.generator.LootGenerator;
+import net.desolatesky.loot.generator.LootGeneratorType;
+import net.desolatesky.loot.table.LootTable;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,6 +66,28 @@ public final class DSItem implements Keyed {
 
     public boolean is(@NotNull ItemStack itemStack) {
         return this.itemStack.isSimilar(itemStack);
+    }
+
+    public <T> @Nullable T getTag(ItemStack itemStack, Tag<T> tag) {
+        if (this.itemHandler != null) {
+            return this.itemHandler.getTagData(itemStack, tag);
+        }
+        return itemStack.getTag(tag);
+    }
+
+    public @Nullable LootTable getLootTable(ItemLootRegistry lootRegistry) {
+        if (this.itemHandler == null) {
+            return null;
+        }
+        return lootRegistry.getLootTable(this.key);
+    }
+
+    public @Nullable LootGenerator getLootGenerator(ItemLootRegistry lootRegistry, LootGeneratorType type) {
+        final LootTable lootTable = this.getLootTable(lootRegistry);
+        if (lootTable == null) {
+            return null;
+        }
+        return lootTable.getGenerator(type);
     }
 
 }

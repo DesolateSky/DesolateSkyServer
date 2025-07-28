@@ -54,7 +54,6 @@ public final class WeatherManager {
 
     private static final int DEFAULT_MAX_ITEMS = 15;
 
-    private final DSBlocks blocks;
     private final EntityLootRegistry entityLootRegistry;
     private final DSInstance instance;
     private final RandomGenerator random;
@@ -62,8 +61,7 @@ public final class WeatherManager {
 
     private Vec windVelocity;
 
-    public WeatherManager(DSBlocks blocks, EntityLootRegistry entityLootRegistry, DSInstance instance, RandomGenerator random) {
-        this.blocks = blocks;
+    public WeatherManager(EntityLootRegistry entityLootRegistry, DSInstance instance, RandomGenerator random) {
         this.entityLootRegistry = entityLootRegistry;
         this.instance = instance;
         this.random = random;
@@ -121,8 +119,8 @@ public final class WeatherManager {
                     for (final DebrisEntity entity : playerDebris.items) {
                         entity.setVelocity(this.windVelocity.mul(ServerFlag.SERVER_TICKS_PER_SECOND));
                     }
-                    final DebrisEntity targetedEntity = (DebrisEntity) player.getLineOfSightEntity(player.getAttributeValue(Attribute.ENTITY_INTERACTION_RANGE), e -> e instanceof DebrisEntity);
-                    playerDebris.trackEntity(targetedEntity);
+                    final DebrisEntity.Interaction targetedEntity = (DebrisEntity.Interaction) player.getLineOfSightEntity(player.getAttributeValue(Attribute.ENTITY_INTERACTION_RANGE), e -> e instanceof DebrisEntity.Interaction);
+                    playerDebris.trackEntity(targetedEntity == null ? null : targetedEntity.getDebrisEntity());
                 }
 
                 final int maxItems = this.getMaxItems(player);
@@ -138,7 +136,7 @@ public final class WeatherManager {
                     if (lootTable == null) {
                         continue;
                     }
-                    final DebrisEntity debrisEntity = new DebrisEntity(this.blocks, this.instance, lootTable);
+                    final DebrisEntity debrisEntity = new DebrisEntity(this.instance, lootTable);
                     debrisEntity.setInstance(this.instance, this.getRandomPosition(player.getPosition()));
                     playerDebris.items.add(debrisEntity);
                 }

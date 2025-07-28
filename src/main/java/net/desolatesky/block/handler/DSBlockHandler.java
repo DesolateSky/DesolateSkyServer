@@ -1,7 +1,6 @@
 package net.desolatesky.block.handler;
 
 import net.desolatesky.DesolateSkyServer;
-import net.desolatesky.block.loot.BlockLootRegistry;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
@@ -37,11 +36,12 @@ public abstract class DSBlockHandler implements BlockHandler {
     protected final DesolateSkyServer server;
     protected final BlockSettings settings;
 
-    protected LootTable cachedLootTable = null;
+    private final LootTable lootTable;
 
     public DSBlockHandler(DesolateSkyServer server, BlockSettings blockSettings) {
         this.server = server;
         this.settings = blockSettings;
+        this.lootTable = this.server.blockLootRegistry().getLootTable(this.settings.key(), LootTable.EMPTY);
     }
 
     public DSBlockHandler(DesolateSkyServer server, BlockSettings.Builder blockSettings) {
@@ -163,22 +163,8 @@ public abstract class DSBlockHandler implements BlockHandler {
         return this.settings.key();
     }
 
-    public LootTable getLoot() {
-        if (this.cachedLootTable != null) {
-            return this.cachedLootTable;
-        }
-        final Key key = this.settings.lootTableKey();
-        if (key == null) {
-            this.cachedLootTable = LootTable.EMPTY;
-            return this.cachedLootTable;
-        }
-        final LootTable loot = this.server.blockLootRegistry().getLootTable(key);
-        if (loot == null) {
-            this.cachedLootTable = LootTable.EMPTY;
-            return this.cachedLootTable;
-        }
-        this.cachedLootTable = loot;
-        return loot;
+    public LootTable loot() {
+        return this.lootTable;
     }
 
     public boolean stateless() {

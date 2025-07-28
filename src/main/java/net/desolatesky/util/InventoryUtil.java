@@ -5,9 +5,12 @@ import net.desolatesky.player.DSPlayer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.ItemEntity;
 import net.minestom.server.inventory.AbstractInventory;
+import net.minestom.server.inventory.PlayerInventory;
 import net.minestom.server.inventory.TransactionOption;
 import net.minestom.server.inventory.click.Click;
+import net.minestom.server.inventory.click.ClickType;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -48,6 +51,33 @@ public final class InventoryUtil {
 
     public static boolean isRightClick(Click click) {
         return click instanceof Click.Right || click instanceof Click.RightShift;
+    }
+
+    public static boolean isShiftClick(Click click) {
+        return click instanceof Click.LeftShift || click instanceof Click.RightShift;
+    }
+
+    public static boolean isShiftClick(ClickType clickType) {
+        return clickType == ClickType.SHIFT_CLICK || clickType == ClickType.START_SHIFT_CLICK;
+    }
+
+    public static AbstractInventory getClickedInventory(AbstractInventory inventory, PlayerInventory playerInventory, Click click) {
+        final int slot = click.slot();
+        if (slot < inventory.getSize()) {
+            return inventory;
+        } else {
+            return playerInventory;
+        }
+    }
+
+    public static ItemStack getClickedItem(AbstractInventory inventory, PlayerInventory playerInventory, Click click) {
+        final int slot = click.slot();
+        if (slot < inventory.getSize()) {
+            return inventory.getItemStack(slot);
+        } else {
+            final int converted = PlayerInventoryUtils.convertMinestomSlotToPlayerInventorySlot(slot);
+            return playerInventory.getItemStack(converted);
+        }
     }
 
 }

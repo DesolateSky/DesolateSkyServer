@@ -11,7 +11,17 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import org.bson.Document;
 import org.jetbrains.annotations.UnknownNullability;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.UnmodifiableView;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+/**
+ * This class is thread safe
+ */
 public final class TeamRole implements Saveable<TeamRole.SaveData> {
 
     public static final MongoCodec<SaveData, TeamRole, MongoContext> MONGO_CODEC = new MongoCodec<>() {
@@ -38,76 +48,10 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
         }
     };
 
-    public boolean togglePermission(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
-        if (!this.hasManagePermissionsPermission(team, player, type)) {
-            sendNoPermissionMessage(messageHandler, player);
-            return false;
-        }
-        return this.permissions.togglePermission(type);
-    }
-
-    public void setSetting(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, RolePermissionSetting setting) {
-        if (!this.hasManagePermissionsPermission(team, player, type)) {
-            sendNoPermissionMessage(messageHandler, player);
-            return;
-        }
-        this.permissions.setSetting(type, setting);
-    }
-
-    public void toggleSetting(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
-        if (!this.hasManagePermissionsPermission(team, player, type)) {
-            sendNoPermissionMessage(messageHandler, player);
-            return;
-        }
-        this.permissions.toggleSetting(type);
-    }
-
-    public void addValue(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, Key value) {
-        if (!this.hasManagePermissionsPermission(team, player, type)) {
-            sendNoPermissionMessage(messageHandler, player);
-            return;
-        }
-        this.permissions.addValue(type, value);
-    }
-
-    public void removeValue(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, Key value) {
-        if (!this.hasManagePermissionsPermission(team, player, type)) {
-            sendNoPermissionMessage(messageHandler, player);
-            return;
-        }
-        this.permissions.removeValue(type, value);
-    }
-
-    public void setEnabled(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, boolean enabled) {
-        if (!this.hasManagePermissionsPermission(team, player, type)) {
-            sendNoPermissionMessage(messageHandler, player);
-            return;
-        }
-        this.permissions.setEnabled(type, enabled);
-    }
-
-    /**
-     * @return the new enabled state after toggling
-     */
-    public boolean toggle(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
-        if (!this.hasManagePermissionsPermission(team, player, type)) {
-            sendNoPermissionMessage(messageHandler, player);
-            return false;
-        }
-        return this.permissions.toggle(type);
-    }
-
-    private static void sendNoPermissionMessage(MessageHandler messageHandler, DSPlayer player) {
-        messageHandler.sendMessage(player, Messages.ISLAND_PERMISSION_DENIED);
-    }
-
-    private boolean hasManagePermissionsPermission(IslandTeam team, DSPlayer player, RolePermissionType type) {
-        final TeamRole playerRole = team.getRole(player);
-        return playerRole.priority() < this.priority && team.hasPermission(player, RolePermissionType.MANAGE_PERMISSIONS, type.key());
-    }
-
     public record MongoContext(RolePermissionsRegistry rolePermissionsRegistry) {
     }
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private final String id;
     private final RolePermissions permissions;
@@ -123,6 +67,135 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
         this.permissions = permissions;
         this.displayName = displayName;
         this.priority = priority;
+    }
+
+    public boolean togglePermission(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
+        try {
+            this.lock.writeLock().lock();
+            if (!this.hasManagePermissionsPermission(team, player, type)) {
+                sendNoPermissionMessage(messageHandler, player);
+                return false;
+            }
+            return this.permissions.togglePermission(type);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    public void setSetting(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, RolePermissionSetting setting) {
+        try {
+            this.lock.writeLock().lock();
+            if (!this.hasManagePermissionsPermission(team, player, type)) {
+                sendNoPermissionMessage(messageHandler, player);
+                return;
+            }
+            this.permissions.setSetting(type, setting);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    public void toggleSetting(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
+        try {
+            if (!this.hasManagePermissionsPermission(team, player, type)) {
+                sendNoPermissionMessage(messageHandler, player);
+                return;
+            }
+            this.permissions.toggleSetting(type);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    public void addValue(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, Key value) {
+        try {
+            this.lock.writeLock().lock();
+            if (!this.hasManagePermissionsPermission(team, player, type)) {
+                sendNoPermissionMessage(messageHandler, player);
+                return;
+            }
+            this.permissions.addValue(type, value);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    public void removeValue(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, Key value) {
+        try {
+            this.lock.writeLock().lock();
+            if (!this.hasManagePermissionsPermission(team, player, type)) {
+                sendNoPermissionMessage(messageHandler, player);
+                return;
+            }
+            this.permissions.removeValue(type, value);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    public void setEnabled(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, boolean enabled) {
+        try {
+            this.lock.writeLock().lock();
+            if (!this.hasManagePermissionsPermission(team, player, type)) {
+                sendNoPermissionMessage(messageHandler, player);
+                return;
+            }
+            this.permissions.setEnabled(type, enabled);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * @return the new enabled state after toggling
+     */
+    public boolean toggle(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
+        try {
+            if (!this.hasManagePermissionsPermission(team, player, type)) {
+                sendNoPermissionMessage(messageHandler, player);
+                return false;
+            }
+            return this.permissions.toggle(type);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    public boolean hasPermission(RolePermissionType type, Key value) {
+        try {
+            this.lock.readLock().lock();
+            return this.permissions.hasPermission(type, value);
+        } finally {
+            this.lock.readLock().unlock();
+        }
+    }
+
+    public boolean hasTogglePermission(RolePermissionType type) {
+        try {
+            this.lock.readLock().lock();
+            return this.permissions.hasTogglePermission(type);
+        } finally {
+            this.lock.readLock().unlock();
+        }
+    }
+
+    @Unmodifiable
+    public Map<RolePermissionType, RolePermission> getPermissions() {
+        try {
+            this.lock.readLock().lock();
+            return Map.copyOf(this.permissions.getPermissions());
+        } finally {
+            this.lock.readLock().unlock();
+        }
+    }
+
+    private static void sendNoPermissionMessage(MessageHandler messageHandler, DSPlayer player) {
+        messageHandler.sendMessage(player, Messages.ISLAND_PERMISSION_DENIED);
+    }
+
+    private boolean hasManagePermissionsPermission(IslandTeam team, DSPlayer player, RolePermissionType type) {
+        final TeamRole playerRole = team.getRole(player);
+        return playerRole.priority() < this.priority && team.hasPermission(player, RolePermissionType.MANAGE_PERMISSIONS, type.key());
     }
 
     public String id() {
@@ -160,6 +233,11 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
 
     @Override
     public SaveData createSnapshot() {
-        return new SaveData(this.id, this.permissions.createSnapshot(), this.displayName, this.priority);
+        try {
+            this.lock.readLock().lock();
+            return new SaveData(this.id, this.permissions.createSnapshot(), this.displayName, this.priority);
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 }

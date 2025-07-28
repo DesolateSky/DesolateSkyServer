@@ -44,7 +44,7 @@ public final class LobbyInstance extends DSInstance {
         this.worldPath = worldPath;
         this.spawnPoint = new InstancePoint<>(this, spawnPoint);
         this.region = region;
-        this.weatherManager = new WeatherManager(server.blocks(), server.entityLootRegistry(), this, this.randomSource);
+        this.weatherManager = new WeatherManager(server.entityLootRegistry(), this, this.randomSource);
         this.setChunkLoader(new AnvilLoader(worldPath));
         this.setGenerator(unit -> unit.modifier().fillBiome(Biome.THE_VOID));
     }

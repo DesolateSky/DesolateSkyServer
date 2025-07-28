@@ -11,6 +11,7 @@ public final class BlockTags {
     }
 
     public static final Tag<Key> ID = Tag.String("id").map(Namespace::key, Key::asString);
+    public static final Tag<Double> COMPOSTER_LEVEL = Tag.Double("composter_level");
 //    public static final Tag<Boolean> UNBREAKABLE = Tag.Boolean("unbreakable");
 //    public static final Tag<Key> BLOCK_ITEM = Tag.String("block_item").map(Namespace::key, Key::asString);
 

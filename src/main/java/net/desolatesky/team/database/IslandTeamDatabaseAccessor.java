@@ -54,12 +54,9 @@ public final class IslandTeamDatabaseAccessor implements DatabaseAccessor<Island
                     final ConcurrentLinkedDeque<IslandTeam.SaveData> queue = entry.getValue();
                     Thread.startVirtualThread(() -> {
                         synchronized (queue) {
-                            if (queue.isEmpty()) {
-                                return;
-                            }
-                            final IslandTeam.SaveData data = queue.poll();
-                            final IslandTeam team = data.team();
-                            synchronized (team) {
+                            while (!queue.isEmpty()) {
+                                final IslandTeam.SaveData data = queue.poll();
+                                final IslandTeam team = data.team();
                                 if (team.state() == IslandTeam.State.DELETED) {
                                     return;
                                 }

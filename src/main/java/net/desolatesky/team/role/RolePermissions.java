@@ -2,9 +2,6 @@ package net.desolatesky.team.role;
 
 import net.desolatesky.database.MongoCodec;
 import net.desolatesky.database.Saveable;
-import net.desolatesky.message.MessageHandler;
-import net.desolatesky.message.Messages;
-import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.key.Key;
 import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
@@ -18,6 +15,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * This class is not thread-safe, but {@link TeamRole} is thread-safe which is why the methods in this class
+ * are package private.
+ */
 public final class RolePermissions implements Saveable<RolePermissions.SaveData> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RolePermissions.class);
@@ -62,7 +63,7 @@ public final class RolePermissions implements Saveable<RolePermissions.SaveData>
         return this.permissions.get(type);
     }
 
-    public boolean hasPermission(RolePermissionType type, Key value) {
+    boolean hasPermission(RolePermissionType type, Key value) {
         final RolePermission permission = this.getPermission(type);
         if (permission == null) {
             return false;
@@ -70,7 +71,7 @@ public final class RolePermissions implements Saveable<RolePermissions.SaveData>
         return permission.isAllowed(value);
     }
 
-    public boolean hasTogglePermission(RolePermissionType type) {
+    boolean hasTogglePermission(RolePermissionType type) {
         final RolePermission permission = this.getPermission(type);
         if (permission == null) {
             return false;
@@ -146,16 +147,12 @@ public final class RolePermissions implements Saveable<RolePermissions.SaveData>
         return permission.toggle();
     }
 
-    public @UnmodifiableView Map<RolePermissionType, RolePermission> getPermissions() {
+    @UnmodifiableView Map<RolePermissionType, RolePermission> getPermissions() {
         return Collections.unmodifiableMap(this.permissions);
     }
 
     private static void logPermissionNotFound(RolePermissionType type) {
         LOGGER.warn("No permission found for type: {}", type);
-    }
-
-    private static void sendNoPermissionMessage(MessageHandler messageHandler, DSPlayer player) {
-        messageHandler.sendMessage(player, Messages.ISLAND_PERMISSION_DENIED);
     }
 
     public record SaveData(Map<RolePermissionType, RolePermission.SaveData> permissions) {

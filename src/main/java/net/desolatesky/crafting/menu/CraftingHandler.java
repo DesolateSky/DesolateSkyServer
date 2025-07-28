@@ -3,10 +3,10 @@ package net.desolatesky.crafting.menu;
 import net.desolatesky.crafting.CraftingManager;
 import net.desolatesky.crafting.recipe.CraftingRecipe;
 import net.desolatesky.crafting.recipe.RecipeType;
+import net.desolatesky.util.InventoryUtil;
 import net.desolatesky.util.array.ShiftedArray;
 import net.minestom.server.inventory.AbstractInventory;
-import net.minestom.server.inventory.Inventory;
-import net.minestom.server.inventory.click.ClickType;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
 
@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public final class CraftingHandler {
 
@@ -51,7 +52,7 @@ public final class CraftingHandler {
             final ItemStack[][] newInput = currentOutputResult.newInput();
             this.setInputItems(newInput);
             final ItemStack output = currentOutputResult.output();
-            this.setOutputItem(output);
+            this.setOutputItem(output.withAmount(recipe.resultAmount()));
             break;
         }
         if (currentRecipe == null) {
@@ -61,8 +62,7 @@ public final class CraftingHandler {
         this.inventory.setTag(CURRENT_RECIPE_TAG, currentRecipe);
     }
 
-    public void collectRecipe(CraftingManager craftingManager, ClickType clickType) {
-        final CraftingRecipe.Result currentOutputResult = this.inventory.getTag(CURRENT_OUTPUT_RESULT_TAG);
+    private void collectRecipe(CraftingManager craftingManager, Click click, int amount) {
         final CraftingRecipe currentRecipe = this.inventory.getTag(CURRENT_RECIPE_TAG);
         if (currentRecipe == null) {
             return;
@@ -85,19 +85,39 @@ public final class CraftingHandler {
             if (ratio <= 0) {
                 return itemStack;
             }
-            final int craftAmount = currentOutputResult.totalMatches() * ratio;
-            final int newAmount = isLeftClick(clickType) ? inputAmount - craftAmount : inputAmount - craftAmount / 2;
+            final int craftAmount = amount * ratio;
+            final int newAmount = InventoryUtil.isShiftClick(click) ? inputAmount - craftAmount : inputAmount - 1;
             return itemStack.withAmount(newAmount);
         });
         this.fillRecipe(craftingManager);
     }
 
-    private static boolean isLeftClick(ClickType clickType) {
-        return clickType == ClickType.LEFT_CLICK || clickType == ClickType.SHIFT_CLICK;
+    /**
+     * @param collectFunction - returns the number of results that were collected, not the amount of items.
+     */
+    public void collectOutput(CraftingManager craftingManager, AbstractInventory inventory, Click click,  Function<CollectionInput, Integer> collectFunction) {
+        final CraftingRecipe.Result currentOutputResult = inventory.getTag(CURRENT_OUTPUT_RESULT_TAG);
+        final CraftingRecipe currentRecipe = inventory.getTag(CURRENT_RECIPE_TAG);
+        if (currentOutputResult == null || !currentOutputResult.success()) {
+            return;
+        }
+        if (currentRecipe == null) {
+            return;
+        }
+        final ItemStack outputItem = this.getOutputItem();
+        if (outputItem.isAir()) {
+            return;
+        }
+        final int outputAmount = currentOutputResult.totalMatches() * currentRecipe.resultAmount();
+        if (outputAmount <= 0) {
+            return;
+        }
+        final int collectedAmount = collectFunction.apply(new CollectionInput(outputItem, currentOutputResult.totalMatches(), currentRecipe.resultAmount()));
+        this.collectRecipe(craftingManager, click, collectedAmount);
     }
 
-    private static boolean isRightClick(ClickType clickType) {
-        return clickType == ClickType.RIGHT_CLICK;
+    public record CollectionInput(ItemStack resultItem, int totalMatches, int amountPerCraft) {
+
     }
 
     public ItemStack[][] getInputItems() {

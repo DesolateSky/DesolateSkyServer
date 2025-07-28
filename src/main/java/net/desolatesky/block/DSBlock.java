@@ -1,6 +1,6 @@
 package net.desolatesky.block;
 
-import net.desolatesky.block.handler.BlockHandlerSupplier;
+import net.desolatesky.block.handler.BlockHandlers;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -8,45 +8,46 @@ import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Supplier;
-
 public final class DSBlock implements Keyed {
 
     private final Key key;
-    private final Supplier<Block> blockSupplier;
+    private final Block block;
+    private @Nullable Block cachedBlock;
 
     public static DSBlock create(Block block) {
-        return create(block.key(), block, null);
+        return create(block.key(), block);
     }
 
-    public static DSBlock create(Block block, @Nullable BlockHandlerSupplier<? extends DSBlockHandler> blockHandlerSupplier) {
-        return create(block.key(), block, blockHandlerSupplier);
-    }
-
-    public static DSBlock create(Key key, Block block, @Nullable BlockHandlerSupplier<? extends DSBlockHandler> blockHandlerSupplier) {
+    public static DSBlock create(Key key, Block block) {
         if (!key.equals(block.key())) {
             block = block.withTag(BlockTags.ID, key);
         }
-        if (blockHandlerSupplier == null) {
-            final Block result = block;
-            return new DSBlock(key, () -> result);
-        }
-        final DSBlockHandler handler = blockHandlerSupplier.get();
-        if (handler.stateless()) {
-            final Block blockResult = block.withHandler(handler);
-            return new DSBlock(key, () -> blockResult);
-        }
-        final Block result = block;
-        return new DSBlock(key, () -> result.withHandler(blockHandlerSupplier.get()));
+        return new DSBlock(key, block);
     }
 
-    public DSBlock(Key key, Supplier<Block> blockSupplier) {
+    private DSBlock(Key key, Block block) {
         this.key = key;
-        this.blockSupplier = blockSupplier;
+        this.block = block;
     }
 
-    public Block create() {
-        return this.blockSupplier.get();
+    public Block create(BlockHandlers blockHandlers) {
+        if (this.cachedBlock != null) {
+            return this.cachedBlock;
+        }
+        final DSBlockHandler handler = blockHandlers.getHandlerForBlock(this);
+        if (handler == null) {
+            return this.block;
+        }
+        if (handler.stateless()) {
+            this.cachedBlock = this.block.withHandler(handler);
+            return this.cachedBlock;
+        }
+        return this.block.withHandler(handler);
+    }
+
+    public BlockBuilder createBuilder(BlockHandlers blockHandlers) {
+        final Block block = this.create(blockHandlers);
+        return BlockBuilder.from(block);
     }
 
     @Override

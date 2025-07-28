@@ -14,9 +14,7 @@ import net.desolatesky.loot.generator.LootGeneratorType;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
-import net.desolatesky.util.Namespace;
 import net.desolatesky.util.RandomUtil;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.util.RGBLike;
 import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.color.Color;
@@ -33,7 +31,6 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,8 +40,8 @@ import java.util.random.RandomGenerator;
 
 public class DebrisEntity extends Entity implements DSEntity {
 
-    private static final float WIDTH = 2.0f;
-    private static final float HEIGHT = 2.0f;
+    private static final float WIDTH = 1.0f;
+    private static final float HEIGHT = 1.0f;
 
     public static final LootGeneratorType LOOT_GENERATOR_TYPE = LootGeneratorType.create("debris");
 
@@ -53,59 +50,49 @@ public class DebrisEntity extends Entity implements DSEntity {
             Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST
     };
 
-    private final DSBlocks blocks;
     private final RandomGenerator randomGenerator = new SplittableRandom();
     private final DSInstance dsInstance;
     private final Collection<Display> displays = new ArrayList<>();
-    private final Entity baseEntity;
     private final LootTable lootTable;
+    private final float randomPitch;
+    private final float randomYaw;
+    private final Interaction interactionEntity;
 
-    public DebrisEntity(DSBlocks blocks, DSInstance dsInstance, LootTable lootTable) {
-        super(EntityType.INTERACTION);
-        this.blocks = blocks;
+    public DebrisEntity(DSInstance dsInstance, LootTable lootTable) {
+        super(EntityType.ARMOR_STAND);
         this.dsInstance = dsInstance;
         this.lootTable = lootTable;
-        final InteractionMeta interactionMeta = (InteractionMeta) this.getEntityMeta();
-        interactionMeta.setNotifyAboutChanges(false);
-        this.setNoGravity(true);
-        this.setInvisible(false);
-        interactionMeta.setWidth(WIDTH);
-        interactionMeta.setHeight(HEIGHT);
-        interactionMeta.setNotifyAboutChanges(true);
-        this.baseEntity = new Entity(EntityType.ARMOR_STAND);
-        final ArmorStandMeta armorStandMeta = (ArmorStandMeta) this.baseEntity.getEntityMeta();
+        this.randomPitch = this.randomGenerator.nextFloat(0, 360);
+        this.randomYaw = this.randomGenerator.nextFloat(0, 360);
+        final ArmorStandMeta armorStandMeta = (ArmorStandMeta) this.getEntityMeta();
         armorStandMeta.setNotifyAboutChanges(false);
-        this.baseEntity.setNoGravity(true);
+        this.setNoGravity(true);
         armorStandMeta.setSmall(true);
         armorStandMeta.setInvisible(true);
         armorStandMeta.setNotifyAboutChanges(true);
-
         this.setBoundingBox(new BoundingBox(WIDTH, HEIGHT, WIDTH));
+
+        this.interactionEntity = new Interaction();
+        this.interactionEntity.setBoundingBox(this.boundingBox);
     }
 
     @Override
     public void spawn() {
         super.spawn();
-        this.baseEntity.setInstance(this.getInstance(), this.getPosition().sub(0, 1, 0));
-
-        final Quaternionf rotation = RandomUtil.randomRotation(DebrisEntity.this.randomGenerator);
-        final float[] arrayRotation = new float[4];
-        arrayRotation[0] = rotation.x;
-        arrayRotation[1] = rotation.y;
-        arrayRotation[2] = rotation.z;
-        arrayRotation[3] = rotation.w;
+        this.interactionEntity.setInstance(this.getInstance(), this.getPosition().add(0, 0.5, 0));
 
         final Pos currentPos = this.getPosition();
-        Point translation = new Vec(0, 0.1, 0);
-        Entity previous = this.baseEntity;
+        Point translation = new Vec(-0.5, -0.5, -0.5);
+
+        Entity previous = this;
         for (int i = 0; i < DISPLAYS; i++) {
             final Direction direction = RandomUtil.randomElement(DebrisEntity.this.randomGenerator, POSSIBLE_DIRECTIONS);
-            final Display display = new Display(direction, arrayRotation, translation);
-            translation = translation.add(0, 0.2, 0);
+            final Display display = new Display(direction, translation);
+            translation = translation.add(0, 0.1, 0);
             this.displays.add(display);
             previous.addPassenger(display);
             previous = display;
-            display.setInstance(this.getInstance(), currentPos);
+            display.setInstance(this.getInstance(), currentPos.add(0.5, 0.5, 0.5).withPitch(this.randomPitch).withYaw(this.randomYaw));
         }
     }
 
@@ -114,7 +101,7 @@ public class DebrisEntity extends Entity implements DSEntity {
         for (final Display display : this.displays) {
             display.remove();
         }
-        this.baseEntity.remove();
+        this.interactionEntity.remove();
         super.despawn();
     }
 
@@ -168,6 +155,7 @@ public class DebrisEntity extends Entity implements DSEntity {
 
     @Override
     public void update(long time) {
+        this.interactionEntity.teleport(this.getPosition().add(0, 0.5, 0));
     }
 
     @Override
@@ -178,7 +166,6 @@ public class DebrisEntity extends Entity implements DSEntity {
     @Override
     public void setVelocity(@NotNull Vec velocity) {
         super.setVelocity(velocity);
-        this.baseEntity.setVelocity(velocity);
     }
 
     @Override
@@ -193,10 +180,10 @@ public class DebrisEntity extends Entity implements DSEntity {
 
     private class Display extends Entity implements DSEntity {
 
-        public Display(Direction direction, float[] rotation, Point translation) {
+        public Display(Direction direction, Point translation) {
             super(EntityType.BLOCK_DISPLAY);
             final BlockDisplayMeta blockMeta = (BlockDisplayMeta) this.getEntityMeta();
-            final Block block = BlockBuilder.from(DebrisEntity.this.blocks.leafLitter())
+            final Block block = BlockBuilder.from(Block.LEAF_LITTER)
                     .property(BlockProperties.FACING, direction)
                     .property(BlockProperties.SEGMENT_AMOUNT, 4)
                     .build();
@@ -204,7 +191,6 @@ public class DebrisEntity extends Entity implements DSEntity {
             blockMeta.setTransformationInterpolationDuration(0);
             blockMeta.setPosRotInterpolationDuration(0);
             blockMeta.setBlockState(block);
-            blockMeta.setLeftRotation(rotation);
             blockMeta.setTranslation(translation);
             this.setNoGravity(true);
             blockMeta.setNotifyAboutChanges(true);
@@ -217,12 +203,12 @@ public class DebrisEntity extends Entity implements DSEntity {
 
         @Override
         public void onClick(DSEntity clicker, Point interactionPoint, PlayerHand hand) {
-
+            DebrisEntity.this.onClick(clicker, interactionPoint, hand);
         }
 
         @Override
         public void onPunch(DSEntity attacker) {
-
+            DebrisEntity.this.onPunch(attacker);
         }
 
         @Override
@@ -234,6 +220,51 @@ public class DebrisEntity extends Entity implements DSEntity {
         public InstancePoint<Pos> getInstancePosition() {
             return new InstancePoint<>(DebrisEntity.this.getInstance(), this.getPosition());
         }
+    }
+
+    public class Interaction extends Entity implements DSEntity {
+
+        private Interaction() {
+            super(EntityType.INTERACTION);
+            final InteractionMeta interactionMeta = (InteractionMeta) this.getEntityMeta();
+            interactionMeta.setNotifyAboutChanges(false);
+            this.setNoGravity(true);
+            this.setInvisible(false);
+            interactionMeta.setWidth(WIDTH);
+            interactionMeta.setHeight(HEIGHT);
+            interactionMeta.setNotifyAboutChanges(true);
+            this.setBoundingBox(new BoundingBox(WIDTH, HEIGHT, WIDTH));
+        }
+
+        @Override
+        public DSInstance getDSInstance() {
+            return DebrisEntity.this.dsInstance;
+        }
+
+        @Override
+        public void onClick(DSEntity clicker, Point interactionPoint, PlayerHand hand) {
+            DebrisEntity.this.onClick(clicker, interactionPoint, hand);
+        }
+
+        @Override
+        public void onPunch(DSEntity attacker) {
+            DebrisEntity.this.onPunch(attacker);
+        }
+
+        @Override
+        public @NotNull EntityKey key() {
+            return DebrisEntity.this.key();
+        }
+
+        @Override
+        public InstancePoint<Pos> getInstancePosition() {
+            return new InstancePoint<>(DebrisEntity.this.getInstance(), this.getPosition());
+        }
+
+        public DebrisEntity getDebrisEntity() {
+            return DebrisEntity.this;
+        }
+
     }
 
 }

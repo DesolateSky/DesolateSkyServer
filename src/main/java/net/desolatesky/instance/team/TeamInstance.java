@@ -63,15 +63,15 @@ public final class TeamInstance extends DSInstance {
         super(team.id(), worldFolderPath, DimensionType.OVERWORLD, new AnvilLoader(worldFolderPath));
         this.team = team;
         this.spawnPoint = new InstancePoint<>(this, spawn);
-        this.weatherManager = new WeatherManager(server.blocks(), server.entityLootRegistry(), this, this.randomSource);
-        this.setGenerator(new StartingIslandGenerator(server.blocks(), this));
+        this.weatherManager = new WeatherManager(server.entityLootRegistry(), this, this.randomSource);
+        this.setGenerator(new StartingIslandGenerator(server.blockHandlers(), this));
         this.setChunkSupplier(LightingChunk::new);
         this.setWorldBorder(new WorldBorder(50, spawn.x(), spawn.z(), 0, 0, 50));
     }
 
     public CompletableFuture<Void> unload() {
         this.tickTask.cancel();
-        return this.saveChunksToStorage().whenComplete((result, error) -> this.saveInstance().join());
+        return this.saveChunksToStorage().whenComplete((_, _) -> this.saveInstance().join());
     }
 
     public Point initialSpawnPoint() {

@@ -17,6 +17,10 @@ public class LootTableRegistry {
         return this.blockLoots.get(key);
     }
 
+    public @UnknownNullability LootTable getLootTable(Key key, LootTable defaultLootTable) {
+        return this.blockLoots.getOrDefault(key, defaultLootTable);
+    }
+
     protected void register(Key key, LootTable lootTable) {
         this.blockLoots.put(key, lootTable);
     }

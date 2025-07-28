@@ -9,6 +9,7 @@ import net.kyori.adventure.key.Key;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
 public final class TrapdoorHandler extends TransientBlockHandler {

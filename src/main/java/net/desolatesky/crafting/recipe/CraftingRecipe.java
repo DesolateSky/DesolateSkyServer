@@ -15,19 +15,21 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class CraftingRecipe implements Recipe<CraftingRecipe> {
 
     private final ItemIngredient[][] recipe;
-    private final Function<Integer, ItemStack> outputSupplier;
+    private final Supplier<ItemStack> outputSupplier;
+    private final int resultAmount;
     private final int width;
     private final int height;
     private final MinestomRecipe minestomRecipe;
 
-    public CraftingRecipe(ItemIngredient[][] recipe, Function<Integer, ItemStack> outputSupplier) {
+    public CraftingRecipe(ItemIngredient[][] recipe, Supplier<ItemStack> outputSupplier, int resultAmount) {
         this.recipe = recipe;
         this.outputSupplier = outputSupplier;
+        this.resultAmount = resultAmount;
         final ItemIngredient[][] shiftedRecipe = new ItemIngredient[recipe.length][recipe[0].length];
         for (int i = 0; i < recipe.length; i++) {
             for (int j = 0; j < recipe[0].length; j++) {
@@ -38,6 +40,10 @@ public final class CraftingRecipe implements Recipe<CraftingRecipe> {
         this.height = shifted.actualRows();
         this.width = shifted.actualColumns();
         this.minestomRecipe = new MinestomRecipe();
+    }
+
+    public CraftingRecipe(ItemIngredient[][] recipe, Supplier<ItemStack> outputSupplier) {
+        this(recipe, outputSupplier, 1);
     }
 
     public Result getCraftingResult(ItemStack[] input) {
@@ -75,7 +81,10 @@ public final class CraftingRecipe implements Recipe<CraftingRecipe> {
             }
         }
 
-        return new Result(true, input, this.outputSupplier.apply(minMatches), minMatches);
+        final ItemStack result = this.outputSupplier.get();
+        final int totalAmount = Math.min(result.maxStackSize(), this.resultAmount * minMatches);
+        final int craftAmount = totalAmount / this.resultAmount;
+        return new Result(true, input, this.outputSupplier.get(), craftAmount);
     }
 
     public int getMatches(ItemStack itemStack, int row, int col) {
@@ -93,6 +102,10 @@ public final class CraftingRecipe implements Recipe<CraftingRecipe> {
     @Override
     public RecipeType<CraftingRecipe> type() {
         return RecipeType.CRAFTING;
+    }
+
+    public int resultAmount() {
+        return this.resultAmount;
     }
 
     @Override
@@ -132,7 +145,7 @@ public final class CraftingRecipe implements Recipe<CraftingRecipe> {
                     CraftingRecipe.this.width,
                     CraftingRecipe.this.height,
                     ingredients,
-                    new SlotDisplay.ItemStack(CraftingRecipe.this.outputSupplier.apply(1)),
+                    new SlotDisplay.ItemStack(CraftingRecipe.this.outputSupplier.get().withAmount(CraftingRecipe.this.resultAmount)),
                     new SlotDisplay.Item(Material.CRAFTING_TABLE)
             ));
         }
