@@ -1,10 +1,12 @@
 package net.desolatesky.instance;
 
+import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.weather.WeatherManager;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.BlockVec;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.IChunkLoader;
 import net.minestom.server.instance.InstanceContainer;
@@ -18,14 +20,21 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.random.RandomGenerator;
 
 public abstract class DSInstance extends InstanceContainer {
 
     protected final Path worldFilePath;
     protected final Map<UUID, InstancePoint<Pos>> playerSpawnPoints = new HashMap<>();
+    protected final Set<Point> blockEntities = new HashSet<>();
+    protected final ReadWriteLock blockEntityLock = new ReentrantReadWriteLock();
 
     public DSInstance(@NotNull UUID uuid, Path worldFilePath, @NotNull RegistryKey<DimensionType> dimensionType) {
         super(uuid, dimensionType);
@@ -76,6 +85,48 @@ public abstract class DSInstance extends InstanceContainer {
 
     public Path worldFilePath() {
         return this.worldFilePath;
+    }
+
+    public void onSave() {
+
+    }
+
+    public final CompletableFuture<Void> save() {
+        return CompletableFuture.runAsync(() -> {
+            this.onSave();
+            for (final Point point : this.blockEntities) {
+                final Block block = this.getBlock(point);
+            if (!(block.handler() instanceof final DSBlockHandler handler)) {
+                continue;
+            }
+            final Block saved = handler.save(this, point, block);
+            if (saved != null) {
+                this.setBlock(point, saved);
+            }
+                System.out.println("Saving block with handler: " + block.handler() + " " + block.key());
+            }
+            this.saveInstance().join();
+            this.saveChunksToStorage().join();
+        });
+    }
+
+    public void addBlockEntity(Point point) {
+        try {
+            this.blockEntityLock.writeLock().lock();
+            this.blockEntities.add(point);
+            System.out.println("Adding block entity: " + point);
+        } finally {
+            this.blockEntityLock.writeLock().unlock();
+        }
+    }
+
+    public void removeBlockEntity(Point point) {
+        try {
+            this.blockEntityLock.writeLock().lock();
+            this.blockEntities.remove(point);
+        } finally {
+            this.blockEntityLock.writeLock().unlock();
+        }
     }
 
 }

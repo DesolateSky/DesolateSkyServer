@@ -22,10 +22,11 @@ public class PlayerCooldowns {
         public void write(PlayerCooldowns input, Document document) {
             final Map<Key, CooldownData> cooldowns = input.cooldowns;
             final List<Document> cooldownDocuments = cooldowns.values().stream()
+                    .filter(CooldownData::isNotExpired)
                     .map(data -> {
                         final Document cooldownDocument = new Document();
                         CooldownData.MONGO_CODEC.write(data, cooldownDocument);
-                        return document;
+                        return cooldownDocument;
                     })
                     .toList();
             document.append("cooldowns", cooldownDocuments);
@@ -59,6 +60,10 @@ public class PlayerCooldowns {
             return Duration.ZERO;
         }
         return cooldown.getTimeLeft();
+    }
+
+    public boolean isOnCooldown(Key key) {
+        return this.getCooldownTime(key).compareTo(Duration.ZERO) > 0;
     }
 
     public boolean addCooldown(Key key) {

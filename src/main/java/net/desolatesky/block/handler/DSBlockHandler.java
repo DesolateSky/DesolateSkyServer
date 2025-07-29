@@ -13,7 +13,6 @@ import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
 import net.desolatesky.util.PacketUtil;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.block.Block;
@@ -28,6 +27,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DSBlockHandler implements BlockHandler {
 
@@ -35,6 +35,7 @@ public abstract class DSBlockHandler implements BlockHandler {
 
     protected final DesolateSkyServer server;
     protected final BlockSettings settings;
+    protected final AtomicBoolean loaded = new AtomicBoolean(false);
 
     private final LootTable lootTable;
 
@@ -53,6 +54,11 @@ public abstract class DSBlockHandler implements BlockHandler {
         if (!(placement.getInstance() instanceof final DSInstance instance)) {
             return;
         }
+        instance.addBlockEntity(placement.getBlockPosition());
+        final boolean loaded = this.loaded.getAndSet(true);
+        if (placement.getClass().equals(Placement.class) && !loaded) {
+            this.load(placement, instance);
+        }
         this.onPlace(placement, instance);
     }
 
@@ -65,6 +71,7 @@ public abstract class DSBlockHandler implements BlockHandler {
         if (!(destroy.getInstance() instanceof final DSInstance instance)) {
             return;
         }
+        instance.removeBlockEntity(destroy.getBlockPosition());
         this.onDestroy(destroy, instance);
     }
 
@@ -199,8 +206,8 @@ public abstract class DSBlockHandler implements BlockHandler {
         return this.settings;
     }
 
-    public abstract void save(DSInstance instance, Point point, Block block);
+    public abstract @Nullable Block save(DSInstance instance, Point point, Block block);
 
-    public abstract void load(CompoundBinaryTag tag, DSInstance instance, Point point, Block block);
+    public abstract void load(Placement placement, DSInstance instance);
 
 }

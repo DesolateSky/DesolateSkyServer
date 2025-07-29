@@ -5,12 +5,15 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import net.desolatesky.DesolateSkyServer;
+import net.desolatesky.cooldown.Cooldowns;
+import net.desolatesky.cooldown.PlayerCooldowns;
 import net.desolatesky.instance.team.TeamInstance;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.team.database.IslandCreationResult;
 import net.desolatesky.team.database.IslandTeamDatabaseAccessor;
+import net.desolatesky.util.TextUtil;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,9 +23,11 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class IslandTeamManager {
 
@@ -72,8 +77,12 @@ public final class IslandTeamManager {
                     if (key == null || value == null) {
                         return;
                     }
+                    final IslandTeam.State state = value.state();
+                    if (state.isDeleting() || state.isDeleted()) {
+                        return;
+                    }
                     if (cause.wasEvicted()) {
-                        database.queueSave(key, value.createSnapshot());
+                        database.queueSave(key, value);
                     }
                 })
                 .build());
@@ -117,6 +126,18 @@ public final class IslandTeamManager {
     }
 
     public CompletableFuture<IslandCreationResult> createTeam(DSPlayer owner, String name) {
+        final AtomicBoolean cooldown = new AtomicBoolean(true);
+        DSPlayer.acquireAndSync(owner, _ -> {
+            if (owner.cooldowns().isOnCooldown(Cooldowns.ISLAND_CREATION)) {
+                this.server.messageHandler().sendMessage(owner, Messages.ISLAND_CREATE_COOLDOWN, Map.of("cooldown", TextUtil.formatDuration(owner.cooldowns().getCooldownTime(Cooldowns.ISLAND_CREATION))));
+                cooldown.set(true);
+            } else {
+                cooldown.set(false);
+            }
+        });
+        if (cooldown.get()) {
+            return CompletableFuture.completedFuture(IslandCreationResult.ON_COOLDOWN);
+        }
         return this.database.create(owner, name)
                 .thenApply(result -> {
                     if (result.isInvalid()) {
@@ -127,7 +148,9 @@ public final class IslandTeamManager {
                         return IslandCreationResult.DATABASE_ERROR;
                     }
                     final TeamInstance teamInstance = this.server.instanceManager().createIslandInstance(team);
+                    teamInstance.save().join();
                     DSPlayer.acquireAndSync(owner, player -> {
+                        player.cooldowns().addCooldown(Cooldowns.ISLAND_CREATION);
                         player.setIslandId(team.id());
                         this.server.playerManager().queueSave(player);
                     });
@@ -149,10 +172,13 @@ public final class IslandTeamManager {
         }
         messageHandler.sendMessage(player, Messages.DELETING_ISLAND);
         final UUID islandId = team.id();
-        this.database.delete(islandId, team.createSnapshot())
+        this.database.delete(islandId, team)
                 .thenAccept(_ -> {
                     this.teams.invalidate(islandId);
-                    player.acquirable().sync(p -> ((DSPlayer) p).setIslandId(null));
+                    player.acquirable().sync(p -> {
+                        player.getInventory().clear();
+                        ((DSPlayer) p).setIslandId(null);
+                    });
                     this.server.instanceManager().archiveTeamInstance(islandId);
                     messageHandler.sendMessage(player, Messages.DELETED_ISLAND);
                 });
@@ -160,14 +186,14 @@ public final class IslandTeamManager {
 
     public void acceptInvite(IslandTeam team, DSPlayer player) {
         team.acceptInvite(this.server.messageHandler(), player, () -> {
-            this.database.queueSave(team.id(), team.createSnapshot());
+            this.database.queueSave(team.id(), team);
             this.server.playerManager().queueSave(player);
         });
     }
 
     public void leave(IslandTeam team, DSPlayer player) {
         team.leave(this.server.messageHandler(), player, () -> {
-            this.database.queueSave(team.id(), team.createSnapshot());
+            this.database.queueSave(team.id(), team);
             this.server.playerManager().queueSave(player);
         });
     }
@@ -178,12 +204,22 @@ public final class IslandTeamManager {
                 .toList();
     }
 
-    public void save(IslandTeam islandTeam) {
-        this.database.save(islandTeam.id(), islandTeam.createSnapshot());
+    public void queueSave(IslandTeam islandTeam) {
+        this.database.queueSave(islandTeam.id(), islandTeam);
+    }
+
+    public void forceSave(IslandTeam islandTeam) {
+        this.database.save(islandTeam.id(), islandTeam);
     }
 
     private IslandTeamDatabaseAccessor database() {
         return this.database;
+    }
+
+    public void shutdown() {
+        this.database.shutdown();
+        this.teams.invalidateAll();
+        LOGGER.info("IslandTeamManager shutdown complete.");
     }
 
 }

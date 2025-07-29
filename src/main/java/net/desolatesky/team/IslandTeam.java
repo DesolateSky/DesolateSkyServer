@@ -3,7 +3,6 @@ package net.desolatesky.team;
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.database.MongoCodec;
 import net.desolatesky.database.Saveable;
-import net.desolatesky.instance.team.TeamInstance;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
@@ -22,10 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
@@ -94,6 +94,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     private final InviteManager inviteManager;
     private State state = State.LOADING;
 
+    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
+
     public IslandTeam(UUID id, String name, TeamRoles teamRoles, Map<UUID, PlayerIslandData> playerData, InviteManager inviteManager) {
         this.id = id;
         this.name = name;
@@ -125,68 +127,103 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public void invite(MessageHandler messageHandler, DSPlayer inviter, DSPlayer toAdd) {
-        if (!this.hasTogglePermission(inviter, RolePermissionType.INVITE_MEMBER)) {
-            messageHandler.sendMessage(inviter, Messages.ISLAND_PERMISSION_DENIED);
-            return;
+        try {
+            this.lock.readLock().lock();
+            if (!this.hasTogglePermission(inviter, RolePermissionType.INVITE_MEMBER)) {
+                messageHandler.sendMessage(inviter, Messages.ISLAND_PERMISSION_DENIED);
+                return;
+            }
+            if (this.inviteManager.isInvited(toAdd.getUuid())) {
+                messageHandler.sendMessage(inviter, Messages.INVITE_ALREADY_EXISTS, Map.of("player", toAdd.getName()));
+                return;
+            }
+            if (this.playerData.containsKey(toAdd.getUuid())) {
+                messageHandler.sendMessage(inviter, Messages.INVITE_ALREADY_MEMBER, Map.of("player", toAdd.getName()));
+                return;
+            }
+        } finally {
+            this.lock.readLock().unlock();
         }
-        if (this.inviteManager.isInvited(toAdd.getUuid())) {
-            messageHandler.sendMessage(inviter, Messages.INVITE_ALREADY_EXISTS, Map.of("player", toAdd.getName()));
-            return;
+        try {
+            this.lock.writeLock().lock();
+            this.inviteManager.addInvite(inviter.profile(), toAdd.profile(), this.name);
+            messageHandler.sendMessage(inviter, Messages.INVITE_SENT, Map.of("player", toAdd.getName()));
+            messageHandler.sendMessage(toAdd, Messages.INVITE_RECEIVED, Map.of("player", inviter.getName(), "island", this.name));
+        } finally {
+            this.lock.writeLock().unlock();
         }
-        if (this.playerData.containsKey(toAdd.getUuid())) {
-            messageHandler.sendMessage(inviter, Messages.INVITE_ALREADY_MEMBER, Map.of("player", toAdd.getName()));
-            return;
-        }
-        this.inviteManager.addInvite(inviter.profile(), toAdd.profile(), this.name);
-        messageHandler.sendMessage(inviter, Messages.INVITE_SENT, Map.of("player", toAdd.getName()));
-        messageHandler.sendMessage(toAdd, Messages.INVITE_RECEIVED, Map.of("player", inviter.getName(), "island", this.name));
     }
 
     void acceptInvite(MessageHandler messageHandler, DSPlayer player, Runnable onSuccess) {
         final UUID inviteId = player.getUuid();
-        if (!this.inviteManager.isInvited(inviteId)) {
-            messageHandler.sendMessage(player, Messages.INVITE_NOT_FOUND, Map.of("island", this.name));
-            return;
+        try {
+            this.lock.readLock().lock();
+            if (!this.inviteManager.isInvited(inviteId)) {
+                messageHandler.sendMessage(player, Messages.INVITE_NOT_FOUND, Map.of("island", this.name));
+                return;
+            }
+            final PlayerIslandData data = this.playerData.get(player.getUuid());
+            if (data != null) {
+                messageHandler.sendMessage(player, Messages.ALREADY_HAS_ISLAND);
+                return;
+            }
+            if (!this.inviteManager.isInvited(inviteId)) {
+                messageHandler.sendMessage(player, Messages.INVITE_NOT_FOUND, Map.of("island", this.name));
+                return;
+            }
+        } finally {
+            this.lock.readLock().unlock();
         }
-        final PlayerIslandData data = this.playerData.get(player.getUuid());
-        if (data != null) {
-            messageHandler.sendMessage(player, Messages.ALREADY_HAS_ISLAND);
-            return;
+        try {
+            this.lock.writeLock().lock();
+            final TeamRole role = this.teamRoles.getRole(TeamRoles.MEMBER_ID);
+            this.playerData.put(player.getUuid(), new PlayerIslandData(this.id, player.getUuid(), Instant.now(), role.id()));
+            this.inviteManager.removeInvite(inviteId);
+            DSPlayer.acquireAndSync(player, p -> p.setIslandId(this.id));
+            messageHandler.sendMessage(player, Messages.RECEIVED_INVITE_ACCEPTED, Map.of("island", this.name));
+            onSuccess.run();
+        } finally {
+            this.lock.writeLock().unlock();
         }
-        if (!this.inviteManager.isInvited(inviteId)) {
-            messageHandler.sendMessage(player, Messages.INVITE_NOT_FOUND, Map.of("island", this.name));
-            return;
-        }
-        final TeamRole role = this.teamRoles.getRole(TeamRoles.MEMBER_ID);
-        this.playerData.put(player.getUuid(), new PlayerIslandData(this.id, player.getUuid(), Instant.now(), role.id()));
-        this.inviteManager.removeInvite(inviteId);
-        DSPlayer.acquireAndSync(player, p -> p.setIslandId(this.id));
-        messageHandler.sendMessage(player, Messages.RECEIVED_INVITE_ACCEPTED, Map.of("island", this.name));
-        onSuccess.run();
     }
 
     void leave(MessageHandler messageHandler, DSPlayer player, Runnable onSuccess) {
         final UUID playerId = player.getUuid();
-        if (!this.playerData.containsKey(playerId)) {
-            messageHandler.sendMessage(player, Messages.NOT_ISLAND_MEMBER, Map.of("island", this.name));
-            return;
+        try {
+            this.lock.readLock().lock();
+            if (!this.playerData.containsKey(playerId)) {
+                messageHandler.sendMessage(player, Messages.NOT_ISLAND_MEMBER, Map.of("island", this.name));
+                return;
+            }
+            if (this.isOwner(player)) {
+                messageHandler.sendMessage(player, Messages.OWNER_CANNOT_LEAVE);
+                return;
+            }
+        } finally {
+            this.lock.readLock().unlock();
         }
-        if (this.isOwner(player)) {
-            messageHandler.sendMessage(player, Messages.OWNER_CANNOT_LEAVE);
-            return;
+        try {
+            this.lock.writeLock().lock();
+            this.playerData.remove(playerId);
+            DSPlayer.acquireAndSync(player, p -> p.setIslandId(null));
+            messageHandler.sendMessage(player, Messages.LEFT_ISLAND, Map.of("island", this.name));
+            onSuccess.run();
+        } finally {
+            this.lock.writeLock().unlock();
         }
-        this.playerData.remove(playerId);
-        DSPlayer.acquireAndSync(player, p -> p.setIslandId(null));
-        messageHandler.sendMessage(player, Messages.LEFT_ISLAND, Map.of("island", this.name));
-        onSuccess.run();
     }
 
     public TeamRole getRole(DSPlayer player) {
-        final PlayerIslandData data = this.playerData.get(player.getUuid());
-        if (data == null) {
-            return this.teamRoles.getRole(TeamRoles.VISITOR_ID);
+        try {
+            this.lock.readLock().lock();
+            final PlayerIslandData data = this.playerData.get(player.getUuid());
+            if (data == null) {
+                return this.teamRoles.getRole(TeamRoles.VISITOR_ID);
+            }
+            return this.teamRoles.getRole(data.roleId());
+        } finally {
+            this.lock.readLock().unlock();
         }
-        return this.teamRoles.getRole(data.roleId());
     }
 
     public UUID id() {
@@ -202,50 +239,90 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public @UnmodifiableView Map<UUID, PlayerIslandData> playerData() {
-        return Collections.unmodifiableMap(this.playerData);
+        try {
+            this.lock.readLock().lock();
+            return Map.copyOf(this.playerData);
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public boolean isOwner(DSPlayer player) {
-        final UUID playerId = player.getUuid();
-        final PlayerIslandData data = this.playerData.get(playerId);
-        return data != null && data.roleId().equals(TeamRoles.OWNER_ID);
+        try {
+            this.lock.readLock().lock();
+            final UUID playerId = player.getUuid();
+            final PlayerIslandData data = this.playerData.get(playerId);
+            return data != null && data.roleId().equals(TeamRoles.OWNER_ID);
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public UUID getOwnerId() {
-        return this.playerData.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().roleId().equals(TeamRoles.OWNER_ID))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElseThrow();
+        try {
+            this.lock.readLock().lock();
+            return this.playerData.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue().roleId().equals(TeamRoles.OWNER_ID))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElseThrow();
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public boolean isMember(DSPlayer player) {
-        return this.isMember(player.getUuid());
+        try {
+            this.lock.readLock().lock();
+            return this.isMember(player.getUuid());
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public boolean isMember(UUID playerId) {
-        final PlayerIslandData data = this.playerData.get(playerId);
-        return data != null && !data.roleId().equals(TeamRoles.VISITOR_ID);
+        try {
+            this.lock.readLock().lock();
+            final PlayerIslandData data = this.playerData.get(playerId);
+            return data != null && !data.roleId().equals(TeamRoles.VISITOR_ID);
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public @UnmodifiableView Map<UUID, PlayerIslandData> getPlayerData() {
-        return Collections.unmodifiableMap(this.playerData);
+        try {
+            this.lock.readLock().lock();
+        return Map.copyOf(this.playerData);
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public int getMemberCount() {
-        return (int) this.playerData.values()
-                .stream()
-                .filter(data -> !data.roleId().equals(TeamRoles.VISITOR_ID))
-                .count();
+        try {
+            this.lock.readLock().lock();
+            return (int) this.playerData.values()
+                    .stream()
+                    .filter(data -> !data.roleId().equals(TeamRoles.VISITOR_ID))
+                    .count();
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public int getOnlinePlayersCount() {
-        return (int) this.playerData.keySet()
-                .stream()
-                .map(id -> MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(id))
-                .filter(player -> player != null && player.isOnline())
-                .count();
+        try {
+            this.lock.readLock().lock();
+            return (int) this.playerData.keySet()
+                    .stream()
+                    .map(id -> MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(id))
+                    .filter(player -> player != null && player.isOnline())
+                    .count();
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public record SaveData(
@@ -259,31 +336,50 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
 
     @Override
     public SaveData createSnapshot() {
-        final Map<UUID, PlayerIslandData.SaveData> playerDataSnapshot = this.playerData.entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().createSnapshot()
-                ));
-        return new SaveData(
-                this,
-                this.id,
-                this.name,
-                this.teamRoles.createSnapshot(),
-                playerDataSnapshot
-        );
+        try {
+            this.lock.readLock().lock();
+            final Map<UUID, PlayerIslandData.SaveData> playerDataSnapshot = this.playerData.entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> entry.getValue().createSnapshot()
+                    ));
+            return new SaveData(
+                    this,
+                    this.id,
+                    this.name,
+                    this.teamRoles.createSnapshot(),
+                    playerDataSnapshot
+            );
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public State state() {
-        return this.state;
+        try {
+            this.lock.readLock().lock();
+            return this.state;
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     public void setState(State state) {
-        if (this.state == State.DELETED) {
-            LOGGER.warn("Attempted to set state of deleted island team {} to {}", this.id, state);
-            return;
+        try {
+            this.lock.writeLock().lock();
+            if (this.state == State.DELETED) {
+                LOGGER.warn("Attempted to set state of deleted island team {} to {}", this.id, state);
+                return;
+            }
+            if (this.state == State.DELETING && state != State.DELETED) {
+                LOGGER.warn("Attempted to set state of deleting island team {} to {}", this.id, state);
+                return;
+            }
+            this.state = state;
+        } finally {
+            this.lock.writeLock().unlock();
         }
-        this.state = state;
     }
 
     public enum State {
@@ -293,6 +389,22 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
         SAVING,
         DELETING,
         DELETED;
+
+        public boolean isSaving() {
+            return this == SAVING || this == DELETING;
+        }
+
+        public boolean isLoaded() {
+            return this == LOADED;
+        }
+
+        public boolean isDeleted() {
+            return this == DELETED;
+        }
+
+        public boolean isDeleting() {
+            return this == DELETING;
+        }
 
     }
 }

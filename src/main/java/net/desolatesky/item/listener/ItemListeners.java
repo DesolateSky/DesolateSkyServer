@@ -20,14 +20,12 @@ import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.item.PickupItemEvent;
-import net.minestom.server.event.player.PlayerBlockInteractEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
 import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.event.trait.ItemEvent;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.instance.block.BlockHandler;
@@ -67,6 +65,7 @@ public final class ItemListeners implements DSListener {
         return EventNode.type("item-click", EventFilter.PLAYER, (event, player) -> player instanceof DSPlayer)
                 .addListener(PlayerUseItemOnBlockEvent.class, event -> {
                     final DSPlayer player = (DSPlayer) event.getPlayer();
+                    player.sendMessage("Use item on block event");
                     ItemStack itemStack = player.getItemInMainHand();
                     final Key blockId = itemStack.getTag(ItemTags.BLOCK_ID);
                     final Point clickedPoint = event.getPosition();
@@ -86,6 +85,7 @@ public final class ItemListeners implements DSListener {
                 })
                 .addListener(PlayerBlockPlaceEvent.class, event -> {
                     final DSPlayer player = (DSPlayer) event.getPlayer();
+                    player.sendMessage("Block place event");
                     final ItemStack itemStack = player.getItemInMainHand();
                     final Key blockId = itemStack.getTag(ItemTags.BLOCK_ID);
                     if (blockId != null) {
@@ -100,6 +100,7 @@ public final class ItemListeners implements DSListener {
                 })
                 .addListener(PlayerEntityInteractEvent.class, event -> {
                     final DSPlayer player = (DSPlayer) event.getPlayer();
+                    player.sendMessage("Player interact entity");
                     ItemStack itemStack = player.getItemInMainHand();
                     final ItemHandler itemHandler = this.itemRegistry.getItemHandler(itemStack);
                     if (itemHandler == null) {
@@ -110,6 +111,7 @@ public final class ItemListeners implements DSListener {
                 })
                 .addListener(PlayerUseItemEvent.class, event -> {
                     final DSPlayer player = (DSPlayer) event.getPlayer();
+                    player.sendMessage("Player use item event");
                     ItemStack itemStack = player.getItemInMainHand();
                     final ItemHandler itemHandler = this.itemRegistry.getItemHandler(itemStack);
                     if (itemHandler == null) {
@@ -135,6 +137,7 @@ public final class ItemListeners implements DSListener {
         if (block == null) {
             return;
         }
+        player.sendMessage("tryPlaceBlock");
         final Point placePoint = clickedBlock.registry().isReplaceable() ? clickedPoint : clickedPoint.add(blockFace.toDirection().vec());
         final BlockHandler.Placement placement = new BlockHandler.PlayerPlacement(
                 block,

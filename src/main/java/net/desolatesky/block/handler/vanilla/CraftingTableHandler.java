@@ -22,11 +22,11 @@ public class CraftingTableHandler extends TransientBlockHandler {
     public boolean onInteract(@NotNull Interaction interaction, DSInstance instance) {
         final DSPlayer player = (DSPlayer) interaction.getPlayer();
         if (player.isSneaking()) {
-            return false;
+            return true;
         }
         final CraftingMenu craftingMenu = new CraftingMenu();
         player.openInventory(craftingMenu);
-        return true;
+        return false;
     }
 
 }

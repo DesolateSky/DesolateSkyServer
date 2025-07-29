@@ -34,6 +34,7 @@ import net.minestom.server.event.player.PlayerStartDiggingEvent;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.RecipeBookSettingsPacket;
 import net.minestom.server.ping.Status;
 import net.minestom.server.utils.identity.NamedAndIdentified;
@@ -94,9 +95,6 @@ public final class PlayerListener implements DSListener {
                     final DSPlayer player = (DSPlayer) event.getPlayer();
                     player.setAllowFlying(true);
                     player.setFlying(true);
-                    if (!player.playerData().playedBefore()) {
-                        player.getInventory().addItemStack(DSItems.DEBRIS_CATCHER.create());
-                    }
                     final RecipeBookSettingsPacket settingsPacket = new RecipeBookSettingsPacket(true, true, true, true, true, true, true, true);
                     player.sendPacket(settingsPacket);
                     player.refreshRecipes();
@@ -131,16 +129,16 @@ public final class PlayerListener implements DSListener {
     }
 
     private EventNode<PlayerEvent> playerDisconnectNode() {
-        return EventNode.type("player-disconnect", EventFilter.PLAYER, (event, player) -> player instanceof DSPlayer)
+        return EventNode.type("player-disconnect", EventFilter.PLAYER, (_, player) -> player instanceof DSPlayer)
                 .addListener(PlayerDisconnectEvent.class, event -> {
                     final DSPlayer player = (DSPlayer) event.getPlayer();
                     this.server.instanceManager().handlePlayerLeaver(player);
-                    this.server.playerManager().savePlayer(player);
+                    this.server.playerManager().forceSave(player);
                 });
     }
 
     private EventNode<PlayerEvent> playerDigNode() {
-        return EventNode.type("player-dig", EventFilter.PLAYER, (event, player) -> player instanceof DSPlayer)
+        return EventNode.type("player-dig", EventFilter.PLAYER, (_, player) -> player instanceof DSPlayer)
                 .addListener(PlayerStartDiggingEvent.class, event -> {
                     final DSPlayer player = (DSPlayer) event.getPlayer();
                     final DSInstance instance = player.getDSInstance();
@@ -158,7 +156,7 @@ public final class PlayerListener implements DSListener {
     }
 
     private EventNode<PlayerEvent> playerMoveNode() {
-        return EventNode.type("player-move", EventFilter.PLAYER, (event, player) -> player instanceof DSPlayer)
+        return EventNode.type("player-move", EventFilter.PLAYER, (_, player) -> player instanceof DSPlayer)
                 .addListener(PlayerMoveEvent.class, event -> {
                     final DSPlayer player = (DSPlayer) event.getPlayer();
                     final DSInstance instance = player.getDSInstance();

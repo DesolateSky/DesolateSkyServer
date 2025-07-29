@@ -20,7 +20,7 @@ public final class DSBlockSettings {
     public static final BlockSettings COMPOSTER = BlockSettings.builder(ComposterBlockHandler.KEY, DSItems.COMPOSTER.create()).breakTime(1_000).stateful().blockItem(ItemKeys.COMPOSTER).categories(BlockCategories.AXE_MINEABLE).build();
     public static final BlockSettings DUST_BLOCK = BlockSettings.builder(BlockKeys.DUST_BLOCK, DSItems.DUST_BLOCK.create()).lootTable(BlockKeys.DUST_BLOCK).stateless().breakTime(500).build();
 
-    public static final BlockSettings CRAFTING_TABLE = builder(Block.CRAFTING_TABLE).breakTime(3_000).stateless().blockItem(ItemKeys.CRAFTING_TABLE).build();
+    public static final BlockSettings CRAFTING_TABLE = builder(Block.CRAFTING_TABLE).breakTime(3_000).stateless().blockItem(ItemKeys.CRAFTING_TABLE).categories(BlockCategories.AXE_MINEABLE).build();
     public static final BlockSettings DIRT = builder(Block.DIRT).breakTime(1_000).stateless().blockItem(ItemKeys.DIRT).categories(BlockCategories.SHOVEL_MINEABLE, BlockCategories.DIRT).build();
     public static final BlockSettings PETRIFIED_PLANKS = builder(Block.PALE_OAK_PLANKS).breakTime(3_000).stateless().blockItem(ItemKeys.PETRIFIED_PLANKS).categories(BlockCategories.AXE_MINEABLE, BlockCategories.PLANKS).build();
     public static final BlockSettings PETRIFIED_SLAB = builder(Block.PALE_OAK_SLAB).breakTime(1_000).stateless().blockItem(ItemKeys.PETRIFIED_SLAB).categories(BlockCategories.AXE_MINEABLE, BlockCategories.WOODEN_SLABS).build();

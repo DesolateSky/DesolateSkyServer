@@ -1,6 +1,7 @@
 package net.desolatesky.cooldown;
 
 import net.desolatesky.database.MongoCodec;
+import net.desolatesky.database.codec.InstantCodec;
 import net.kyori.adventure.key.Key;
 import org.bson.Document;
 import org.jetbrains.annotations.UnknownNullability;
@@ -23,7 +24,7 @@ public record CooldownData(Cooldown cooldown, Instant start) {
             final String keyString = document.getString("key");
             final Key key = Key.key(keyString);
             final Duration duration = Duration.ofMillis(document.getLong("duration"));
-            final Instant start = Instant.ofEpochMilli(document.getLong("start"));
+            final Instant start = InstantCodec.decode(document.get("start", Document.class));
             return new CooldownData(Cooldown.create(key, duration), start);
         }
     };
@@ -43,6 +44,10 @@ public record CooldownData(Cooldown cooldown, Instant start) {
 
     public boolean isExpired() {
         return Instant.now().isAfter(this.start.plus(this.cooldown.duration()));
+    }
+
+    public boolean isNotExpired() {
+        return !this.isExpired();
     }
 
     public Instant getEnd() {

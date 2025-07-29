@@ -2,6 +2,8 @@ package net.desolatesky.database;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import net.desolatesky.instance.DSInstanceManager;
+import net.desolatesky.instance.team.TeamInstance;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.DSPlayerManager;
 import net.desolatesky.player.database.PlayerDatabaseAccessor;
@@ -28,11 +30,13 @@ public final class DatabaseTimer {
 
     private final IslandTeamManager teamManager;
     private final DSPlayerManager playerManager;
+    private final DSInstanceManager instanceManager;
     private Task task;
 
-    public DatabaseTimer(IslandTeamManager teamManager, DSPlayerManager playerManager) {
+    public DatabaseTimer(IslandTeamManager teamManager, DSPlayerManager playerManager, DSInstanceManager instanceManager) {
         this.teamManager = teamManager;
         this.playerManager = playerManager;
+        this.instanceManager = instanceManager;
     }
 
     public void start() {
@@ -48,12 +52,22 @@ public final class DatabaseTimer {
     }
 
     public void saveAll(boolean async) {
+        this.saveAll(async, false);
+    }
+
+    private void saveAll(boolean async, boolean shutdown) {
         final Multimap<UUID, DSPlayer> islandsToPlayers = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
         for (final Player element : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
             final DSPlayer player = (DSPlayer) element;
             final UUID islandId = player.islandId();
             if (islandId == null) {
-                save(() -> this.playerManager.savePlayer(player), async);
+                save(() -> {
+                    if (shutdown) {
+                        this.playerManager.forceSave(player);
+                    } else {
+                        this.playerManager.queueSave(player);
+                    }
+                }, async);
                 continue;
             }
             islandsToPlayers.put(islandId, player);
@@ -64,17 +78,37 @@ public final class DatabaseTimer {
             save(() -> {
                 final IslandTeam islandTeam = this.teamManager.getTeam(islandId);
                 if (islandTeam != null) {
-                    this.teamManager.save(islandTeam);
+                    if (shutdown) {
+                        this.teamManager.forceSave(islandTeam);
+                    } else {
+                        this.teamManager.queueSave(islandTeam);
+                    }
                 }
                 for (final DSPlayer player : players) {
                     if (!player.isOnline()) {
                         return;
                     }
                     LOGGER.info("Saving player {} with UUID {}", player.getUsername(), player.getUuid());
-                    this.playerManager.savePlayer(player);
+                    if (shutdown) {
+                        this.playerManager.forceSave(player);
+                    } else {
+                        this.playerManager.queueSave(player);
+                    }
+                }
+                final TeamInstance teamInstance = this.instanceManager.getIslandInstance(islandId);
+                if (teamInstance != null) {
+                    teamInstance.save();
                 }
             }, async);
         }
+    }
+
+    public void shutdownAndSave() {
+        this.stop();
+        this.playerManager.shutdown();
+        this.teamManager.shutdown();
+        LOGGER.info("Saving all players and teams before shutdown...");
+        this.saveAll(false, true);
     }
 
     private static void save(Runnable runnable, boolean async) {

@@ -1,15 +1,16 @@
 package net.desolatesky.instance.team;
 
 import net.desolatesky.DesolateSkyServer;
-import net.desolatesky.block.BlockTags;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.instance.generator.StartingIslandGenerator;
+import net.desolatesky.instance.loader.MyAnvilLoader;
 import net.desolatesky.instance.weather.WeatherManager;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.team.IslandTeam;
 import net.desolatesky.team.role.RolePermissionType;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
@@ -60,7 +61,7 @@ public final class TeamInstance extends DSInstance {
     }
 
     private TeamInstance(DesolateSkyServer server, IslandTeam team, Path worldFolderPath, Pos spawn) {
-        super(team.id(), worldFolderPath, DimensionType.OVERWORLD, new AnvilLoader(worldFolderPath));
+        super(team.id(), worldFolderPath, DimensionType.OVERWORLD, new MyAnvilLoader(worldFolderPath));
         this.team = team;
         this.spawnPoint = new InstancePoint<>(this, spawn);
         this.weatherManager = new WeatherManager(server.entityLootRegistry(), this, this.randomSource);
@@ -71,7 +72,13 @@ public final class TeamInstance extends DSInstance {
 
     public CompletableFuture<Void> unload() {
         this.tickTask.cancel();
-        return this.saveChunksToStorage().whenComplete((_, _) -> this.saveInstance().join());
+        return this.save()
+                .whenComplete((_, error) -> {
+                    if (error != null) {
+                        error.printStackTrace();
+                    }
+                    MinecraftServer.getInstanceManager().unregisterInstance(this);
+                });
     }
 
     public Point initialSpawnPoint() {
@@ -100,6 +107,7 @@ public final class TeamInstance extends DSInstance {
     @Override
     public void breakBlock(DSPlayer player, BlockVec pos, Block block, BlockFace face) {
         this.breakBlock(player, pos, face, true);
+
     }
 
     @Override

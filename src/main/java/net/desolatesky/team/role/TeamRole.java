@@ -97,6 +97,7 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
 
     public void toggleSetting(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
         try {
+            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return;
@@ -151,6 +152,7 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
      */
     public boolean toggle(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
         try {
+            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return false;

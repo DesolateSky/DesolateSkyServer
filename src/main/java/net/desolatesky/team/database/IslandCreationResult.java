@@ -14,6 +14,7 @@ public record IslandCreationResult(@Nullable IslandTeam islandTeam, @Nullable Te
     public static final IslandCreationResult ALREADY_EXISTS = new IslandCreationResult(Type.ALREADY_EXISTS);
     public static final IslandCreationResult DATABASE_ERROR = new IslandCreationResult(Type.DATABASE_ERROR);
     public static final IslandCreationResult ALREADY_IN_TEAM = new IslandCreationResult(Type.ALREADY_IN_TEAM);
+    public static final IslandCreationResult ON_COOLDOWN = new IslandCreationResult(Type.ON_COOLDOWN);
 
     public static IslandCreationResult success(IslandTeam team) {
         return new IslandCreationResult(team, null, Type.SUCCESS);
@@ -35,6 +36,7 @@ public record IslandCreationResult(@Nullable IslandTeam islandTeam, @Nullable Te
         INVALID_NAME,
         DATABASE_ERROR,
         ALREADY_IN_TEAM,
+        ON_COOLDOWN
 
     }
 

@@ -25,7 +25,7 @@ public final class DSPlayerManager {
         return this.playerDatabase.load(playerUuid);
     }
 
-    public void savePlayer(DSPlayer player) {
+    public void forceSave(DSPlayer player) {
         final PlayerData playerData = player.playerData();
         DSPlayer.acquireAndSync(player, playerData::prepareForSave);
         this.playerDatabase.save(player.getUuid(), player);
@@ -35,6 +35,10 @@ public final class DSPlayerManager {
         final PlayerData playerData = player.playerData();
         DSPlayer.acquireAndSync(player, playerData::prepareForSave);
         this.playerDatabase.queueSave(player.getUuid(), player);
+    }
+
+    public void shutdown() {
+        this.playerDatabase.shutdown();
     }
 
     public static DSPlayerManager create(PlayerDatabaseAccessor playerDatabase) {

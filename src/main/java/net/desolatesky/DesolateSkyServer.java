@@ -169,21 +169,25 @@ public final class DesolateSkyServer {
 
     public void stop() {
         this.stopped.set(true);
-        this.islandDatabase.shutdown();
-        this.databaseTimer.stop();
+        this.databaseTimer.shutdownAndSave();
         MinecraftServer.getInstanceManager().getInstances().stream()
                 .map(instance -> instance.saveChunksToStorage()
                         .thenApply(_ -> CompletableFuture.allOf(instance.saveChunksToStorage(), instance.saveInstance()))
                 )
                 .forEach(CompletableFuture::join);
         LuckPermsMinestom.disable();
-        this.databaseTimer.saveAll(false);
         final Map<Thread, StackTraceElement[]> allThreads = Thread.getAllStackTraces();
-        for (final Thread thread : allThreads.keySet()) {
-            System.out.println("Thread: " + thread.getName() + " | State: " + thread.getState());
-        }
         LOGGER.info("Server shutdown complete.");
         MinecraftServer.stopCleanly();
+        LOGGER.info("Minecraft server stopping.");
+        try {
+            Thread.sleep(1000);
+            for (final Thread thread : allThreads.keySet()) {
+                LOGGER.info("Thread: {} | State: {}", thread.getName(), thread.getState());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void startServer(MinecraftServer minecraftServer) {
@@ -221,7 +225,7 @@ public final class DesolateSkyServer {
 
         this.instanceManager.createLobbyInstance();
 
-        this.databaseTimer = new DatabaseTimer(this.islandTeamManager, this.playerManager);
+        this.databaseTimer = new DatabaseTimer(this.islandTeamManager, this.playerManager, this.instanceManager);
         this.databaseTimer.start();
     }
 

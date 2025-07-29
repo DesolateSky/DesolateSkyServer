@@ -6,6 +6,8 @@ import net.desolatesky.instance.DSInstance;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class TransientBlockHandler extends DSBlockHandler {
 
@@ -18,12 +20,12 @@ public class TransientBlockHandler extends DSBlockHandler {
     }
 
     @Override
-    public void save(DSInstance instance, Point point, Block block) {
-
+    public @Nullable Block save(DSInstance instance, Point point, Block block) {
+        return null;
     }
 
     @Override
-    public void load(CompoundBinaryTag tag, DSInstance instance, Point point, Block block) {
+    public void load(Placement placement, DSInstance instance) {
 
     }
 

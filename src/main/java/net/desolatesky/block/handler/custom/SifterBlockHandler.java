@@ -2,18 +2,14 @@ package net.desolatesky.block.handler.custom;
 
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.DSBlock;
-import net.desolatesky.block.DSBlocks;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.loot.BlockLootRegistry;
 import net.desolatesky.block.settings.DSBlockSettings;
 import net.desolatesky.entity.type.SifterBlockEntity;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
-import net.desolatesky.item.DSItem;
 import net.desolatesky.item.DSItemRegistry;
-import net.desolatesky.item.DSItems;
 import net.desolatesky.item.ItemTags;
-import net.desolatesky.item.loot.ItemLootRegistry;
 import net.desolatesky.loot.LootContext;
 import net.desolatesky.loot.generator.LootGenerator;
 import net.desolatesky.loot.generator.LootGeneratorType;
@@ -47,6 +43,8 @@ public class SifterBlockHandler extends DSBlockHandler {
     private final DSItemRegistry itemRegistry;
     private final BlockLootRegistry blockLootRegistry;
     private SifterBlockEntity entity;
+    private int stage = 0;
+    private Block siftingBlock;
 
     public SifterBlockHandler(DesolateSkyServer server) {
         super(server, DSBlockSettings.SIFTER);
@@ -62,47 +60,47 @@ public class SifterBlockHandler extends DSBlockHandler {
 
     public boolean click(DSPlayer player, DSInstance instance, Point blockPosition, boolean clickNearby) {
         final ItemStack itemStack = player.getItemInMainHand();
-        if (player.isSneaking()) {
-            return false;
-        }
-        if (this.lastClick.plus(COOLDOWN).isAfter(Instant.now())) {
-            return true;
-        }
-        if (this.entity != null && !this.entity.isRemoved()) {
-            final boolean wasCompleted = this.entity.isComplete();
-            this.entity.addStage();
-            if (clickNearby) {
-                this.clickNearbySifters(player, instance, blockPosition, 1);
-            }
-            if (!wasCompleted && this.entity.isComplete()) {
-                final InstancePoint<Point> dropPosition = new InstancePoint<>(instance, blockPosition.add(0.5, 1, 0.5));
-                this.dropLoot(player.getInventory(), dropPosition, this.entity.block());
-            }
-            if (this.entity.isRemoved()) {
-                this.entity = null;
-            }
-            return false;
-        }
-        final Key blockKey = itemStack.getTag(ItemTags.BLOCK_ID);
-        if (blockKey == null) {
-            return false;
-        }
-        final Block block = this.server.blockRegistry().create(blockKey);
-        if (block == null) {
-            return false;
-        }
-        final LootGenerator lootGenerator = this.getLootGeneratorForBlock(block);
-        if (lootGenerator == null) {
-            return false;
-        }
-        this.entity = new SifterBlockEntity(block, block, blockPosition, this);
-        this.entity.setInstance(instance, blockPosition.add(0, 1, 0));
-        this.entity.addStage();
-        this.lastClick = Instant.now();
-        player.setItemInMainHand(itemStack.consume(1));
-        if (clickNearby) {
-            this.clickNearbySifters(player, instance, blockPosition, 1);
-        }
+//        if (player.isSneaking()) {
+//            return false;
+//        }
+//        if (this.lastClick.plus(COOLDOWN).isAfter(Instant.now())) {
+//            return true;
+//        }
+//        if (this.entity != null && !this.entity.isRemoved()) {
+//            final boolean wasCompleted = this.entity.isComplete();
+//            this.entity.addStage();
+//            if (clickNearby) {
+//                this.clickNearbySifters(player, instance, blockPosition, 1);
+//            }
+//            if (!wasCompleted && this.entity.isComplete()) {
+//                final InstancePoint<Point> dropPosition = new InstancePoint<>(instance, blockPosition.add(0.5, 1, 0.5));
+//                this.dropLoot(player.getInventory(), dropPosition, this.entity.block());
+//            }
+//            if (this.entity.isRemoved()) {
+//                this.entity = null;
+//            }
+//            return false;
+//        }
+//        final Key blockKey = itemStack.getTag(ItemTags.BLOCK_ID);
+//        if (blockKey == null) {
+//            return false;
+//        }
+//        final Block block = this.server.blockRegistry().create(blockKey);
+//        if (block == null) {
+//            return false;
+//        }
+//        final LootGenerator lootGenerator = this.getLootGeneratorForBlock(block);
+//        if (lootGenerator == null) {
+//            return false;
+//        }
+//        this.entity = new SifterBlockEntity(block, block, blockPosition, this);
+//        this.entity.setInstance(instance, blockPosition.add(0, 1, 0));
+//        this.entity.addStage();
+//        this.lastClick = Instant.now();
+//        player.setItemInMainHand(itemStack.consume(1));
+//        if (clickNearby) {
+//            this.clickNearbySifters(player, instance, blockPosition, 1);
+//        }
         return false;
     }
 
@@ -154,13 +152,12 @@ public class SifterBlockHandler extends DSBlockHandler {
     }
 
     @Override
-    public void save(DSInstance instance, Point point, Block block) {
-        // TODO
+    public @Nullable Block save(DSInstance instance, Point point, Block block) {
+        return null;
     }
 
     @Override
-    public void load(CompoundBinaryTag tag, DSInstance instance, Point point, Block block) {
-        // TODO
-    }
+    public void load(Placement placement, DSInstance instance) {
 
+    }
 }

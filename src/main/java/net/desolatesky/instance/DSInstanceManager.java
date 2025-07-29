@@ -8,6 +8,7 @@ import net.desolatesky.player.DSPlayer;
 import net.desolatesky.team.IslandTeam;
 import net.desolatesky.teleport.TeleportLocations;
 import net.desolatesky.teleport.TeleportManager;
+import net.desolatesky.util.FileUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.Instance;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -62,21 +64,29 @@ public final class DSInstanceManager {
     public void archiveTeamInstance(UUID islandId) {
         final Instance instance = this.instanceManager.getInstance(islandId);
         if (instance instanceof TeamInstance teamInstance) {
-            teamInstance.getPlayers().forEach(player -> player.setInstance(this.lobbyInstance));
-            teamInstance.saveChunksToStorage();
-            teamInstance.saveChunksToStorage();
-            final File file = teamInstance.worldFilePath().toFile();
-            if (file.exists()) {
-                final File archiveFolder = new File(this.worldFolderPath.toFile(), "archive");
-                if (!archiveFolder.exists()) {
-                    archiveFolder.mkdirs();
+            teamInstance.getPlayers().forEach(player -> {
+                player.setInstance(this.lobbyInstance);
+                this.server.playerManager().queueSave((DSPlayer) player);
+            });
+            teamInstance.unload().thenRun(() -> {
+                final File file = teamInstance.worldFilePath().toFile();
+                if (file.exists()) {
+                    final File archiveFolder = this.worldFolderPath.resolve("archive").toFile();
+                    if (!archiveFolder.exists()) {
+                        archiveFolder.mkdirs();
+                    }
+                    final Path archivedWorld = teamInstance.worldFilePath().resolve("../");
+                    try {
+                        FileUtil.zipDirectory(archivedWorld, archiveFolder.toPath().resolve(islandId + ".zip"));
+                        FileUtil.deleteDirectory(archivedWorld);
+                    } catch (IOException e) {
+                        LOGGER.info("Error archiving world file for world {}", teamInstance.getUuid());
+                        e.printStackTrace();
+                    }
+                } else {
+                    LOGGER.warn("Attempted to archive non-existent island instance: {}", islandId);
                 }
-                final File archivedWorld = new File(archiveFolder, islandId.toString());
-                file.renameTo(archivedWorld);
-                this.instanceManager.unregisterInstance(teamInstance);
-            } else {
-                LOGGER.warn("Attempted to archive non-existent island instance: {}", islandId);
-            }
+            });
         }
     }
 
@@ -122,7 +132,7 @@ public final class DSInstanceManager {
         if (teamInstance != null) {
             teamInstance.onLeave(player);
             if (MinecraftServer.getConnectionManager().getOnlinePlayers().stream().noneMatch(p -> islandId.equals(((DSPlayer) p).islandId()) && !p.equals(player))) {
-                teamInstance.unload().whenComplete((result, error) -> MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
+                teamInstance.save().whenComplete((_, _) -> MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
                     if (!teamInstance.getPlayers().isEmpty()) {
                         return;
                     }

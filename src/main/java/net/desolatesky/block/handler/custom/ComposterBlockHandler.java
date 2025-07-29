@@ -23,6 +23,7 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class ComposterBlockHandler extends DSBlockHandler {
 
@@ -87,13 +88,13 @@ public final class ComposterBlockHandler extends DSBlockHandler {
     }
 
     @Override
-    public void save(DSInstance instance, Point point, Block block) {
-        // TODO
+    public @Nullable Block save(DSInstance instance, Point point, Block block) {
+        return block;
     }
 
     @Override
-    public void load(CompoundBinaryTag tag, DSInstance instance, Point point, Block block) {
-        // TODO
+    public void load(Placement placement, DSInstance instance) {
+
     }
 
 }

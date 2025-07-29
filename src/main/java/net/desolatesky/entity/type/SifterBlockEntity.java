@@ -34,7 +34,7 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
     private final Block displayBlock;
     private final Point sifterPosition;
     private final SifterBlockHandler blockHandler;
-    private int stage = 0;
+    //    private int stage = 0;
     private Interaction interactionEntity;
 
     public SifterBlockEntity(Block block, Block displayBlock, Point sifterPosition, SifterBlockHandler blockHandler) {
@@ -66,36 +66,26 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
         this.interactionEntity = new Interaction();
     }
 
-    public boolean isComplete() {
-        return this.stage >= MAX_STAGE;
+    public void setStage(int stage) {
+        this.adjustPosition(stage);
+        final WorldEventPacket packet = new WorldEventPacket(2001, this.getPosition(), this.displayBlock.stateId(), false);
+        this.getInstance().sendGroupedPacket(packet);
     }
 
-    public void addStage() {
-        if (this.stage < MAX_STAGE) {
-            this.stage++;
-            this.adjustPosition();
-            final WorldEventPacket packet = new WorldEventPacket(2001, this.getPosition(), this.displayBlock.stateId(), false);
-            this.getInstance().sendGroupedPacket(packet);
-        }
-        if (this.isComplete()) {
-            this.remove();
-        }
-    }
-
-    private void adjustPosition() {
+    private void adjustPosition(int stage) {
         final BlockDisplayMeta meta = (BlockDisplayMeta) this.getEntityMeta();
         meta.setNotifyAboutChanges(false);
-        meta.setScale(new Vec(1, this.getVerticalScale(), 1));
+        meta.setScale(new Vec(1, this.getVerticalScale(stage), 1));
         meta.setNotifyAboutChanges(true);
-        this.interactionEntity.updateVerticalScale();
+        this.interactionEntity.updateVerticalScale(stage);
     }
 
-    private float getVerticalScale() {
-        return (float) (1 - this.getPercentCompletion()) * 0.5f;
+    private float getVerticalScale(int stage) {
+        return (float) (1 - this.getPercentCompletion(stage)) * 0.5f;
     }
 
-    public double getPercentCompletion() {
-        return (double) this.stage / MAX_STAGE;
+    public double getPercentCompletion(int stage) {
+        return (double) stage / MAX_STAGE;
     }
 
     @Override
@@ -166,10 +156,10 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
             }
         }
 
-        private void updateVerticalScale() {
+        private void updateVerticalScale(int stage) {
             final InteractionMeta interactionMeta = (InteractionMeta) this.getEntityMeta();
             interactionMeta.setNotifyAboutChanges(false);
-            interactionMeta.setHeight(SifterBlockEntity.this.getVerticalScale() + 0.2f);
+            interactionMeta.setHeight(SifterBlockEntity.this.getVerticalScale(stage) + 0.2f);
             interactionMeta.setNotifyAboutChanges(true);
         }
 

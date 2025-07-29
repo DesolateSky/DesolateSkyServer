@@ -3,11 +3,13 @@ package net.desolatesky.command.player;
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.team.TeamInstance;
+import net.desolatesky.item.DSItems;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.team.IslandTeam;
 import net.desolatesky.team.IslandTeamManager;
+import net.desolatesky.team.database.IslandCreationResult;
 import net.desolatesky.team.menu.permission.PermissionMenu;
 import net.desolatesky.team.role.TeamRoles;
 import net.desolatesky.teleport.TeleportManager;
@@ -89,12 +91,16 @@ public final class IslandCommand extends Command {
                         this.messageHandler.sendMessage(player, Messages.ISLAND_CREATION_FAILED);
                         return;
                     }
+                    if (result.type() == IslandCreationResult.Type.ON_COOLDOWN) {
+                        return;
+                    }
                     final IslandTeam team = result.islandTeam();
                     final TeamInstance instance = result.islandInstance();
                     if (team == null || instance == null) {
                         this.messageHandler.sendMessage(player, Messages.ISLAND_CREATION_FAILED);
                         return;
                     }
+                    player.getInventory().addItemStack(DSItems.DEBRIS_CATCHER.create());
                     this.instanceManager.teleportToIsland(this.teleportManager, team, player);
                 });
     }

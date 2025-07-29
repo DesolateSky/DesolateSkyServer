@@ -17,6 +17,7 @@ public final class Messages {
     public static final MessageKey TELEPORT_INTERVAL = new MessageKey("teleport-interval");
     public static final MessageKey TELEPORT_SUCCESS = new MessageKey("teleport-success");
     public static final MessageKey TELEPORT_CANCELLED = new MessageKey("teleport-cancelled");
+    public static final MessageKey ISLAND_CREATE_COOLDOWN = new MessageKey("island-create-cooldown");
 
     public static final MessageKey CONFIRM_DELETE_ISLAND = new MessageKey("confirm-delete-island");
     public static final MessageKey DELETING_ISLAND = new MessageKey("deleting-island");

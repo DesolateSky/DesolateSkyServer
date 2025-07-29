@@ -8,18 +8,23 @@ import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.database.DatabaseAccessor;
 import net.desolatesky.database.MongoConnection;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.executor.WrappedExecutorService;
+import net.minestom.server.instance.Instance;
 import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public final class PlayerDatabaseAccessor implements DatabaseAccessor<DSPlayer, PlayerData, UUID> {
 
-    private static final Logger LOGGER = Logger.getLogger(PlayerDatabaseAccessor.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlayerDatabaseAccessor.class.getName());
 
     private static final String COLLECTION_NAME = "players";
 
@@ -39,20 +44,18 @@ public final class PlayerDatabaseAccessor implements DatabaseAccessor<DSPlayer, 
     private PlayerDatabaseAccessor(DesolateSkyServer server, MongoConnection connection) {
         this.server = server;
         this.connection = connection;
-        this.executorService = Executors.newSingleThreadExecutor();
+        this.executorService = new WrappedExecutorService(Executors.newSingleThreadExecutor());
     }
 
     @Override
     public void save(UUID id, DSPlayer player) {
+        LOGGER.info("Saving player data for {} in MongoDB.", id);
         final MongoCollection<Document> collection = this.getCollection();
-        final PlayerData playerData = player.playerData();
-        playerData.setLastLogoutInstanceId(player.getInstance().getUuid());
-        playerData.setLastLogoutPos(player.getPosition());
         final Document playerDocument = new Document();
         playerDocument.append(ID_FIELD, id);
         DSPlayer.MONGO_CODEC.write(player, playerDocument);
         collection.replaceOne(Filters.eq(ID_FIELD, id), playerDocument, new ReplaceOptions().upsert(true));
-        LOGGER.info("Saved player data for " + id + " in MongoDB.");
+        LOGGER.info("Saved player data for {} in MongoDB.", id);
     }
 
     @Override
@@ -85,7 +88,22 @@ public final class PlayerDatabaseAccessor implements DatabaseAccessor<DSPlayer, 
 
     @Override
     public void shutdown() {
+        try {
+            LOGGER.info("Shutting down PlayerDatabaseAccessor executor service.");
+            final long currentTime = System.currentTimeMillis();
+            this.executorService.shutdown();
+            LOGGER.info("Shutdown");
+            final boolean terminated = this.executorService.awaitTermination(30, TimeUnit.SECONDS);
+            final long elapsedTime = System.currentTimeMillis() - currentTime;
+            if (!terminated) {
+                LOGGER.warn("Executor service did not terminate in the expected time ({})", elapsedTime);
+            } else {
+                LOGGER.info("Executor service terminated successfully after {} ms.", elapsedTime);
+            }
 
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private MongoCollection<Document> getCollection() {
@@ -95,4 +113,5 @@ public final class PlayerDatabaseAccessor implements DatabaseAccessor<DSPlayer, 
     private void load() {
         this.connection.database().createCollection(COLLECTION_NAME);
     }
+
 }
