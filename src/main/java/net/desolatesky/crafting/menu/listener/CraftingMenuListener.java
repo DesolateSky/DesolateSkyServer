@@ -92,7 +92,7 @@ public final class CraftingMenuListener implements DSListener {
             return false;
         }
         final ItemStack onCursor = playerInventory.getCursorItem();
-        if (!onCursor.isAir() && !InventoryUtil.isShiftClick(click)) {
+        if (!onCursor.isSimilar(craftingHandler.getOutputItem()) && !InventoryUtil.isShiftClick(click)) {
             return true;
         }
         craftingHandler.collectOutput(this.craftingManager, clickedInventory, click, input -> {
@@ -131,14 +131,12 @@ public final class CraftingMenuListener implements DSListener {
             if (canGive <= 0) {
                 return 0;
             }
-            final int toGive = Math.min(amount, canGive);
-            final int matchesToGive = toGive / amountPerCraft;
-            final int giveAmount = matchesToGive * amountPerCraft;
-            if (giveAmount <= 0) {
+            // 1 only if not shift-clicking
+            if (canGive < amountPerCraft) {
                 return 0;
             }
-            MinecraftServer.getSchedulerManager().scheduleNextTick(() -> playerInventory.setCursorItem(result.withAmount(cursorItem.amount() + giveAmount)));
-            return matchesToGive;
+            MinecraftServer.getSchedulerManager().scheduleNextTick(() -> playerInventory.setCursorItem(result.withAmount(cursorItem.amount() + amountPerCraft)));
+            return amountPerCraft;
         });
         return true;
     }

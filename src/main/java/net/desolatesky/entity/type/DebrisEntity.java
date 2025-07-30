@@ -2,7 +2,6 @@ package net.desolatesky.entity.type;
 
 import net.desolatesky.block.BlockBuilder;
 import net.desolatesky.block.BlockProperties;
-import net.desolatesky.block.DSBlocks;
 import net.desolatesky.entity.DSEntity;
 import net.desolatesky.entity.EntityKey;
 import net.desolatesky.entity.EntityKeys;
@@ -183,7 +182,7 @@ public class DebrisEntity extends Entity implements DSEntity {
         public Display(Direction direction, Point translation) {
             super(EntityType.BLOCK_DISPLAY);
             final BlockDisplayMeta blockMeta = (BlockDisplayMeta) this.getEntityMeta();
-            final Block block = BlockBuilder.from(Block.LEAF_LITTER)
+            final Block block = BlockBuilder.blockBuilder(Block.LEAF_LITTER)
                     .property(BlockProperties.FACING, direction)
                     .property(BlockProperties.SEGMENT_AMOUNT, 4)
                     .build();

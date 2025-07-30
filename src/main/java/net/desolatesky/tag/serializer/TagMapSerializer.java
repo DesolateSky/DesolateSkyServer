@@ -1,5 +1,6 @@
 package net.desolatesky.tag.serializer;
 
+import net.desolatesky.util.Tags;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
 import net.minestom.server.tag.TagSerializer;
@@ -11,7 +12,7 @@ import java.util.function.Supplier;
 
 public class TagMapSerializer<K, V> implements TagSerializer<Map<K, V>> {
 
-    private static final Tag<Integer> SIZE_TAG = Tag.Integer("size");
+    private static final Tag<Integer> SIZE_TAG = Tags.Integer("size");
 
     private final Supplier<Map<K, V>> mapSupplier;
     private final TagSerializer<K> keySerializer;
@@ -48,4 +49,5 @@ public class TagMapSerializer<K, V> implements TagSerializer<Map<K, V>> {
             this.valueSerializer.write(writer, value);
         }
     }
+
 }

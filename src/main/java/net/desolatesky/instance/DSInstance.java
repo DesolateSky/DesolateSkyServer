@@ -1,6 +1,7 @@
 package net.desolatesky.instance;
 
-import net.desolatesky.block.handler.DSBlockHandler;
+import net.desolatesky.block.DSBlock;
+import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.weather.WeatherManager;
 import net.desolatesky.player.DSPlayer;
@@ -96,14 +97,13 @@ public abstract class DSInstance extends InstanceContainer {
             this.onSave();
             for (final Point point : this.blockEntities) {
                 final Block block = this.getBlock(point);
-            if (!(block.handler() instanceof final DSBlockHandler handler)) {
-                continue;
-            }
-            final Block saved = handler.save(this, point, block);
-            if (saved != null) {
-                this.setBlock(point, saved);
-            }
-                System.out.println("Saving block with handler: " + block.handler() + " " + block.key());
+                if (!(block.handler() instanceof final BlockEntity<?> handler)) {
+                    continue;
+                }
+                final Block saved = handler.save(this, point, block);
+                if (saved != null) {
+                    this.setBlock(point, saved);
+                }
             }
             this.saveInstance().join();
             this.saveChunksToStorage().join();
@@ -114,7 +114,6 @@ public abstract class DSInstance extends InstanceContainer {
         try {
             this.blockEntityLock.writeLock().lock();
             this.blockEntities.add(point);
-            System.out.println("Adding block entity: " + point);
         } finally {
             this.blockEntityLock.writeLock().unlock();
         }

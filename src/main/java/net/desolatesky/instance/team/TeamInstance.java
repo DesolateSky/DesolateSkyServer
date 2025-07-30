@@ -36,7 +36,7 @@ public final class TeamInstance extends DSInstance {
 
     private static final Pos initialSpawnPoint = new Pos(0.5, 64, 0.5);
     private final RandomGenerator randomSource = new SplittableRandom();
-    private final BreakingManager breakingManager = new BreakingManager(new HashMap<>());
+    private final BreakingManager breakingManager;
     private final WeatherManager weatherManager;
     private final IslandTeam team;
     private InstancePoint<Pos> spawnPoint;
@@ -62,10 +62,11 @@ public final class TeamInstance extends DSInstance {
 
     private TeamInstance(DesolateSkyServer server, IslandTeam team, Path worldFolderPath, Pos spawn) {
         super(team.id(), worldFolderPath, DimensionType.OVERWORLD, new MyAnvilLoader(worldFolderPath));
+         this.breakingManager = new BreakingManager(server, new HashMap<>(), server.blockRegistry());
         this.team = team;
         this.spawnPoint = new InstancePoint<>(this, spawn);
         this.weatherManager = new WeatherManager(server.entityLootRegistry(), this, this.randomSource);
-        this.setGenerator(new StartingIslandGenerator(server.blockHandlers(), this));
+        this.setGenerator(new StartingIslandGenerator(server.blockEntities(), this));
         this.setChunkSupplier(LightingChunk::new);
         this.setWorldBorder(new WorldBorder(50, spawn.x(), spawn.z(), 0, 0, 50));
     }

@@ -1,24 +1,23 @@
 package net.desolatesky.block.handler;
 
 import net.desolatesky.DesolateSkyServer;
+import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
-import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.handler.ItemHandler;
 import net.desolatesky.item.handler.breaking.MiningLevel;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
-import net.desolatesky.util.InventoryUtil;
-import net.desolatesky.util.PacketUtil;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.key.Keyed;
 import net.minestom.server.coordinate.Point;
-import net.minestom.server.coordinate.Pos;
+import net.minestom.server.entity.Player;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockHandler;
+import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
-import net.minestom.server.network.packet.server.play.WorldEventPacket;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,114 +26,110 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class DSBlockHandler implements BlockHandler {
+public class DSBlockHandler implements Keyed {
 
     public static final Duration UNBREAKABLE_BREAK_TIME = Duration.ofMillis(-1);
 
-    protected final DesolateSkyServer server;
     protected final BlockSettings settings;
-    protected final AtomicBoolean loaded = new AtomicBoolean(false);
 
-    private final LootTable lootTable;
-
-    public DSBlockHandler(DesolateSkyServer server, BlockSettings blockSettings) {
-        this.server = server;
+    public DSBlockHandler(BlockSettings blockSettings) {
         this.settings = blockSettings;
-        this.lootTable = this.server.blockLootRegistry().getLootTable(this.settings.key(), LootTable.EMPTY);
+        System.out.println("Creating block handler for " + this.getClass().getName() + " with settings: " + blockSettings);
     }
 
-    public DSBlockHandler(DesolateSkyServer server, BlockSettings.Builder blockSettings) {
-        this(server, blockSettings.build());
+    public DSBlockHandler(BlockSettings.Builder blockSettings) {
+        this(blockSettings.build());
     }
 
-    @Override
-    public void onPlace(@NotNull Placement placement) {
-        if (!(placement.getInstance() instanceof final DSInstance instance)) {
-            return;
-        }
-        instance.addBlockEntity(placement.getBlockPosition());
-        final boolean loaded = this.loaded.getAndSet(true);
-        if (placement.getClass().equals(Placement.class) && !loaded) {
-            this.load(placement, instance);
-        }
-        this.onPlace(placement, instance);
+    public void onPlace(
+            DSInstance instance,
+            Block block,
+            Point blockPosition
+    ) {
     }
 
-    public void onPlace(@NotNull Placement placement, DSInstance instance) {
-
+    public void onPlayerPlace(
+            DSPlayer player,
+            DSInstance instance,
+            Block block,
+            Point blockPosition,
+            PlayerHand hand,
+            BlockFace face,
+            Point cursorPosition
+    ) {
     }
 
-    @Override
-    public void onDestroy(@NotNull Destroy destroy) {
-        if (!(destroy.getInstance() instanceof final DSInstance instance)) {
-            return;
-        }
-        instance.removeBlockEntity(destroy.getBlockPosition());
-        this.onDestroy(destroy, instance);
+    public void onDestroy(
+            DSInstance instance,
+            Block block,
+            Point blockPosition
+    ) {
     }
 
-    public void onDestroy(@NotNull Destroy destroy, DSInstance instance) {
-        if (destroy instanceof final PlayerDestroy playerDestroy) {
-            final ItemStack toolUsed = playerDestroy.getPlayer().getItemInMainHand();
-            final Point point = playerDestroy.getBlockPosition();
-            final Block block = playerDestroy.getBlock();
-            final Collection<ItemStack> drops = this.generateDrops(this.server.itemRegistry(), toolUsed, point, block);
-            final WorldEventPacket packet = PacketUtil.blockBreakPacket(point, block);
-            final DSPlayer player = (DSPlayer) playerDestroy.getPlayer();
-            player.sendPacket(packet);
-            if (!drops.isEmpty()) {
-                final InstancePoint<Pos> instancePoint = new InstancePoint<>(instance, new Pos(point));
-                drops.forEach(drop -> InventoryUtil.addItemToInventory(player, drop, instancePoint));
-            }
-        }
+    public void onPlayerDestroy(
+            DSPlayer player,
+            DSInstance instance,
+            Block block,
+            Point blockPosition
+    ) {
     }
 
-    @Override
-    public boolean onInteract(@NotNull Interaction interaction) {
-        if (!(interaction.getInstance() instanceof final DSInstance instance)) {
-            return BlockHandler.super.onInteract(interaction);
-        }
-        return this.onInteract(interaction, instance);
+    public InteractionResult onPlayerInteract(
+            Player player,
+            DSInstance instance,
+            Block block,
+            Point blockPosition,
+            PlayerHand hand,
+            BlockFace face,
+            Point cursorPosition
+    ) {
+        return InteractionResult.PASSTHROUGH;
     }
 
-    public boolean onInteract(@NotNull Interaction interaction, DSInstance instance) {
-        return BlockHandler.super.onInteract(interaction);
+    public InteractionResult onBlockEntityInteract(
+            BlockEntity<?> entity,
+            DSInstance instance,
+            Block block,
+            Point blockPosition,
+            BlockFace face
+    ) {
+        return InteractionResult.PASSTHROUGH;
     }
 
-    @Override
-    public void onTouch(@NotNull Touch touch) {
-        if (!(touch.getInstance() instanceof final DSInstance instance)) {
-            return;
-        }
-        this.onTouch(touch, instance);
+    public InteractionResult onPlayerPunch(
+            Player player,
+            DSInstance instance,
+            Block block,
+            Point blockPosition,
+            BlockFace face,
+            Point cursorPosition
+    ) {
+        return InteractionResult.PASSTHROUGH;
     }
 
-    public void onTouch(@NotNull Touch touch, DSInstance instance) {
-        BlockHandler.super.onTouch(touch);
+    public InteractionResult onBlockEntityPunch(
+            BlockEntity<?> entity,
+            DSInstance instance,
+            Block block,
+            Point blockPosition,
+            BlockFace face
+    ) {
+        return InteractionResult.PASSTHROUGH;
     }
 
-    @Override
-    public void tick(@NotNull Tick tick) {
-        if (!(tick.getInstance() instanceof final DSInstance instance)) {
-            return;
-        }
-        this.tick(tick, instance);
+    public void onTick(
+            DSInstance instance,
+            Block block,
+            Point blockPosition
+    ) {
     }
 
-    public void tick(@NotNull Tick tick, DSInstance instance) {
-        BlockHandler.super.tick(tick);
-    }
-
-    public void randomTick(@NotNull Tick randomTick) {
-        if (!(randomTick.getInstance() instanceof final DSInstance instance)) {
-            return;
-        }
-        this.randomTick(randomTick, instance);
-    }
-
-    public void randomTick(@NotNull Tick randomTick, DSInstance instance) {
+    public void onRandomTick(
+            DSInstance instance,
+            Block block,
+            Point blockPosition
+    ) {
     }
 
     public Collection<ItemStack> generateDrops(DSItemRegistry itemRegistry, ItemStack toolUsed, Point point, Block block) {
@@ -149,16 +144,16 @@ public abstract class DSBlockHandler implements BlockHandler {
         return List.of(itemStack);
     }
 
-    public Duration calculateBlockBreakTime(DSPlayer player, Block block) {
+    public Duration calculateBlockBreakTime(DesolateSkyServer server, DSPlayer player, Block block) {
         final ItemStack itemInHand = player.getItemInMainHand();
         if (itemInHand.isAir()) {
-            return Duration.ofMillis(this.breakTime());
+            return this.breakTime();
         }
-        final ItemHandler itemHandler = this.server.itemRegistry().getItemHandler(itemInHand);
+        final ItemHandler itemHandler = server.itemRegistry().getItemHandler(itemInHand);
         if (itemHandler == null) {
-            return Duration.ofMillis(this.breakTime());
+            return this.breakTime();
         }
-        return itemHandler.calculateBreakTime(itemInHand, block);
+        return itemHandler.calculateBreakTime(server, itemInHand, block);
     }
 
     public boolean isCategory(Category category) {
@@ -166,24 +161,20 @@ public abstract class DSBlockHandler implements BlockHandler {
     }
 
     @Override
-    public @NotNull Key getKey() {
+    public @NotNull Key key() {
         return this.settings.key();
     }
 
     public LootTable loot() {
-        return this.lootTable;
+        return this.settings.lootTable();
     }
 
-    public boolean stateless() {
-        return this.settings.stateless();
-    }
-
-    public int breakTime() {
+    public Duration breakTime() {
         return this.settings.breakTime();
     }
 
     public boolean isUnbreakable() {
-        return this.settings.breakTime() < 0;
+        return this.settings.breakTime().equals(BlockSettings.UNBREAKABLE_BREAK_TIME);
     }
 
     public @Nullable Key blockItemKey() {
@@ -205,9 +196,5 @@ public abstract class DSBlockHandler implements BlockHandler {
     public BlockSettings settings() {
         return this.settings;
     }
-
-    public abstract @Nullable Block save(DSInstance instance, Point point, Block block);
-
-    public abstract void load(Placement placement, DSInstance instance);
 
 }

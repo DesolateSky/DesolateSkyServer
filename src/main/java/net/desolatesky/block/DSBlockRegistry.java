@@ -1,9 +1,8 @@
 package net.desolatesky.block;
 
-import com.google.common.base.Preconditions;
-import net.desolatesky.block.handler.BlockHandlers;
+import net.desolatesky.block.entity.BlockEntities;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.loot.BlockLootRegistry;
+import net.desolatesky.loot.table.LootTable;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.Nullable;
@@ -12,27 +11,50 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 public final class DSBlockRegistry {
 
     private final Map<Key, DSBlock> blocksByKey;
-    private final BlockHandlers blockHandlers;
+    private final BlockEntities blockEntities;
     private final DSBlocks blocks;
-    private final BlockLootRegistry blockLootRegistry;
 
-    public static DSBlockRegistry create(Map<Key, DSBlock> blocksByKey, BlockHandlers blockHandlers, DSBlocks blocks, BlockLootRegistry blockLootRegistry) {
-        return new DSBlockRegistry(blocksByKey, blockHandlers, blocks, blockLootRegistry);
+    public static DSBlockRegistry create(Map<Key, DSBlock> blocksByKey, BlockEntities blockEntities, DSBlocks blocks) {
+        return new DSBlockRegistry(blocksByKey, blockEntities, blocks);
     }
 
-    private DSBlockRegistry(Map<Key, DSBlock> blocksByKey, BlockHandlers blockHandlers, DSBlocks blocks, BlockLootRegistry blockLootRegistry) {
+    private DSBlockRegistry(Map<Key, DSBlock> blocksByKey, BlockEntities blockEntities, DSBlocks blocks) {
         this.blocksByKey = blocksByKey;
-        this.blockHandlers = blockHandlers;
+        this.blockEntities = blockEntities;
         this.blocks = blocks;
-        this.blockLootRegistry = blockLootRegistry;
     }
 
-    public  BlockHandlers blockHandlers() {
-        return this.blockHandlers;
+    public BlockEntities blockEntities() {
+        return this.blockEntities;
+    }
+
+    public @Nullable DSBlockHandler getHandlerForBlock(Block block) {
+        final DSBlock dsBlock = this.getBlock(block);
+        if (dsBlock == null) {
+            return null;
+        }
+        return dsBlock.handler();
+    }
+
+    public @Nullable LootTable getLootTableForBlock(Block block) {
+        final DSBlock dsBlock = this.getBlock(block);
+        if (dsBlock == null) {
+            return null;
+        }
+        return dsBlock.settings().lootTable();
+    }
+
+    public LootTable getLootTableForBlock(Block block, LootTable defaultLootTable) {
+        final DSBlock dsBlock = this.getBlock(block);
+        if (dsBlock == null) {
+            return defaultLootTable;
+        }
+        return dsBlock.settings().lootTable();
     }
 
     public DSBlocks blocks() {
@@ -40,16 +62,15 @@ public final class DSBlockRegistry {
     }
 
     public void register(DSBlock block) {
-        Preconditions.checkArgument(this.blockHandlers.getHandlerForBlock(block) != null, "Block handler for block %s is not registered", block.key());
         this.blocksByKey.put(block.key(), block);
     }
 
     public @UnknownNullability Block create(Key key) {
-        final DSBlock block = this.blocksByKey.get(key);
+        final DSBlock block = this.getBlock(key);
         if (block == null) {
             return Block.fromKey(key);
         }
-        return block.create(this.blockHandlers);
+        return block.create(this.blockEntities);
     }
 
     public Block create(Block block) {
@@ -57,19 +78,23 @@ public final class DSBlockRegistry {
         if (dsBlock == null) {
             return block;
         }
-        return dsBlock.create(this.blockHandlers);
+        return dsBlock.create(this.blockEntities);
     }
 
     public @Nullable DSBlock getBlock(Key key) {
         return this.blocksByKey.get(key);
     }
 
-    public @UnmodifiableView Collection<Key> getKeys() {
-        return this.blocksByKey.keySet();
+    public @Nullable DSBlock getBlock(Block block) {
+        return this.blocksByKey.get(DSBlock.getIdFor(block));
     }
 
-    public BlockLootRegistry blockLootRegistry() {
-        return this.blockLootRegistry;
+    public static Key getKeyFor(Block block) {
+        return DSBlock.getIdFor(block);
+    }
+
+    public @UnmodifiableView Collection<Key> getKeys() {
+        return this.blocksByKey.keySet();
     }
 
 }

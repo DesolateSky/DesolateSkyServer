@@ -1,6 +1,6 @@
 package net.desolatesky.block;
 
-import net.desolatesky.util.Namespace;
+import net.desolatesky.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.tag.Tag;
 
@@ -10,9 +10,7 @@ public final class BlockTags {
         throw new UnsupportedOperationException();
     }
 
-    public static final Tag<Key> ID = Tag.String("id").map(Namespace::key, Key::asString);
-    public static final Tag<Double> COMPOSTER_LEVEL = Tag.Double("composter_level");
-//    public static final Tag<Boolean> UNBREAKABLE = Tag.Boolean("unbreakable");
-//    public static final Tag<Key> BLOCK_ITEM = Tag.String("block_item").map(Namespace::key, Key::asString);
+    public static final Tag<Key> ID = Tags.NamespaceKey("block_id");
+    public static final Tag<Double> COMPOSTER_LEVEL = Tags.Double("composter_level");
 
 }

@@ -1,53 +1,56 @@
 package net.desolatesky.block;
 
-import net.desolatesky.block.handler.BlockHandlers;
+import net.desolatesky.block.entity.BlockEntities;
+import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.handler.DSBlockHandler;
+import net.desolatesky.block.settings.BlockSettings;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public final class DSBlock implements Keyed {
 
     private final Key key;
     private final Block block;
-    private @Nullable Block cachedBlock;
+    private final DSBlockHandler blockHandler;
 
-    public static DSBlock create(Block block) {
-        return create(block.key(), block);
+    public static DSBlock create(Block block, DSBlockHandler blockHandler) {
+        return create(block.key(), block, blockHandler);
     }
 
-    public static DSBlock create(Key key, Block block) {
+    public static DSBlock create(Key key, Block block, DSBlockHandler blockHandler) {
         if (!key.equals(block.key())) {
             block = block.withTag(BlockTags.ID, key);
         }
-        return new DSBlock(key, block);
+        return new DSBlock(key, block, blockHandler);
     }
 
-    private DSBlock(Key key, Block block) {
+    private DSBlock(Key key, Block block, DSBlockHandler blockHandler) {
         this.key = key;
         this.block = block;
+        this.blockHandler = blockHandler;
     }
 
-    public Block create(BlockHandlers blockHandlers) {
-        if (this.cachedBlock != null) {
-            return this.cachedBlock;
-        }
-        final DSBlockHandler handler = blockHandlers.getHandlerForBlock(this);
+    public Block create(BlockEntities blockEntities) {
+        final BlockEntity<?> handler = blockEntities.getBlockEntity(this.key);
         if (handler == null) {
             return this.block;
-        }
-        if (handler.stateless()) {
-            this.cachedBlock = this.block.withHandler(handler);
-            return this.cachedBlock;
         }
         return this.block.withHandler(handler);
     }
 
-    public BlockBuilder createBuilder(BlockHandlers blockHandlers) {
-        final Block block = this.create(blockHandlers);
-        return BlockBuilder.from(block);
+    public BlockBuilder createBuilder(BlockEntities blockEntities) {
+        final Block block = this.create(blockEntities);
+        return BlockBuilder.blockBuilder(block);
+    }
+
+    public @NotNull BlockSettings settings() {
+        return this.handler().settings();
+    }
+
+    public DSBlockHandler handler() {
+        return this.blockHandler;
     }
 
     @Override

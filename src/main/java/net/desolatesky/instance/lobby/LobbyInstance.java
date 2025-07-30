@@ -33,7 +33,7 @@ public final class LobbyInstance extends DSInstance {
 
     private final RandomGenerator randomSource = new SplittableRandom();
 
-    private final BreakingManager breakingManager = new BreakingManager(new HashMap<>());
+    private final BreakingManager breakingManager;
     private final Path worldPath;
     private final InstancePoint<Pos> spawnPoint;
     private final Region region;
@@ -41,6 +41,7 @@ public final class LobbyInstance extends DSInstance {
 
     private LobbyInstance(DesolateSkyServer server, UUID uuid, Path worldPath, Pos spawnPoint, Region region) {
         super(uuid, worldPath, DimensionType.OVERWORLD);
+        this.breakingManager = new BreakingManager(server, new HashMap<>(), server.blockRegistry());
         this.worldPath = worldPath;
         this.spawnPoint = new InstancePoint<>(this, spawnPoint);
         this.region = region;

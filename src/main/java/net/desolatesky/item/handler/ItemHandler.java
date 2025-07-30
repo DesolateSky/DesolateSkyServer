@@ -1,5 +1,6 @@
 package net.desolatesky.item.handler;
 
+import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.category.ItemCategory;
 import net.desolatesky.item.handler.breaking.MiningLevel;
@@ -77,8 +78,8 @@ public class ItemHandler implements Keyed {
         return usedItem;
     }
 
-    public Duration calculateBreakTime(ItemStack usedItem, Block block) {
-        return this.breakTimeCalculator.calculateBreakTime(this, usedItem, block);
+    public Duration calculateBreakTime(DesolateSkyServer server, ItemStack usedItem, Block block) {
+        return this.breakTimeCalculator.calculateBreakTime(server, this, usedItem, block);
     }
 
     public @Unmodifiable Collection<ItemCategory> categories() {

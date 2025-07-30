@@ -1,15 +1,11 @@
 package net.desolatesky.instance.generator;
 
-import net.desolatesky.block.BlockBuilder;
 import net.desolatesky.block.BlockProperties;
-import net.desolatesky.block.BlockTags;
-import net.desolatesky.block.DSBlock;
-import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.DSBlocks;
-import net.desolatesky.block.handler.BlockHandlers;
+import net.desolatesky.block.entity.BlockEntities;
 import net.desolatesky.block.property.SlabType;
-import net.desolatesky.instance.team.TeamInstance;
 import net.desolatesky.instance.biome.Biomes;
+import net.desolatesky.instance.team.TeamInstance;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.generator.GenerationUnit;
@@ -29,31 +25,31 @@ public final class StartingIslandGenerator implements Generator {
     private Block southTrapdoor;
     private Block northTrapdoor;
 
-    public StartingIslandGenerator(BlockHandlers blocks, TeamInstance instance) {
+    public StartingIslandGenerator(BlockEntities blockEntities, TeamInstance instance) {
         this.instance = instance;
-        this.initializeBlocks(blocks);
+        this.initializeBlocks(blockEntities);
     }
 
-    private void initializeBlocks(BlockHandlers blockHandlers) {
-        this.bottomBlock = DSBlocks.UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB.createBuilder(blockHandlers)
+    private void initializeBlocks(BlockEntities blockEntities) {
+        this.bottomBlock = DSBlocks.UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB.createBuilder(blockEntities)
                 .property(BlockProperties.SLAB_TYPE, SlabType.TOP)
                 .build();
-        this.topTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
+        this.topTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockEntities)
                 .property(BlockProperties.OPEN, false)
                 .build();
-        this.westTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
+        this.westTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockEntities)
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.WEST)
                 .build();
-        this.eastTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
+        this.eastTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockEntities)
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.EAST)
                 .build();
-        this.southTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
+        this.southTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockEntities)
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.SOUTH)
                 .build();
-        this.northTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockHandlers)
+        this.northTrapdoor = DSBlocks.WAXED_EXPOSED_COPPER_TRAPDOOR.createBuilder(blockEntities)
                 .property(BlockProperties.OPEN, true)
                 .property(BlockProperties.FACING, Direction.NORTH)
                 .build();

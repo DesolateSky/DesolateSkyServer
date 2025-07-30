@@ -21,8 +21,8 @@ public class LootTableRegistry {
         return this.blockLoots.getOrDefault(key, defaultLootTable);
     }
 
-    protected void register(Key key, LootTable lootTable) {
-        this.blockLoots.put(key, lootTable);
+    protected void register(LootTable lootTable) {
+        this.blockLoots.put(lootTable.key(), lootTable);
     }
 
 }

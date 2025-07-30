@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,13 +23,11 @@ import java.util.Set;
 
 public final class BlockSettings implements Keyed {
 
+    public static final Duration UNBREAKABLE_BREAK_TIME = Duration.ofMillis(-1);
+
     private final Key key;
-    private final @Nullable Key lootTableKey;
-    /**
-     * Break time in milliseconds
-     */
-    private final int breakTime;
-    private final boolean stateless;
+    private final LootTable lootTable;
+    private final Duration breakTime;
     private final @Nullable Key blockItemKey;
     private final MiningLevel miningLevel;
     private final @Unmodifiable Set<Category> categories;
@@ -38,14 +37,10 @@ public final class BlockSettings implements Keyed {
     private final ItemStack menuItem;
     private final CompoundBinaryTag taggedSettings;
 
-    /**
-     * @param breakTime break time in milliseconds
-     */
-    public BlockSettings(Key key, @Nullable Key lootTableKey, int breakTime, boolean stateless, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
+    public BlockSettings(Key key, LootTable lootTable, Duration breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
         this.key = key;
-        this.lootTableKey = lootTableKey;
+        this.lootTable = lootTable;
         this.breakTime = breakTime;
-        this.stateless = stateless;
         this.blockItemKey = blockItemkey;
         this.miningLevel = miningLevel;
         this.categories = Set.copyOf(categories);
@@ -53,21 +48,24 @@ public final class BlockSettings implements Keyed {
         this.taggedSettings = taggedSettings;
     }
 
+    /**
+     * @param breakTime break time in milliseconds
+     */
+    public BlockSettings(Key key, LootTable lootTable, int breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
+        this(key, lootTable, Duration.ofMillis(breakTime), blockItemkey, miningLevel,categories, menuItem, taggedSettings);
+    }
+
     @Override
     public @NotNull Key key() {
         return this.key;
     }
 
-    public @Nullable Key lootTableKey() {
-        return this.lootTableKey;
+    public LootTable lootTable() {
+        return this.lootTable;
     }
 
-    public int breakTime() {
+    public Duration breakTime() {
         return this.breakTime;
-    }
-
-    public boolean stateless() {
-        return this.stateless;
     }
 
     public @Nullable Key blockItemKey() {
@@ -112,9 +110,8 @@ public final class BlockSettings implements Keyed {
     public static class Builder {
 
         private final Key key;
-        private @Nullable Key lootTableKey = null;
-        private int breakTime = 1_000;
-        private boolean stateless = false;
+        private LootTable lootTable = LootTable.EMPTY;
+        private Duration breakTime = UNBREAKABLE_BREAK_TIME;
         private @Nullable Key blockItemKey = null;
         private MiningLevel miningLevel = MiningLevels.NONE;
         private final Set<Category> categories = new HashSet<>();
@@ -126,27 +123,23 @@ public final class BlockSettings implements Keyed {
             this.menuItem = menuItem;
         }
 
-        public Builder lootTable(Key lootTableKey) {
-            this.lootTableKey = lootTableKey;
+        public Builder lootTable(LootTable lootTable) {
+            this.lootTable = lootTable;
             return this;
         }
 
+        /**
+         *
+         * @param breakTime in milliseconds
+         */
         public Builder breakTime(int breakTime) {
-            this.breakTime = breakTime;
+            this.breakTime = Duration.ofMillis(breakTime);
             return this;
         }
 
-        public Builder stateless(boolean stateless) {
-            this.stateless = stateless;
+        public Builder unbreakable() {
+            this.breakTime = UNBREAKABLE_BREAK_TIME;
             return this;
-        }
-
-        public Builder stateless() {
-            return this.stateless(true);
-        }
-
-        public Builder stateful() {
-            return this.stateless(false);
         }
 
         public Builder blockItem(@Nullable Key blockItemKey) {
@@ -180,7 +173,7 @@ public final class BlockSettings implements Keyed {
         }
 
         public BlockSettings build() {
-            return new BlockSettings(this.key, this.lootTableKey, this.breakTime, this.stateless, this.blockItemKey, this.miningLevel, this.categories, this.menuItem, this.taggedSettings.build());
+            return new BlockSettings(this.key, this.lootTable, this.breakTime, this.blockItemKey, this.miningLevel, this.categories, this.menuItem, this.taggedSettings.build());
         }
 
     }

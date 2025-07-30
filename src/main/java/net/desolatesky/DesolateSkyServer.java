@@ -6,8 +6,7 @@ import me.lucko.luckperms.minestom.CommandRegistry;
 import me.lucko.luckperms.minestom.LuckPermsMinestom;
 import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.DSBlocks;
-import net.desolatesky.block.handler.BlockHandlers;
-import net.desolatesky.block.loot.BlockLootRegistry;
+import net.desolatesky.block.entity.BlockEntities;
 import net.desolatesky.command.Commands;
 import net.desolatesky.command.console.ConsoleCommandHandler;
 import net.desolatesky.config.ConfigFile;
@@ -30,13 +29,11 @@ import net.desolatesky.item.loot.ItemLootRegistry;
 import net.desolatesky.menu.listener.MenuListener;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.pack.ResourcePackSettings;
-import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.DSPlayerManager;
 import net.desolatesky.player.database.PlayerDatabaseAccessor;
 import net.desolatesky.player.database.PlayerLoader;
 import net.desolatesky.player.listener.PlayerListener;
 import net.desolatesky.registry.DSRegistries;
-import net.desolatesky.team.IslandTeam;
 import net.desolatesky.team.IslandTeamManager;
 import net.desolatesky.team.database.IslandTeamDatabaseAccessor;
 import net.desolatesky.team.role.RolePermissionsRegistry;
@@ -45,7 +42,6 @@ import net.desolatesky.teleport.TeleportManager;
 import net.desolatesky.util.ResourceLoader;
 import net.luckperms.api.LuckPerms;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.extras.MojangAuth;
 import org.slf4j.Logger;
@@ -118,10 +114,6 @@ public final class DesolateSkyServer {
         return this.registries.itemRegistry();
     }
 
-    public BlockLootRegistry blockLootRegistry() {
-        return this.registries.blockLootRegistry();
-    }
-
     public ItemLootRegistry itemLootRegistry() {
         return this.registries.itemLootRegistry();
     }
@@ -138,8 +130,8 @@ public final class DesolateSkyServer {
         return this.blockRegistry().blocks();
     }
 
-    public BlockHandlers blockHandlers() {
-        return this.blockRegistry().blockHandlers();
+    public BlockEntities blockEntities() {
+        return this.blockRegistry().blockEntities();
     }
 
     public RolePermissionsRegistry teamPermissionsRegistry() {
@@ -245,7 +237,7 @@ public final class DesolateSkyServer {
 
     private void registerListeners() {
         final GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
-        InstanceListener.register(globalEventHandler);
+        new InstanceListener(this.blockRegistry(), this.itemRegistry()).register(globalEventHandler);
         EntityListener.register(globalEventHandler);
 
         final ConfigFile resourcePackConfig = ConfigFile.get(Path.of("resource-pack.conf"), "/resource-pack.conf");
@@ -289,18 +281,17 @@ public final class DesolateSkyServer {
     }
 
     private DSRegistries loadRegistries() {
-        final BlockLootRegistry blockLootRegistry = BlockLootRegistry.create();
-        final DSBlockRegistry blockRegistry = this.loadBlockRegistry(blockLootRegistry);
+        final DSBlockRegistry blockRegistry = this.loadBlockRegistry();
         final DSItemRegistry itemRegistry = DSItemRegistry.create(new HashMap<>());
         final ItemLootRegistry itemLootRegistry = ItemLootRegistry.create();
         final EntityLootRegistry entityLootRegistry = EntityLootRegistry.create();
-        return new DSRegistries(blockRegistry, itemRegistry, blockLootRegistry, itemLootRegistry, entityLootRegistry);
+        return new DSRegistries(blockRegistry, itemRegistry, itemLootRegistry, entityLootRegistry);
     }
 
-    private DSBlockRegistry loadBlockRegistry(BlockLootRegistry blockLootRegistry) {
-        final BlockHandlers blockHandlers = BlockHandlers.load(this, blockLootRegistry);
+    private DSBlockRegistry loadBlockRegistry() {
+        final BlockEntities blockEntities = BlockEntities.create(MinecraftServer.getBlockManager());
         final DSBlocks blocks = DSBlocks.load();
-        return DSBlockRegistry.create(new HashMap<>(), blockHandlers, blocks, blockLootRegistry);
+        return DSBlockRegistry.create(new HashMap<>(), blockEntities, blocks);
     }
 
     private static MongoConnection createMongoConnection() {

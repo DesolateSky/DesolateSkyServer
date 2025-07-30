@@ -5,6 +5,8 @@ import net.kyori.adventure.key.Key;
 
 public final class Namespace {
 
+    public static final Key EMPTY_KEY = key("empty");
+
     private Namespace() {
         throw new UnsupportedOperationException();
     }
@@ -40,7 +42,7 @@ public final class Namespace {
     }
 
     public static Key key(String key) {
-        final String[] parts = key.split(":");
+        final String[] parts = key.split(KEY_SEPARATOR);
         if (parts.length == 2) {
             return Key.key(parts[0], parts[1]);
         }

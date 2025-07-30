@@ -1,7 +1,5 @@
 package net.desolatesky.entity.type;
 
-import net.desolatesky.block.DSBlock;
-import net.desolatesky.block.handler.custom.SifterBlockHandler;
 import net.desolatesky.entity.DSEntity;
 import net.desolatesky.entity.EntityKey;
 import net.desolatesky.entity.EntityKeys;
@@ -24,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public final class SifterBlockEntity extends Entity implements DSEntity {
+public final class SifterBlockDisplayEntity extends Entity implements DSEntity {
 
     public static final int MAX_STAGE = 8;
 
@@ -33,11 +31,11 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
     private final Block block;
     private final Block displayBlock;
     private final Point sifterPosition;
-    private final SifterBlockHandler blockHandler;
+    private final net.desolatesky.block.entity.custom.SifterBlockEntity blockHandler;
     //    private int stage = 0;
     private Interaction interactionEntity;
 
-    public SifterBlockEntity(Block block, Block displayBlock, Point sifterPosition, SifterBlockHandler blockHandler) {
+    public SifterBlockDisplayEntity(Block block, Block displayBlock, Point sifterPosition, net.desolatesky.block.entity.custom.SifterBlockEntity blockHandler) {
         super(EntityType.BLOCK_DISPLAY);
         this.block = block;
         this.displayBlock = displayBlock;
@@ -46,7 +44,7 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
         this.setup();
     }
 
-    public SifterBlockEntity(Block block, Block displayBlock, Point sifterPosition, SifterBlockHandler blockHandler, UUID uuid) {
+    public SifterBlockDisplayEntity(Block block, Block displayBlock, Point sifterPosition, net.desolatesky.block.entity.custom.SifterBlockEntity blockHandler, UUID uuid) {
         super(EntityType.BLOCK_DISPLAY, uuid);
         this.block = block;
         this.displayBlock = displayBlock;
@@ -151,7 +149,7 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
 
         @Override
         public void update(long time) {
-            if (SifterBlockEntity.this.isRemoved()) {
+            if (SifterBlockDisplayEntity.this.isRemoved()) {
                 this.remove();
             }
         }
@@ -159,13 +157,13 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
         private void updateVerticalScale(int stage) {
             final InteractionMeta interactionMeta = (InteractionMeta) this.getEntityMeta();
             interactionMeta.setNotifyAboutChanges(false);
-            interactionMeta.setHeight(SifterBlockEntity.this.getVerticalScale(stage) + 0.2f);
+            interactionMeta.setHeight(SifterBlockDisplayEntity.this.getVerticalScale(stage) + 0.2f);
             interactionMeta.setNotifyAboutChanges(true);
         }
 
         @Override
         public DSInstance getDSInstance() {
-            return (DSInstance) SifterBlockEntity.this.getInstance();
+            return (DSInstance) SifterBlockDisplayEntity.this.getInstance();
         }
 
         @Override
@@ -173,7 +171,7 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
             if (!(clicker instanceof final DSPlayer player)) {
                 return;
             }
-            SifterBlockEntity.this.blockHandler.click(player, player.getDSInstance(), SifterBlockEntity.this.sifterPosition, true);
+            SifterBlockDisplayEntity.this.blockHandler.click(player, player.getDSInstance(), SifterBlockDisplayEntity.this.sifterPosition, true);
         }
 
         @Override
@@ -181,7 +179,7 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
             if (!(attacker instanceof final DSPlayer player)) {
                 return;
             }
-            SifterBlockEntity.this.blockHandler.click(player, player.getDSInstance(), SifterBlockEntity.this.sifterPosition, true);
+            SifterBlockDisplayEntity.this.blockHandler.click(player, player.getDSInstance(), SifterBlockDisplayEntity.this.sifterPosition, true);
         }
 
         @Override
@@ -191,7 +189,7 @@ public final class SifterBlockEntity extends Entity implements DSEntity {
 
         @Override
         public @NotNull EntityKey key() {
-            return SifterBlockEntity.this.key();
+            return SifterBlockDisplayEntity.this.key();
         }
 
     }

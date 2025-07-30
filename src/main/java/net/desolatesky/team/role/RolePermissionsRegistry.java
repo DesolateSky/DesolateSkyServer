@@ -109,7 +109,7 @@ public final class RolePermissionsRegistry {
         if (block == null) {
             return ItemStack.of(Material.BEDROCK).withCustomName(ComponentUtil.noItalics("Unknown Block: " + key.value()).color(NamedTextColor.RED));
         }
-        final DSBlockHandler handler = (DSBlockHandler) block.handler();
+        final DSBlockHandler handler = this.blockRegistry.getHandlerForBlock(block);
         if (handler == null) {
             return ItemStack.of(Material.BEDROCK).withCustomName(ComponentUtil.noItalics("Unknown Block: " + key.value()).color(NamedTextColor.RED));
         }

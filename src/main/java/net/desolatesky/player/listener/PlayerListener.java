@@ -5,7 +5,6 @@ import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.lobby.LobbyInstance;
-import net.desolatesky.item.DSItems;
 import net.desolatesky.listener.DSListener;
 import net.desolatesky.pack.ResourcePackSettings;
 import net.desolatesky.player.DSPlayer;
@@ -15,11 +14,9 @@ import net.desolatesky.util.Constants;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
@@ -34,13 +31,11 @@ import net.minestom.server.event.player.PlayerStartDiggingEvent;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.RecipeBookSettingsPacket;
 import net.minestom.server.ping.Status;
 import net.minestom.server.utils.identity.NamedAndIdentified;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.UUID;
 
 public final class PlayerListener implements DSListener {
@@ -146,9 +141,11 @@ public final class PlayerListener implements DSListener {
                         return;
                     }
                     if (!instance.canBreakBlock(player, event.getBlockPosition(), event.getBlock())) {
+                        player.sendMessage("Cannot break " + event.getBlock().key() + " here");
                         return;
                     }
                     final BreakingManager breakingManager = instance.breakingManager();
+                    player.sendMessage("Starting to break " + event.getBlock().key() + " has handler: " + this.server.blockRegistry().getHandlerForBlock(event.getBlock()));
                     breakingManager.startBreaking(player, event.getBlockPosition(), event.getBlock());
                 })
                 .addListener(PlayerCancelDiggingEvent.class, event -> pauseBreaking((DSPlayer) event.getPlayer(), event.getBlockPosition()))

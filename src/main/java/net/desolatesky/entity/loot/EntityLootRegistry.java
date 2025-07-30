@@ -15,6 +15,20 @@ import java.util.Map;
 
 public final class EntityLootRegistry extends LootTableRegistry {
 
+    public static final LootTable DEBRIS_ENTITY = LootTable.create(EntityKeys.DEBRIS_ENTITY.key(), Map.of(
+            DebrisEntity.LOOT_GENERATOR_TYPE,
+            ItemStackLootGenerator.create(
+                    DebrisEntity.LOOT_GENERATOR_TYPE,
+                    List.of(
+                            new ItemStackLoot(DSItems.DUST, 1, 2, 3),
+                            new ItemStackLoot(DSItems.PETRIFIED_STICK, 1, 2, 3),
+                            new ItemStackLoot(DSItems.FIBER, 1, 2, 3),
+                            new ItemStackLoot(DSItems.DEAD_LEAVES, 1, 2, 3)
+                    ),
+                    1,
+                    3
+            )));
+
     public static EntityLootRegistry create() {
         return new EntityLootRegistry(new HashMap<>());
     }
@@ -24,19 +38,7 @@ public final class EntityLootRegistry extends LootTableRegistry {
     }
 
     public void load() {
-        this.register(EntityKeys.DEBRIS_ENTITY.key(), LootTable.create(Map.of(
-                DebrisEntity.LOOT_GENERATOR_TYPE,
-                ItemStackLootGenerator.create(
-                        DebrisEntity.LOOT_GENERATOR_TYPE,
-                        List.of(
-                                new ItemStackLoot(DSItems.DUST, 1, 2, 3),
-                                new ItemStackLoot(DSItems.PETRIFIED_STICK, 1, 2, 3),
-                                new ItemStackLoot(DSItems.FIBER, 1, 2, 3),
-                                new ItemStackLoot(DSItems.DEAD_LEAVES, 1, 2, 3)
-                                ),
-                        1,
-                        3
-                ))));
+        this.register(DEBRIS_ENTITY);
     }
 
 }

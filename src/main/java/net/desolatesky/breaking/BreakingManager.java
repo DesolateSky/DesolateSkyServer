@@ -1,6 +1,7 @@
 package net.desolatesky.breaking;
 
-import net.desolatesky.block.BlockTags;
+import net.desolatesky.DesolateSkyServer;
+import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.player.DSPlayer;
@@ -10,7 +11,6 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.network.packet.server.play.BlockBreakAnimationPacket;
-import net.minestom.server.utils.Direction;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -23,11 +23,15 @@ public final class BreakingManager {
 
     private static final byte MAX_CRACK_PROGRESS = 10;
 
+    private final DesolateSkyServer server;
+    private final DSBlockRegistry blockRegistry;
     private final Map<UUID, BreakingData> breakingDataMap;
     private final AtomicInteger blockBreakId = new AtomicInteger(0);
 
-    public BreakingManager(Map<UUID, BreakingData> breakingDataMap) {
+    public BreakingManager(DesolateSkyServer server, Map<UUID, BreakingData> breakingDataMap, DSBlockRegistry blockRegistry) {
+        this.server = server;
         this.breakingDataMap = breakingDataMap;
+        this.blockRegistry = blockRegistry;
     }
 
     public void tick() {
@@ -57,11 +61,12 @@ public final class BreakingManager {
                 resetBreakProgress(instance, breakingData.id(), blockPos);
                 return true;
             }
-            if (!(block.handler() instanceof final DSBlockHandler blockHandler)) {
+            final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
+            if (blockHandler == null) {
                 resetBreakProgress(instance, breakingData.id(), blockPos);
                 return false;
             }
-            final Duration breakTime = blockHandler.calculateBlockBreakTime(player, block);
+            final Duration breakTime = blockHandler.calculateBlockBreakTime(this.server, player, block);
             if (breakTime == null || breakTime.isNegative()) {
                 resetBreakProgress(instance, breakingData.id(), blockPos);
                 return false;

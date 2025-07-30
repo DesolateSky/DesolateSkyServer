@@ -4,6 +4,7 @@ import net.desolatesky.crafting.CraftingManager;
 import net.desolatesky.crafting.recipe.CraftingRecipe;
 import net.desolatesky.crafting.recipe.RecipeType;
 import net.desolatesky.util.InventoryUtil;
+import net.desolatesky.util.Tags;
 import net.desolatesky.util.array.ShiftedArray;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.click.Click;
@@ -18,8 +19,8 @@ import java.util.function.Function;
 
 public final class CraftingHandler {
 
-    public static final Tag<CraftingRecipe.Result> CURRENT_OUTPUT_RESULT_TAG = Tag.Transient("current_output_result");
-    public static final Tag<CraftingRecipe> CURRENT_RECIPE_TAG = Tag.Transient("current_recipe");
+    public static final Tag<CraftingRecipe.Result> CURRENT_OUTPUT_RESULT_TAG = Tags.Transient("current_output_result");
+    public static final Tag<CraftingRecipe> CURRENT_RECIPE_TAG = Tags.Transient("current_recipe");
 
     private final AbstractInventory inventory;
     private final int inputStartSlot;

@@ -9,7 +9,7 @@ public class BlockBuilder {
 
     private Block current;
 
-    public static BlockBuilder from(Block block) {
+    public static BlockBuilder blockBuilder(Block block) {
         return new BlockBuilder(block);
     }
 

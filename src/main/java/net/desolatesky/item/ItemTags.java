@@ -1,6 +1,6 @@
 package net.desolatesky.item;
 
-import net.desolatesky.util.Namespace;
+import net.desolatesky.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.tag.Tag;
 
@@ -10,8 +10,8 @@ public final class ItemTags {
         throw new UnsupportedOperationException();
     }
 
-    public static final Tag<Key> ID = Tag.String("id").map(Namespace::key, Key::asString);
-    public static final Tag<Key> BLOCK_ID = Tag.String("block_id").map(Namespace::key, Key::asString);
-    public static final Tag<Double> COMPOSTER_VALUE = Tag.Double("composter_value");
+    public static final Tag<Key> ID = Tags.NamespaceKey("id");
+    public static final Tag<Key> BLOCK_ID = Tags.NamespaceKey("block_id");
+    public static final Tag<Double> COMPOSTER_VALUE = Tags.Double("composter_value");
 
 }
