@@ -2,30 +2,17 @@ package net.desolatesky.block.entity;
 
 import com.google.common.base.Preconditions;
 import net.desolatesky.DesolateSkyServer;
-import net.desolatesky.block.handler.InteractionResult;
 import net.desolatesky.block.handler.entity.BlockEntityHandler;
-import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
-import net.desolatesky.item.DSItemRegistry;
-import net.desolatesky.item.handler.ItemHandler;
-import net.desolatesky.item.handler.breaking.MiningLevel;
-import net.desolatesky.loot.table.LootTable;
-import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockHandler;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHandler {
@@ -47,10 +34,10 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
         if (!(placement.getInstance() instanceof final DSInstance instance)) {
             return;
         }
-        instance.addBlockEntity(placement.getBlockPosition());
         final boolean loaded = this.loaded.getAndSet(true);
         if (!loaded) {
             this.load(placement, instance);
+            instance.addBlockEntity(placement.getBlockPosition());
         }
 //        @SuppressWarnings("unchecked") final E entity = (E) this;
 //        if (placement instanceof final PlayerPlacement playerPlacement) {

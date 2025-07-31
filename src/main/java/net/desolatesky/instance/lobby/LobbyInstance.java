@@ -8,6 +8,7 @@ import net.desolatesky.instance.region.Region;
 import net.desolatesky.instance.weather.WeatherManager;
 import net.desolatesky.player.DSPlayer;
 import net.minestom.server.coordinate.BlockVec;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
@@ -84,7 +85,7 @@ public final class LobbyInstance extends DSInstance {
     }
 
     @Override
-    public boolean canBreakBlock(DSPlayer player, BlockVec pos, Block block) {
+    public boolean canBreakBlock(DSPlayer player, Point pos, Block block) {
         return false;
     }
 

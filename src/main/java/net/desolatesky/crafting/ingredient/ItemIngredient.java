@@ -4,6 +4,7 @@ import net.desolatesky.item.DSItem;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.item.category.ItemCategory;
+import net.desolatesky.item.handler.BasicItemHandler;
 import net.desolatesky.item.handler.ItemHandler;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.item.ItemStack;
@@ -16,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;

@@ -30,7 +30,7 @@ public final class CategoryBreakTimeCalculator implements BreakTimeCalculator {
             return BlockEntity.UNBREAKABLE_BREAK_TIME;
         }
         double breakTime = blockHandler.settings().breakTime().toMillis();
-        final MiningLevel miningLevel = itemHandler.miningLevel();
+        final MiningLevel miningLevel = itemHandler.getMiningLevelFor(block);
         if (!miningLevel.isAtLeast(blockHandler.miningLevel())) {
             return BlockEntity.UNBREAKABLE_BREAK_TIME;
         }

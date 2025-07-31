@@ -42,7 +42,7 @@ public interface Menu {
 
     enum ClickResult {
 
-        NONE,
+        CONTINUE,
         CANCEL
 
     }

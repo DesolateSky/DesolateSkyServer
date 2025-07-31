@@ -3,7 +3,10 @@ package net.desolatesky.crafting.menu.listener;
 import net.desolatesky.crafting.CraftingManager;
 import net.desolatesky.crafting.menu.CraftingHandler;
 import net.desolatesky.crafting.menu.CraftingMenu;
+import net.desolatesky.listener.DSEventHandler;
+import net.desolatesky.listener.DSEventHandlers;
 import net.desolatesky.listener.DSListener;
+import net.desolatesky.listener.EventHandlerResult;
 import net.desolatesky.util.InventoryUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
@@ -19,7 +22,7 @@ import net.minestom.server.inventory.TransactionOption;
 import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 
-public final class CraftingMenuListener implements DSListener {
+public final class CraftingMenuListener implements DSEventHandlers<InventoryEvent> {
 
     private final CraftingManager craftingManager;
 
@@ -28,56 +31,66 @@ public final class CraftingMenuListener implements DSListener {
     }
 
     @Override
-    public void register(EventNode<Event> node) {
-        node.addChild(this.craftingMenuClick())
-                .addChild(this.playerCraftingMenuClick());
+    public DSListener.Builder<Event> register(DSListener.Builder<Event> builder) {
+        return builder.handler(InventoryPreClickEvent.class, this.preClickEventHandler())
+                .handler(InventoryClickEvent.class, this.inventoryClickHandler());
     }
 
-    private EventNode<InventoryEvent> craftingMenuClick() {
-        return EventNode.type("crafting-menu-click", EventFilter.INVENTORY)
-                .addListener(InventoryPreClickEvent.class, event -> {
-                    final AbstractInventory eventInventory = event.getInventory();
-                    final PlayerInventory playerInventory = event.getPlayer().getInventory();
-                    final Click click = event.getClick();
-                    if (!(InventoryUtil.getClickedInventory(eventInventory, playerInventory, click) instanceof final CraftingMenu craftingMenu)) {
-                        return;
-                    }
-                    final boolean cancel = this.handlePreClick(event.getPlayer(), playerInventory, craftingMenu, craftingMenu.craftingHandler(), click);
-                    if (cancel) {
-                        event.setCancelled(true);
-                    }
-                })
-                .addListener(InventoryClickEvent.class, event -> {
-                    if (!(event.getInventory() instanceof CraftingMenu craftingMenu)) {
-                        return;
-                    }
-                    this.handleClick(event, craftingMenu.craftingHandler());
-                });
+    private DSEventHandler<InventoryPreClickEvent> preClickEventHandler() {
+        return event -> {
+            final AbstractInventory eventInventory = event.getInventory();
+            final PlayerInventory playerInventory = event.getPlayer().getInventory();
+            final Click click = event.getClick();
+            if (event.getInventory() instanceof final PlayerInventory eventPlayerInventory) {
+                return this.handlePlayerInventoryPreClick(event, eventPlayerInventory);
+            }
+            if (!(InventoryUtil.getClickedInventory(eventInventory, playerInventory, click) instanceof final CraftingMenu craftingMenu)) {
+                return EventHandlerResult.CONSUME_EVENT;
+            }
+            final boolean cancel = this.handlePreClick(event.getPlayer(), playerInventory, craftingMenu, craftingMenu.craftingHandler(), click);
+            if (cancel) {
+                event.setCancelled(true);
+                return EventHandlerResult.CONSUME_EVENT;
+            }
+            return EventHandlerResult.CONSUME_EVENT;
+        };
     }
 
-    private EventNode<InventoryEvent> playerCraftingMenuClick() {
-        return EventNode.type("player-crafting-menu-click", EventFilter.INVENTORY, (_, inventory) -> inventory instanceof PlayerInventory)
-                .addListener(InventoryPreClickEvent.class, event -> {
-                    final Player player = event.getPlayer();
-                    if (player.getOpenInventory() != null) {
-                        return;
-                    }
-                    final PlayerInventory playerInventory = (PlayerInventory) event.getInventory();
-                    final CraftingHandler craftingHandler = createPlayerInventoryCraftingHandler(playerInventory);
-                    final boolean cancel = this.handlePreClick(player, playerInventory, playerInventory, craftingHandler, event.getClick());
-                    if (cancel) {
-                        event.setCancelled(true);
-                    }
-                })
-                .addListener(InventoryClickEvent.class, event -> {
-                    final Player player = event.getPlayer();
-                    if (player.getOpenInventory() != null) {
-                        return;
-                    }
-                    final PlayerInventory playerInventory = (PlayerInventory) event.getInventory();
-                    final CraftingHandler craftingHandler = createPlayerInventoryCraftingHandler(playerInventory);
-                    this.handleClick(event, craftingHandler);
-                });
+    private DSEventHandler<InventoryClickEvent> inventoryClickHandler() {
+        return event -> {
+            if (event.getInventory() instanceof final PlayerInventory playerInventory) {
+                return this.handlePlayerInventoryClick(event, playerInventory);
+            }
+            if (!(event.getInventory() instanceof CraftingMenu craftingMenu)) {
+                return EventHandlerResult.CONSUME_EVENT;
+            }
+            this.handleClick(event, craftingMenu.craftingHandler());
+            return EventHandlerResult.CONSUME_EVENT;
+        };
+    }
+
+    private EventHandlerResult handlePlayerInventoryPreClick(InventoryPreClickEvent event, PlayerInventory playerInventory) {
+        final Player player = event.getPlayer();
+        if (player.getOpenInventory() != null) {
+            return EventHandlerResult.CONTINUE_LISTENING;
+        }
+        final CraftingHandler craftingHandler = createPlayerInventoryCraftingHandler(playerInventory);
+        final boolean cancel = this.handlePreClick(player, playerInventory, playerInventory, craftingHandler, event.getClick());
+        if (cancel) {
+            event.setCancelled(true);
+            return EventHandlerResult.CONSUME_EVENT;
+        }
+        return EventHandlerResult.CONSUME_EVENT;
+    }
+
+    private EventHandlerResult handlePlayerInventoryClick(InventoryClickEvent event, PlayerInventory playerInventory) {
+        final Player player = event.getPlayer();
+        if (player.getOpenInventory() != null) {
+            return EventHandlerResult.CONTINUE_LISTENING;
+        }
+        final CraftingHandler craftingHandler = createPlayerInventoryCraftingHandler(playerInventory);
+        this.handleClick(event, craftingHandler);
+        return EventHandlerResult.CONSUME_EVENT;
     }
 
     private static CraftingHandler createPlayerInventoryCraftingHandler(PlayerInventory playerInventory) {
@@ -92,7 +105,7 @@ public final class CraftingMenuListener implements DSListener {
             return false;
         }
         final ItemStack onCursor = playerInventory.getCursorItem();
-        if (!onCursor.isSimilar(craftingHandler.getOutputItem()) && !InventoryUtil.isShiftClick(click)) {
+        if (!onCursor.isSimilar(craftingHandler.getOutputItem()) && !onCursor.isAir() && !InventoryUtil.isShiftClick(click)) {
             return true;
         }
         craftingHandler.collectOutput(this.craftingManager, clickedInventory, click, input -> {

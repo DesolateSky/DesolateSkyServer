@@ -19,7 +19,7 @@ public enum RolePermissionType implements Keyed {
     USE_ITEM(ItemStack.of(Material.IRON_HOE)),
     INVITE_MEMBER(ItemStack.of(Material.PAPER)),
     KICK_MEMBER(ItemStack.of(Material.BARRIER)),
-    MANAGE_PERMISSIONS(ItemStack.of(Material.WRITABLE_BOOK))
+    MANAGE_PERMISSIONS(ItemStack.of(Material.WRITABLE_BOOK)),
 
     ;
 

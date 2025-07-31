@@ -4,7 +4,6 @@ import net.desolatesky.command.DSCommand;
 import net.desolatesky.item.DSItem;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.player.DSPlayer;
-import net.desolatesky.util.Namespace;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

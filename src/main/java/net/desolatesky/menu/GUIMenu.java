@@ -68,7 +68,7 @@ public class GUIMenu implements Menu {
             currentResult = this.click(player, click, this.defaultClickAction);
         }
         cancel = cancel || (currentResult != null && currentResult.cancel());
-        return cancel ? ClickResult.CANCEL : ClickResult.NONE;
+        return cancel ? ClickResult.CANCEL : ClickResult.CONTINUE;
     }
 
     private @Nullable ClickAction.Result click(DSPlayer player, Click click, @Nullable ClickAction clickAction) {

@@ -1,15 +1,12 @@
 package net.desolatesky.item;
 
 import net.desolatesky.block.BlockKeys;
-import net.desolatesky.item.handler.ItemHandler;
 import net.desolatesky.util.ComponentUtil;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
-import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -1,12 +1,14 @@
 package net.desolatesky.util;
 
+import net.minestom.server.coordinate.BlockVec;
+import net.minestom.server.coordinate.CoordConversion;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.instance.Chunk;
+import net.minestom.server.instance.Section;
 import org.joml.Quaterniond;
-import org.joml.Quaternionf;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.SequencedCollection;
 import java.util.random.RandomGenerator;
 
 public final class RandomUtil {
@@ -22,6 +24,17 @@ public final class RandomUtil {
         final float yaw = random.nextFloat() * 360.0f;
         final float pitch = random.nextFloat() * 360.0f;
         return new Pos(x, y, z, yaw, pitch);
+    }
+
+    public static BlockVec randomBlockPos(RandomGenerator generator, Section section, int chunkX, int sectionIndex, int chunkZ) {
+        final int dimension = section.blockPalette().dimension();
+        final int sectionX = generator.nextInt(dimension);
+        final int sectionY = generator.nextInt(dimension);
+        final int sectionZ = generator.nextInt(dimension);
+        final int x = chunkX * Chunk.CHUNK_SIZE_X + sectionX;
+        final int y = sectionIndex * Chunk.CHUNK_SECTION_SIZE + sectionY;
+        final int z = chunkZ * Chunk.CHUNK_SIZE_Z + sectionZ;
+        return new BlockVec(x, y, z);
     }
 
     public static Quaterniond randomRotation(RandomGenerator random) {

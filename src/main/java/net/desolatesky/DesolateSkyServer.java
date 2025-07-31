@@ -20,12 +20,15 @@ import net.desolatesky.database.MongoConnection;
 import net.desolatesky.database.MongoSettings;
 import net.desolatesky.entity.EntityListener;
 import net.desolatesky.entity.loot.EntityLootRegistry;
+import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.biome.Biomes;
-import net.desolatesky.instance.listener.InstanceListener;
 import net.desolatesky.item.DSItemRegistry;
-import net.desolatesky.item.listener.ItemListeners;
 import net.desolatesky.item.loot.ItemLootRegistry;
+import net.desolatesky.listener.DSListener;
+import net.desolatesky.listener.type.BlockInteractionListener;
+import net.desolatesky.listener.type.ItemInteractionListener;
+import net.desolatesky.listener.type.ProtectionListener;
 import net.desolatesky.menu.listener.MenuListener;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.pack.ResourcePackSettings;
@@ -42,6 +45,8 @@ import net.desolatesky.teleport.TeleportManager;
 import net.desolatesky.util.ResourceLoader;
 import net.luckperms.api.LuckPerms;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.event.Event;
+import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.extras.MojangAuth;
 import org.slf4j.Logger;
@@ -163,23 +168,21 @@ public final class DesolateSkyServer {
         this.stopped.set(true);
         this.databaseTimer.shutdownAndSave();
         MinecraftServer.getInstanceManager().getInstances().stream()
-                .map(instance -> instance.saveChunksToStorage()
-                        .thenApply(_ -> CompletableFuture.allOf(instance.saveChunksToStorage(), instance.saveInstance()))
-                )
+                .filter(DSInstance.class::isInstance)
+                .map(DSInstance.class::cast)
+                .map(DSInstance::save)
                 .forEach(CompletableFuture::join);
         LuckPermsMinestom.disable();
-        final Map<Thread, StackTraceElement[]> allThreads = Thread.getAllStackTraces();
-        LOGGER.info("Server shutdown complete.");
         MinecraftServer.stopCleanly();
-        LOGGER.info("Minecraft server stopping.");
-        try {
-            Thread.sleep(1000);
-            for (final Thread thread : allThreads.keySet()) {
-                LOGGER.info("Thread: {} | State: {}", thread.getName(), thread.getState());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            final Map<Thread, StackTraceElement[]> allThreads = Thread.getAllStackTraces();
+//            Thread.sleep(1000);
+//            for (final Thread thread : allThreads.keySet()) {
+//                LOGGER.info("Thread: {} | State: {}", thread.getName(), thread.getState());
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     private static void startServer(MinecraftServer minecraftServer) {
@@ -237,14 +240,18 @@ public final class DesolateSkyServer {
 
     private void registerListeners() {
         final GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
-        new InstanceListener(this.blockRegistry(), this.itemRegistry()).register(globalEventHandler);
-        EntityListener.register(globalEventHandler);
+        final DSListener.Builder<Event> listenerBuilder = DSListener.builder("desolate_sky", EventFilter.ALL);
+        new ProtectionListener().register(listenerBuilder);
+        new BlockInteractionListener(this.blockRegistry(), this.itemRegistry()).register(listenerBuilder);
+        new ItemInteractionListener(this.blockRegistry(), this.itemRegistry()).register(listenerBuilder);
+        new EntityListener().register(listenerBuilder);
 
         final ConfigFile resourcePackConfig = ConfigFile.get(Path.of("resource-pack.conf"), "/resource-pack.conf");
-        new PlayerListener(this, ResourcePackSettings.fromConfig(resourcePackConfig.rootNode()), loadFavicon()).register(globalEventHandler);
-        new ItemListeners(this.registries).register(globalEventHandler);
-        new CraftingMenuListener(this.craftingManager).register(globalEventHandler);
-        new MenuListener().register(globalEventHandler);
+        new PlayerListener(this, ResourcePackSettings.fromConfig(resourcePackConfig.rootNode()), loadFavicon()).register(listenerBuilder);
+        new CraftingMenuListener(this.craftingManager).register(listenerBuilder);
+        new MenuListener().register(listenerBuilder);
+
+        listenerBuilder.build().register(globalEventHandler);
     }
 
     private static byte[] loadFavicon() {

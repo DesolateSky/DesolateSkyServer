@@ -110,14 +110,12 @@ public final class SifterBlockDisplayEntity extends Entity implements DSEntity {
 
     @Override
     public CompletableFuture<Void> setInstance(@NotNull Instance instance, @NotNull Pos spawnPosition) {
-        this.interactionEntity.setInstance(instance, spawnPosition.add(0.5, 0, 0.5).add(TRANSLATION));
-        return super.setInstance(instance, spawnPosition);
+        return super.setInstance(instance, spawnPosition).thenRun(() -> this.interactionEntity.setInstance(instance, spawnPosition.add(0.5, 0, 0.5).add(TRANSLATION)).join());
     }
 
     @Override
     public CompletableFuture<Void> setInstance(@NotNull Instance instance, @NotNull Point spawnPosition) {
-        this.interactionEntity.setInstance(instance, spawnPosition.add(0.5, 0, 0.5).add(TRANSLATION));
-        return super.setInstance(instance, spawnPosition);
+        return this.setInstance(instance, spawnPosition.asPos());
     }
 
     @Override

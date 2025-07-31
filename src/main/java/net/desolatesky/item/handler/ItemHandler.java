@@ -5,8 +5,6 @@ import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.category.ItemCategory;
 import net.desolatesky.item.handler.breaking.MiningLevel;
 import net.desolatesky.item.handler.breaking.calculator.BreakTimeCalculator;
-import net.desolatesky.item.loot.ItemLootRegistry;
-import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -26,56 +24,46 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Set;
 
-public class ItemHandler implements Keyed {
+public abstract class ItemHandler implements Keyed {
 
     protected final Key key;
     protected final BreakTimeCalculator breakTimeCalculator;
     protected final @Unmodifiable Collection<ItemCategory> categories;
-    protected final MiningLevel miningLevel;
     private final CompoundBinaryTag tagData;
 
-    public ItemHandler(Key key, BreakTimeCalculator breakTimeCalculator, Collection<ItemCategory> categories, MiningLevel miningLevel, CompoundBinaryTag tagData) {
+    public ItemHandler(Key key, BreakTimeCalculator breakTimeCalculator, Collection<ItemCategory> categories, CompoundBinaryTag tagData) {
         this.key = key;
         this.breakTimeCalculator = breakTimeCalculator;
         this.categories = Set.copyOf(categories);
-        this.miningLevel = miningLevel;
         this.tagData = tagData;
     }
 
-    public ItemHandler(Key key, BreakTimeCalculator breakTimeCalculator, Collection<ItemCategory> categories, MiningLevel miningLevel, CompoundBinaryTag.Builder tagData) {
-        this.key = key;
-        this.breakTimeCalculator = breakTimeCalculator;
-        this.categories = Set.copyOf(categories);
-        this.miningLevel = miningLevel;
-        this.tagData = tagData.build();
+    public ItemHandler(Key key, BreakTimeCalculator breakTimeCalculator, Collection<ItemCategory> categories) {
+        this(key, breakTimeCalculator, categories, CompoundBinaryTag.empty());
     }
 
-    public ItemHandler(Key key, BreakTimeCalculator breakTimeCalculator, Collection<ItemCategory> categories, MiningLevel miningLevel) {
-        this(key, breakTimeCalculator, categories, miningLevel, CompoundBinaryTag.empty());
+    public ItemInteractionResult onInteractBlock(DSPlayer player, DSInstance instance, ItemStack usedItem, PlayerHand hand, Point blockPoint, Block block, Point cursorPosition, BlockFace blockFace) {
+        return ItemInteractionResult.passthrough(usedItem);
     }
 
-    public ItemStack onInteractBlock(DSPlayer player, DSInstance instance, ItemStack usedItem, PlayerHand hand, Point blockPoint, Block block, Point cursorPosition, BlockFace blockFace) {
-        return usedItem;
+    public ItemInteractionResult onInteractEntity(DSPlayer player, DSInstance instance, ItemStack usedItem, Entity interacted) {
+        return ItemInteractionResult.passthrough(usedItem);
     }
 
-    public ItemStack onInteractEntity(DSPlayer player, DSInstance instance, ItemStack usedItem, Entity interacted) {
-        return usedItem;
+    public ItemInteractionResult onInteractAir(DSPlayer player, DSInstance instance, ItemStack usedItem) {
+        return ItemInteractionResult.passthrough(usedItem);
     }
 
-    public ItemStack onInteractAir(DSPlayer player, DSInstance instance, ItemStack usedItem) {
-        return usedItem;
+    public ItemInteractionResult onPunchBlock(DSPlayer player, DSInstance instance, ItemStack usedItem, Block block, Point blockPoint) {
+        return ItemInteractionResult.passthrough(usedItem);
     }
 
-    public ItemStack onPunchBlock(DSPlayer player, DSInstance instance, ItemStack usedItem, Point blockPoint, Block block) {
-        return usedItem;
+    public ItemInteractionResult onPunchAir(DSPlayer player, DSInstance instance, ItemStack usedItem) {
+        return ItemInteractionResult.passthrough(usedItem);
     }
 
-    public ItemStack onPunchAir(DSPlayer player, DSInstance instance, ItemStack usedItem) {
-        return usedItem;
-    }
-
-    public ItemStack onPunchEntity(DSPlayer player, DSInstance instance, ItemStack usedItem, Entity interacted) {
-        return usedItem;
+    public ItemInteractionResult onPunchEntity(DSPlayer player, DSInstance instance, ItemStack usedItem, Entity interacted) {
+        return ItemInteractionResult.passthrough(usedItem);
     }
 
     public Duration calculateBreakTime(DesolateSkyServer server, ItemStack usedItem, Block block) {
@@ -90,9 +78,7 @@ public class ItemHandler implements Keyed {
         return this.categories.contains(category);
     }
 
-    public MiningLevel miningLevel() {
-        return this.miningLevel;
-    }
+    public abstract MiningLevel getMiningLevelFor(Block block);
 
     @Override
     public @NotNull Key key() {

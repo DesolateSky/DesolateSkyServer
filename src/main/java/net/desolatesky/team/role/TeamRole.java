@@ -70,8 +70,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
     }
 
     public boolean togglePermission(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return false;
@@ -83,8 +83,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
     }
 
     public void setSetting(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, RolePermissionSetting setting) {
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return;
@@ -96,8 +96,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
     }
 
     public void toggleSetting(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return;
@@ -109,8 +109,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
     }
 
     public void addValue(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, Key value) {
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return;
@@ -122,8 +122,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
     }
 
     public void removeValue(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, Key value) {
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return;
@@ -135,8 +135,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
     }
 
     public void setEnabled(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type, boolean enabled) {
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return;
@@ -151,8 +151,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
      * @return the new enabled state after toggling
      */
     public boolean toggle(MessageHandler messageHandler, IslandTeam team, DSPlayer player, RolePermissionType type) {
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             if (!this.hasManagePermissionsPermission(team, player, type)) {
                 sendNoPermissionMessage(messageHandler, player);
                 return false;
@@ -164,8 +164,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
     }
 
     public boolean hasPermission(RolePermissionType type, Key value) {
+        this.lock.readLock().lock();
         try {
-            this.lock.readLock().lock();
             return this.permissions.hasPermission(type, value);
         } finally {
             this.lock.readLock().unlock();
@@ -173,8 +173,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
     }
 
     public boolean hasTogglePermission(RolePermissionType type) {
+        this.lock.readLock().lock();
         try {
-            this.lock.readLock().lock();
             return this.permissions.hasTogglePermission(type);
         } finally {
             this.lock.readLock().unlock();
@@ -183,8 +183,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
 
     @Unmodifiable
     public Map<RolePermissionType, RolePermission> getPermissions() {
+        this.lock.readLock().lock();
         try {
-            this.lock.readLock().lock();
             return Map.copyOf(this.permissions.getPermissions());
         } finally {
             this.lock.readLock().unlock();
@@ -235,8 +235,8 @@ public final class TeamRole implements Saveable<TeamRole.SaveData> {
 
     @Override
     public SaveData createSnapshot() {
+        this.lock.readLock().lock();
         try {
-            this.lock.readLock().lock();
             return new SaveData(this.id, this.permissions.createSnapshot(), this.displayName, this.priority);
         } finally {
             this.lock.readLock().unlock();

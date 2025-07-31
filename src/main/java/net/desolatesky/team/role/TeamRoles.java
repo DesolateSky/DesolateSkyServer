@@ -84,8 +84,8 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
     }
 
     public @UnknownNullability TeamRole getRole(String id) {
+        this.lock.readLock().lock();
         try {
-            this.lock.readLock().lock();
             return this.roles.get(id);
         } finally {
             this.lock.readLock().unlock();
@@ -93,8 +93,8 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
     }
 
     public void addRole(TeamRole role) {
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             this.roles.put(role.id(), role);
         } finally {
             this.lock.writeLock().unlock();
@@ -161,8 +161,8 @@ public final class TeamRoles implements Saveable<TeamRoles.SaveData> {
 
     @Override
     public SaveData createSnapshot() {
+        this.lock.readLock().lock();
         try {
-            this.lock.readLock().lock();
             final Map<String, TeamRole.SaveData> rolesData = new HashMap<>();
             for (final Map.Entry<String, TeamRole> entry : this.roles.entrySet()) {
                 final String roleId = entry.getKey();

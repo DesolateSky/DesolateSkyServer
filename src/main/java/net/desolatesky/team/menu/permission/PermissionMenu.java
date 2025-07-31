@@ -93,7 +93,6 @@ public final class PermissionMenu extends PaginatedMenu {
 
     private static ClickAction createPermissionClickAction(MessageHandler messageHandler, IslandTeam team, TeamRole role, RolePermissionType type) {
         return clickData -> {
-            clickData.player().sendMessage("Clicked permission: " + type.name());
             final RolePermissions permissions = role.permissions();
             final RolePermission permission = permissions.getPermission(type);
             if (permission == null) {
@@ -112,8 +111,6 @@ public final class PermissionMenu extends PaginatedMenu {
                 return ClickAction.Result.CANCEL;
             }
             if (permission.definition().isTogglePermission()) {
-                final boolean toggled = role.togglePermission(messageHandler, team, player, type);
-                player.sendMessage("New state: " + (toggled ? "Enabled" : "Disabled"));
                 clickData.menu().refresh(clickData.slot());
                 return ClickAction.Result.CANCEL;
             }

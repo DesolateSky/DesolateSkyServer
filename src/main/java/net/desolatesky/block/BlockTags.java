@@ -12,5 +12,6 @@ public final class BlockTags {
 
     public static final Tag<Key> ID = Tags.NamespaceKey("block_id");
     public static final Tag<Double> COMPOSTER_LEVEL = Tags.Double("composter_level");
+    public static final Tag<Key> STRIPS_TO = Tags.NamespaceKey("strips_to");
 
 }

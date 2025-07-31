@@ -5,7 +5,10 @@ import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.lobby.LobbyInstance;
+import net.desolatesky.listener.DSEventHandler;
+import net.desolatesky.listener.DSEventHandlers;
 import net.desolatesky.listener.DSListener;
+import net.desolatesky.listener.EventHandlerResult;
 import net.desolatesky.pack.ResourcePackSettings;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.database.PlayerData;
@@ -20,7 +23,6 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
-import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerCancelDiggingEvent;
 import net.minestom.server.event.player.PlayerDisconnectEvent;
@@ -38,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-public final class PlayerListener implements DSListener {
+public final class PlayerListener implements DSEventHandlers<Event> {
 
     private final DesolateSkyServer server;
     private final ResourcePackSettings resourcePackSettings;
@@ -51,127 +53,99 @@ public final class PlayerListener implements DSListener {
     }
 
     @Override
-    public void register(EventNode<Event> root) {
-        root.addChild(
-                EventNode.all("instance-listener")
-                        .addChild(this.playerJoinNode())
-                        .addChild(this.playerDisconnectNode())
-                        .addChild(this.playerDigNode())
-                        .addChild(this.playerMoveNode())
-                        .addChild(this.serverListPingNode())
-        );
-    }
-
-    private EventNode<PlayerEvent> playerJoinNode() {
-        return EventNode.type("player-join", EventFilter.PLAYER, (event, player) -> player instanceof DSPlayer)
-                .addListener(AsyncPlayerConfigurationEvent.class, event -> {
-                    final DSInstanceManager instanceManager = this.server.instanceManager();
-                    final DSPlayer player = (DSPlayer) event.getPlayer();
-                    this.applyResourcePack(player);
-                    final PlayerData playerData = player.playerData();
-                    final Pos logoutPosition = playerData.lastLogoutPos();
-                    final UUID logoutInstanceId = playerData.lastLogoutInstanceId();
-                    final LobbyInstance lobbyInstance = instanceManager.lobbyInstance();
-                    player.setRespawnPoint(lobbyInstance.getDefaultSpawnPoint().pos());
-                    if (logoutPosition == null || logoutInstanceId == null) {
-                        event.setSpawningInstance(lobbyInstance);
-                        return;
-                    }
-                    final IslandTeam islandTeam = this.server.islandTeamManager().getOrLoadTeam(player);
-                    final Instance instance = instanceManager.getOrLoadInstance(logoutInstanceId, islandTeam);
-                    if (!(instance instanceof final DSInstance dsInstance)) {
-                        event.setSpawningInstance(lobbyInstance);
-                        return;
-                    }
-                    dsInstance.setPlayerSpawnPoint(player, logoutPosition);
-                    event.setSpawningInstance(instance);
-                })
-                .addListener(PlayerLoadedEvent.class, event -> {
-                    final DSPlayer player = (DSPlayer) event.getPlayer();
-                    player.setAllowFlying(true);
-                    player.setFlying(true);
-                    final RecipeBookSettingsPacket settingsPacket = new RecipeBookSettingsPacket(true, true, true, true, true, true, true, true);
-                    player.sendPacket(settingsPacket);
-                    player.refreshRecipes();
-                })
-                .addListener(ItemDropEvent.class, event -> event.setCancelled(true));
-    }
-
-    private EventNode<Event> serverListPingNode() {
-        return EventNode.type("server-list-ping", EventFilter.ALL)
-                .addListener(ServerListPingEvent.class, event -> {
-                    final int onlinePlayers = MinecraftServer.getConnectionManager().getOnlinePlayerCount();
-                    event.setStatus(Status.builder()
-                            .description(
-                                    Component.text("Desolate Sky (Very Early Beta!)").color(Constants.PRIMARY_COLOR)
-                                            .appendNewline()
-                                            .append(Component.text("Join now to help with testing! (Use /discord)"))
-                            )
-                            .favicon(this.favicon)
-                            .playerInfo(Status.PlayerInfo.builder()
-                                    .onlinePlayers(onlinePlayers)
-                                    .maxPlayers(50)
-                                    .sample(
-                                            MinecraftServer.getConnectionManager().getOnlinePlayers()
-                                                    .stream()
-                                                    .filter(p -> p.getSettings().allowServerListings())
-                                                    .sorted((p1, p2) -> p1.getUsername().compareToIgnoreCase(p2.getUsername()))
-                                                    .map(p -> (NamedAndIdentified) p)
-                                                    .toList()
-                                    ).build())
-                            .build());
-                });
-    }
-
-    private EventNode<PlayerEvent> playerDisconnectNode() {
-        return EventNode.type("player-disconnect", EventFilter.PLAYER, (_, player) -> player instanceof DSPlayer)
-                .addListener(PlayerDisconnectEvent.class, event -> {
-                    final DSPlayer player = (DSPlayer) event.getPlayer();
-                    this.server.instanceManager().handlePlayerLeaver(player);
-                    this.server.playerManager().forceSave(player);
-                });
-    }
-
-    private EventNode<PlayerEvent> playerDigNode() {
-        return EventNode.type("player-dig", EventFilter.PLAYER, (_, player) -> player instanceof DSPlayer)
-                .addListener(PlayerStartDiggingEvent.class, event -> {
-                    final DSPlayer player = (DSPlayer) event.getPlayer();
-                    final DSInstance instance = player.getDSInstance();
-                    if (instance == null) {
-                        return;
-                    }
-                    if (!instance.canBreakBlock(player, event.getBlockPosition(), event.getBlock())) {
-                        player.sendMessage("Cannot break " + event.getBlock().key() + " here");
-                        return;
-                    }
-                    final BreakingManager breakingManager = instance.breakingManager();
-                    player.sendMessage("Starting to break " + event.getBlock().key() + " has handler: " + this.server.blockRegistry().getHandlerForBlock(event.getBlock()));
-                    breakingManager.startBreaking(player, event.getBlockPosition(), event.getBlock());
-                })
-                .addListener(PlayerCancelDiggingEvent.class, event -> pauseBreaking((DSPlayer) event.getPlayer(), event.getBlockPosition()))
-                .addListener(PlayerFinishDiggingEvent.class, event -> pauseBreaking((DSPlayer) event.getPlayer(), event.getBlockPosition()));
-    }
-
-    private EventNode<PlayerEvent> playerMoveNode() {
-        return EventNode.type("player-move", EventFilter.PLAYER, (_, player) -> player instanceof DSPlayer)
-                .addListener(PlayerMoveEvent.class, event -> {
-                    final DSPlayer player = (DSPlayer) event.getPlayer();
-                    final DSInstance instance = player.getDSInstance();
-                    if (player.getPosition().y() < -64) {
-                        player.teleport(instance.getSpawnPointFor(player));
-                    }
-                });
+    public DSListener.Builder<Event> register(DSListener.Builder<Event> builder) {
+        return builder.handler(AsyncPlayerConfigurationEvent.class, playerConfigurationEventHandler())
+                .handler(PlayerLoadedEvent.class, this.playerLoadedEventHandler())
+                .handler(ServerListPingEvent.class, this.serverListPingHandler())
+                .handler(PlayerDisconnectEvent.class, this.playerDisconnectHandler())
+                .handler(PlayerMoveEvent.class, this.playerMoveHandler());
     }
 
 
-    private static void pauseBreaking(DSPlayer player, BlockVec pos) {
-        final DSInstance instance = player.getDSInstance();
-        if (instance == null) {
-            return;
-        }
-        final BreakingManager breakingManager = instance.breakingManager();
-        breakingManager.pauseBreaking(player, pos);
+    private DSEventHandler<AsyncPlayerConfigurationEvent> playerConfigurationEventHandler() {
+        return event -> {
+            final DSInstanceManager instanceManager = this.server.instanceManager();
+            final DSPlayer player = (DSPlayer) event.getPlayer();
+            this.applyResourcePack(player);
+            final PlayerData playerData = player.playerData();
+            final Pos logoutPosition = playerData.lastLogoutPos();
+            final UUID logoutInstanceId = playerData.lastLogoutInstanceId();
+            final LobbyInstance lobbyInstance = instanceManager.lobbyInstance();
+            player.setRespawnPoint(lobbyInstance.getDefaultSpawnPoint().pos());
+            if (logoutPosition == null || logoutInstanceId == null) {
+                event.setSpawningInstance(lobbyInstance);
+                return EventHandlerResult.CONTINUE_LISTENING;
+            }
+            final IslandTeam islandTeam = this.server.islandTeamManager().getOrLoadTeam(player);
+            final Instance instance = instanceManager.getOrLoadInstance(logoutInstanceId, islandTeam);
+            if (!(instance instanceof final DSInstance dsInstance)) {
+                event.setSpawningInstance(lobbyInstance);
+                return EventHandlerResult.CONTINUE_LISTENING;
+            }
+            dsInstance.setPlayerSpawnPoint(player, logoutPosition);
+            event.setSpawningInstance(instance);
+            return EventHandlerResult.CONTINUE_LISTENING;
+        };
     }
+
+    private DSEventHandler<PlayerLoadedEvent> playerLoadedEventHandler() {
+        return event -> {
+            final DSPlayer player = (DSPlayer) event.getPlayer();
+            player.setAllowFlying(true);
+            player.setFlying(true);
+            final RecipeBookSettingsPacket settingsPacket = new RecipeBookSettingsPacket(true, true, true, true, true, true, true, true);
+            player.sendPacket(settingsPacket);
+            player.refreshRecipes();
+            return EventHandlerResult.CONTINUE_LISTENING;
+        };
+    }
+
+    private DSEventHandler<ServerListPingEvent> serverListPingHandler() {
+        return event -> {
+            final int onlinePlayers = MinecraftServer.getConnectionManager().getOnlinePlayerCount();
+            event.setStatus(Status.builder()
+                    .description(
+                            Component.text("Desolate Sky (Very Early Beta!)").color(Constants.PRIMARY_COLOR)
+                                    .appendNewline()
+                                    .append(Component.text("Join now to help with testing! (Use /discord)"))
+                    )
+                    .favicon(this.favicon)
+                    .playerInfo(Status.PlayerInfo.builder()
+                            .onlinePlayers(onlinePlayers)
+                            .maxPlayers(50)
+                            .sample(
+                                    MinecraftServer.getConnectionManager().getOnlinePlayers()
+                                            .stream()
+                                            .filter(p -> p.getSettings().allowServerListings())
+                                            .sorted((p1, p2) -> p1.getUsername().compareToIgnoreCase(p2.getUsername()))
+                                            .map(p -> (NamedAndIdentified) p)
+                                            .toList()
+                            ).build())
+                    .build());
+            return EventHandlerResult.CONTINUE_LISTENING;
+        };
+    }
+
+    private DSEventHandler<PlayerDisconnectEvent> playerDisconnectHandler() {
+        return event -> {
+            final DSPlayer player = (DSPlayer) event.getPlayer();
+            this.server.instanceManager().handlePlayerLeaver(player);
+            this.server.playerManager().forceSave(player);
+            return EventHandlerResult.CONTINUE_LISTENING;
+        };
+    }
+
+    private DSEventHandler<PlayerMoveEvent> playerMoveHandler() {
+        return event -> {
+            final DSPlayer player = (DSPlayer) event.getPlayer();
+            final DSInstance instance = player.getDSInstance();
+            if (player.getPosition().y() < -64) {
+                player.teleport(instance.getSpawnPointFor(player));
+            }
+            return EventHandlerResult.CONTINUE_LISTENING;
+        };
+    }
+
 
     private void applyResourcePack(DSPlayer player) {
         final ResourcePackRequest request = ResourcePackRequest.resourcePackRequest()

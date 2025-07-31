@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation("net.minestom:minestom:2025.07.27-1.21.8")
+    implementation("net.minestom:minestom:2025.07.30-1.21.8")
     implementation("com.zaxxer:HikariCP:6.3.0")
     implementation("org.xerial:sqlite-jdbc:3.50.2.0")
     implementation("dev.hollowcube:schem:1.3.1")

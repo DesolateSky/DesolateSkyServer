@@ -81,8 +81,9 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
 
     private void spawnEntity(DSInstance instance, Point position) {
         this.entity = new SifterBlockDisplayEntity(this.siftingBlock, this.siftingBlock, position, this);
-        this.entity.setInstance(instance, position.add(0, 1, 0));
-        this.entity.setStage(this.stage);
+        this.entity.setInstance(instance, position.add(0, 1, 0)).thenRun(() -> {
+            this.entity.setStage(this.stage);
+        });
     }
 
     public InteractionResult click(DSPlayer player, DSInstance instance, Point blockPosition, boolean clickNearby) {
@@ -128,8 +129,8 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
             return InteractionResult.PASSTHROUGH;
         }
         this.siftingBlock = block;
-        this.spawnEntity(instance, blockPosition);
         this.addStage();
+        this.spawnEntity(instance, blockPosition);
         this.lastClick = Instant.now();
         player.setItemInMainHand(itemStack.consume(1));
         if (clickNearby) {

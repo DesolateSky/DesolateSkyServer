@@ -105,30 +105,40 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public boolean hasPermission(DSPlayer player, RolePermissionType type, Key value) {
-        final PlayerIslandData data = this.playerData.get(player.getUuid());
-        final TeamRole role;
-        if (data == null) {
-            role = this.teamRoles.getRole(TeamRoles.VISITOR_ID);
-        } else {
-            role = this.teamRoles.getRole(data.roleId());
+        this.lock.readLock().lock();
+        try {
+            final PlayerIslandData data = this.playerData.get(player.getUuid());
+            final TeamRole role;
+            if (data == null) {
+                role = this.teamRoles.getRole(TeamRoles.VISITOR_ID);
+            } else {
+                role = this.teamRoles.getRole(data.roleId());
+            }
+            return role.hasPermission(type, value);
+        } finally {
+            this.lock.readLock().unlock();
         }
-        return role.hasPermission(type, value);
     }
 
     public boolean hasTogglePermission(DSPlayer player, RolePermissionType type) {
-        final PlayerIslandData data = this.playerData.get(player.getUuid());
-        final TeamRole role;
-        if (data == null) {
-            role = this.teamRoles.getRole(TeamRoles.VISITOR_ID);
-        } else {
-            role = this.teamRoles.getRole(data.roleId());
+        this.lock.readLock().lock();
+        try {
+            final PlayerIslandData data = this.playerData.get(player.getUuid());
+            final TeamRole role;
+            if (data == null) {
+                role = this.teamRoles.getRole(TeamRoles.VISITOR_ID);
+            } else {
+                role = this.teamRoles.getRole(data.roleId());
+            }
+            return role.hasTogglePermission(type);
+        } finally {
+            this.lock.readLock().unlock();
         }
-        return role.hasTogglePermission(type);
     }
 
     public void invite(MessageHandler messageHandler, DSPlayer inviter, DSPlayer toAdd) {
+        this.lock.readLock().lock();
         try {
-            this.lock.readLock().lock();
             if (!this.hasTogglePermission(inviter, RolePermissionType.INVITE_MEMBER)) {
                 messageHandler.sendMessage(inviter, Messages.ISLAND_PERMISSION_DENIED);
                 return;
@@ -144,8 +154,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
         } finally {
             this.lock.readLock().unlock();
         }
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             this.inviteManager.addInvite(inviter.profile(), toAdd.profile(), this.name);
             messageHandler.sendMessage(inviter, Messages.INVITE_SENT, Map.of("player", toAdd.getName()));
             messageHandler.sendMessage(toAdd, Messages.INVITE_RECEIVED, Map.of("player", inviter.getName(), "island", this.name));
@@ -156,8 +166,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
 
     void acceptInvite(MessageHandler messageHandler, DSPlayer player, Runnable onSuccess) {
         final UUID inviteId = player.getUuid();
+        this.lock.readLock().lock();
         try {
-            this.lock.readLock().lock();
             if (!this.inviteManager.isInvited(inviteId)) {
                 messageHandler.sendMessage(player, Messages.INVITE_NOT_FOUND, Map.of("island", this.name));
                 return;
@@ -174,8 +184,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
         } finally {
             this.lock.readLock().unlock();
         }
+        this.lock.writeLock().lock();
         try {
-            this.lock.writeLock().lock();
             final TeamRole role = this.teamRoles.getRole(TeamRoles.MEMBER_ID);
             this.playerData.put(player.getUuid(), new PlayerIslandData(this.id, player.getUuid(), Instant.now(), role.id()));
             this.inviteManager.removeInvite(inviteId);
@@ -189,8 +199,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
 
     void leave(MessageHandler messageHandler, DSPlayer player, Runnable onSuccess) {
         final UUID playerId = player.getUuid();
-        try {
             this.lock.readLock().lock();
+        try {
             if (!this.playerData.containsKey(playerId)) {
                 messageHandler.sendMessage(player, Messages.NOT_ISLAND_MEMBER, Map.of("island", this.name));
                 return;
@@ -202,8 +212,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
         } finally {
             this.lock.readLock().unlock();
         }
-        try {
             this.lock.writeLock().lock();
+        try {
             this.playerData.remove(playerId);
             DSPlayer.acquireAndSync(player, p -> p.setIslandId(null));
             messageHandler.sendMessage(player, Messages.LEFT_ISLAND, Map.of("island", this.name));
@@ -214,8 +224,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public TeamRole getRole(DSPlayer player) {
-        try {
             this.lock.readLock().lock();
+        try {
             final PlayerIslandData data = this.playerData.get(player.getUuid());
             if (data == null) {
                 return this.teamRoles.getRole(TeamRoles.VISITOR_ID);
@@ -239,8 +249,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public @UnmodifiableView Map<UUID, PlayerIslandData> playerData() {
-        try {
             this.lock.readLock().lock();
+        try {
             return Map.copyOf(this.playerData);
         } finally {
             this.lock.readLock().unlock();
@@ -248,8 +258,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public boolean isOwner(DSPlayer player) {
-        try {
             this.lock.readLock().lock();
+        try {
             final UUID playerId = player.getUuid();
             final PlayerIslandData data = this.playerData.get(playerId);
             return data != null && data.roleId().equals(TeamRoles.OWNER_ID);
@@ -259,8 +269,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public UUID getOwnerId() {
-        try {
             this.lock.readLock().lock();
+        try {
             return this.playerData.entrySet()
                     .stream()
                     .filter(entry -> entry.getValue().roleId().equals(TeamRoles.OWNER_ID))
@@ -273,8 +283,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public boolean isMember(DSPlayer player) {
-        try {
             this.lock.readLock().lock();
+        try {
             return this.isMember(player.getUuid());
         } finally {
             this.lock.readLock().unlock();
@@ -282,8 +292,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public boolean isMember(UUID playerId) {
-        try {
             this.lock.readLock().lock();
+        try {
             final PlayerIslandData data = this.playerData.get(playerId);
             return data != null && !data.roleId().equals(TeamRoles.VISITOR_ID);
         } finally {
@@ -292,17 +302,17 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public @UnmodifiableView Map<UUID, PlayerIslandData> getPlayerData() {
-        try {
             this.lock.readLock().lock();
-        return Map.copyOf(this.playerData);
+        try {
+            return Map.copyOf(this.playerData);
         } finally {
             this.lock.readLock().unlock();
         }
     }
 
     public int getMemberCount() {
-        try {
             this.lock.readLock().lock();
+        try {
             return (int) this.playerData.values()
                     .stream()
                     .filter(data -> !data.roleId().equals(TeamRoles.VISITOR_ID))
@@ -313,8 +323,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public int getOnlinePlayersCount() {
-        try {
             this.lock.readLock().lock();
+        try {
             return (int) this.playerData.keySet()
                     .stream()
                     .map(id -> MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(id))
@@ -336,8 +346,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
 
     @Override
     public SaveData createSnapshot() {
-        try {
             this.lock.readLock().lock();
+        try {
             final Map<UUID, PlayerIslandData.SaveData> playerDataSnapshot = this.playerData.entrySet()
                     .stream()
                     .collect(Collectors.toMap(
@@ -357,8 +367,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public State state() {
-        try {
             this.lock.readLock().lock();
+        try {
             return this.state;
         } finally {
             this.lock.readLock().unlock();
@@ -366,8 +376,8 @@ public class IslandTeam implements Team, Saveable<IslandTeam.SaveData> {
     }
 
     public void setState(State state) {
-        try {
             this.lock.writeLock().lock();
+        try {
             if (this.state == State.DELETED) {
                 LOGGER.warn("Attempted to set state of deleted island team {} to {}", this.id, state);
                 return;

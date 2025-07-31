@@ -1,6 +1,5 @@
 package net.desolatesky.instance;
 
-import net.desolatesky.block.DSBlock;
 import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.weather.WeatherManager;
@@ -20,12 +19,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.random.RandomGenerator;
@@ -34,8 +36,9 @@ public abstract class DSInstance extends InstanceContainer {
 
     protected final Path worldFilePath;
     protected final Map<UUID, InstancePoint<Pos>> playerSpawnPoints = new HashMap<>();
-    protected final Set<Point> blockEntities = new HashSet<>();
-    protected final ReadWriteLock blockEntityLock = new ReentrantReadWriteLock();
+    protected final Set<Point> blockEntities = Collections.newSetFromMap(new ConcurrentHashMap<>());
+
+    private final ReadWriteLock blockEntityLock = new ReentrantReadWriteLock();
 
     public DSInstance(@NotNull UUID uuid, Path worldFilePath, @NotNull RegistryKey<DimensionType> dimensionType) {
         super(uuid, dimensionType);
@@ -78,7 +81,7 @@ public abstract class DSInstance extends InstanceContainer {
 
     public abstract BreakingManager breakingManager();
 
-    public abstract boolean canBreakBlock(DSPlayer player, BlockVec pos, Block block);
+    public abstract boolean canBreakBlock(DSPlayer player, Point pos, Block block);
 
     public abstract WeatherManager weatherManager();
 
@@ -95,7 +98,14 @@ public abstract class DSInstance extends InstanceContainer {
     public final CompletableFuture<Void> save() {
         return CompletableFuture.runAsync(() -> {
             this.onSave();
-            for (final Point point : this.blockEntities) {
+            this.blockEntityLock.readLock().lock();
+            final Collection<Point> blockEntitiesCopy = new HashSet<>();
+            try {
+                blockEntitiesCopy.addAll(this.blockEntities);
+            } finally {
+                this.blockEntityLock.readLock().unlock();
+            }
+            for (final Point point : blockEntitiesCopy) {
                 final Block block = this.getBlock(point);
                 if (!(block.handler() instanceof final BlockEntity<?> handler)) {
                     continue;
@@ -107,12 +117,15 @@ public abstract class DSInstance extends InstanceContainer {
             }
             this.saveInstance().join();
             this.saveChunksToStorage().join();
+        }).exceptionally(error -> {
+            error.printStackTrace();
+            return null;
         });
     }
 
     public void addBlockEntity(Point point) {
+        this.blockEntityLock.writeLock().lock();
         try {
-            this.blockEntityLock.writeLock().lock();
             this.blockEntities.add(point);
         } finally {
             this.blockEntityLock.writeLock().unlock();
@@ -120,8 +133,8 @@ public abstract class DSInstance extends InstanceContainer {
     }
 
     public void removeBlockEntity(Point point) {
+        this.blockEntityLock.writeLock().lock();
         try {
-            this.blockEntityLock.writeLock().lock();
             this.blockEntities.remove(point);
         } finally {
             this.blockEntityLock.writeLock().unlock();

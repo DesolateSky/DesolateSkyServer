@@ -6,6 +6,7 @@ import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.DSItemRegistry;
+import net.desolatesky.item.handler.BasicItemHandler;
 import net.desolatesky.item.handler.ItemHandler;
 import net.desolatesky.item.handler.breaking.MiningLevel;
 import net.desolatesky.loot.table.LootTable;
@@ -35,7 +36,6 @@ public class DSBlockHandler implements Keyed {
 
     public DSBlockHandler(BlockSettings blockSettings) {
         this.settings = blockSettings;
-        System.out.println("Creating block handler for " + this.getClass().getName() + " with settings: " + blockSettings);
     }
 
     public DSBlockHandler(BlockSettings.Builder blockSettings) {
