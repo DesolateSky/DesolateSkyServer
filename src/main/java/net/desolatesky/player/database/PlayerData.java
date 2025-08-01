@@ -1,11 +1,12 @@
 package net.desolatesky.player.database;
 
-import com.google.gson.JsonParser;
 import net.desolatesky.cooldown.CooldownConfig;
 import net.desolatesky.cooldown.PlayerCooldowns;
 import net.desolatesky.database.MongoCodec;
 import net.desolatesky.database.codec.InstantCodec;
 import net.desolatesky.player.DSPlayer;
+import net.kyori.adventure.nbt.CompoundBinaryTag;
+import net.kyori.adventure.nbt.TagStringIO;
 import net.minestom.server.codec.Transcoder;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.inventory.PlayerInventory;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +34,15 @@ public final class PlayerData {
 
             final ItemStack[] itemStacks = input.savedInventory;
             final List<String> result = Arrays.stream(itemStacks)
-                    .map(itemStack -> ItemStack.CODEC.encode(Transcoder.JSON, itemStack).orElseThrow().toString())
+                    .map(itemStack -> ItemStack.CODEC.encode(Transcoder.NBT, itemStack).orElseThrow())
+                    .map(tag -> {
+                        try {
+                            return TagStringIO.tagStringIO().asString(tag);
+                        } catch (IOException e) {
+                            LoggerFactory.getLogger(PlayerData.class).error("Failed to encode item stack to string", e);
+                            return "";
+                        }
+                    })
                     .toList();
             document.append("inventory", result);
 
@@ -62,7 +72,15 @@ public final class PlayerData {
             final ItemStack[] savedInventory;
             if (inventoryJson != null) {
                 savedInventory = inventoryJson.stream()
-                        .map(json -> ItemStack.CODEC.decode(Transcoder.JSON, JsonParser.parseString(json)).orElseThrow())
+                        .map(nbt -> {
+                            try {
+                                return TagStringIO.tagStringIO().asTag(nbt);
+                            } catch (IOException e) {
+                                LoggerFactory.getLogger(PlayerData.class).error("Failed to decode item stack from string", e);
+                                return CompoundBinaryTag.empty();
+                            }
+                        })
+                        .map(nbt -> ItemStack.CODEC.decode(Transcoder.NBT, nbt).orElseThrow())
                         .toArray(ItemStack[]::new);
             } else {
                 savedInventory = new PlayerInventory().getItemStacks();
