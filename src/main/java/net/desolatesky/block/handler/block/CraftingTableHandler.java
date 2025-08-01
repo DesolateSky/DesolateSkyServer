@@ -1,7 +1,7 @@
 package net.desolatesky.block.handler.block;
 
+import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.handler.InteractionResult;
 import net.desolatesky.block.settings.DSBlockSettings;
 import net.desolatesky.crafting.menu.CraftingMenu;
 import net.desolatesky.instance.DSInstance;
@@ -18,13 +18,13 @@ public class CraftingTableHandler extends DSBlockHandler {
     }
 
     @Override
-    public InteractionResult onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
+    public BlockHandlerResult onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
         if (player.isSneaking()) {
-            return InteractionResult.PASSTHROUGH;
+            return BlockHandlerResult.PASS_THROUGH;
         }
         final CraftingMenu craftingMenu = new CraftingMenu();
         player.openInventory(craftingMenu);
-        return InteractionResult.CONSUME_INTERACTION;
+        return BlockHandlerResult.CONSUME_CANCEL;
     }
 
 }

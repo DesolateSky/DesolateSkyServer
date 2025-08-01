@@ -34,7 +34,7 @@ public final class DebrisCatcherBlockEntity extends TransientBlockEntity<DebrisC
     private long tickNum = 0;
 
     public DebrisCatcherBlockEntity(DesolateSkyServer server) {
-        super(server, HANDLER);
+        super(BlockKeys.COMPOSTER, server);
     }
 
     private static void collectDebris(Point point, DSInstance instance) {

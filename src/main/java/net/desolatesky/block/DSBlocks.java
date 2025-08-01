@@ -3,6 +3,7 @@ package net.desolatesky.block;
 import net.desolatesky.block.entity.custom.ComposterBlockEntity;
 import net.desolatesky.block.entity.custom.DebrisCatcherBlockEntity;
 import net.desolatesky.block.entity.custom.SifterBlockEntity;
+import net.desolatesky.block.entity.custom.crop.CropBlockEntity;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.handler.block.CraftingTableHandler;
 import net.desolatesky.block.handler.block.TrapDoorHandler;
@@ -32,6 +33,7 @@ public final class DSBlocks {
     public static final DSBlock WAXED_EXPOSED_COPPER_TRAPDOOR = create(Block.WAXED_EXPOSED_COPPER_TRAPDOOR, new TrapDoorHandler(DSBlockSettings.WAXED_EXPOSED_COPPER_TRAPDOOR));
     public static final DSBlock DIRT = create(Block.DIRT, DSBlockSettings.DIRT);
     public static final DSBlock CRAFTING_TABLE = create(Block.CRAFTING_TABLE, new CraftingTableHandler());
+    public static final DSBlock WHEAT = create(Block.WHEAT, CropBlockEntity.createHandler(DSBlockSettings.WHEAT));
 
     public static final DSBlock PETRIFIED_PLANKS = create(BlockKeys.PETRIFIED_PLANKS, Block.PALE_OAK_PLANKS, DSBlockSettings.PETRIFIED_PLANKS);
     public static final DSBlock PETRIFIED_SLAB = create(BlockKeys.PETRIFIED_SLAB, Block.PALE_OAK_SLAB, DSBlockSettings.PETRIFIED_SLAB);

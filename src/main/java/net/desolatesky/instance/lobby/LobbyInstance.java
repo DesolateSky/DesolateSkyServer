@@ -27,6 +27,7 @@ public final class LobbyInstance extends DSInstance {
 
     public static LobbyInstance createLobby(DesolateSkyServer server, UUID uuid, Path worldFolderPath, Pos spawnPoint, Region region) {
         final Path worldPath = worldFolderPath.resolve("world");
+        System.out.println("World exists: " + worldPath.toFile().exists());
         final LobbyInstance lobbyInstance = new LobbyInstance(server, uuid, worldPath, spawnPoint, region);
         lobbyInstance.load();
         return lobbyInstance;
@@ -41,13 +42,12 @@ public final class LobbyInstance extends DSInstance {
     private final WeatherManager weatherManager;
 
     private LobbyInstance(DesolateSkyServer server, UUID uuid, Path worldPath, Pos spawnPoint, Region region) {
-        super(uuid, worldPath, DimensionType.OVERWORLD);
+        super(uuid, worldPath, DimensionType.OVERWORLD, new AnvilLoader(worldPath));
         this.breakingManager = new BreakingManager(server, new HashMap<>(), server.blockRegistry());
         this.worldPath = worldPath;
         this.spawnPoint = new InstancePoint<>(this, spawnPoint);
         this.region = region;
         this.weatherManager = new WeatherManager(server.entityLootRegistry(), this, this.randomSource);
-        this.setChunkLoader(new AnvilLoader(worldPath));
         this.setGenerator(unit -> unit.modifier().fillBiome(Biome.THE_VOID));
     }
 

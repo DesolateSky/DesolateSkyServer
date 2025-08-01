@@ -14,7 +14,7 @@ public interface BreakTimeCalculator {
 
     Duration calculateBreakTime(DesolateSkyServer server, ItemHandler itemHandler, ItemStack usedItem, Block block);
 
-    BreakTimeCalculator BLOCK_TIME = (server, _, _, block) -> {
+    BreakTimeCalculator BLOCK_TIME = (server, unused, unused2, block) -> {
         final DSBlockHandler blockHandler = server.blockRegistry().getHandlerForBlock(block);
         if (blockHandler == null) {
             return BlockEntity.UNBREAKABLE_BREAK_TIME;

@@ -132,7 +132,7 @@ public final class DSInstanceManager {
         if (teamInstance != null) {
             teamInstance.onLeave(player);
             if (MinecraftServer.getConnectionManager().getOnlinePlayers().stream().noneMatch(p -> islandId.equals(((DSPlayer) p).islandId()) && !p.equals(player))) {
-                teamInstance.save().whenComplete((_, _) -> MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
+                teamInstance.save().whenComplete((unused, unused2) -> MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
                     if (!teamInstance.getPlayers().isEmpty()) {
                         return;
                     }

@@ -35,25 +35,25 @@ public final class IslandCommand extends Command {
         this.instanceManager = server.instanceManager();
         this.teleportManager = server.teleportManager();
 
-        this.setCondition((sender, _) -> sender instanceof DSPlayer);
+        this.setCondition((sender, unused) -> sender instanceof DSPlayer);
 
         this.addSyntax(
-                (sender, _) -> this.createIsland((DSPlayer) sender),
+                (sender, unused) -> this.createIsland((DSPlayer) sender),
                 ArgumentType.Literal("create")
         );
 
         this.addSyntax(
-                (sender, _) -> this.goToIsland((DSPlayer) sender),
+                (sender, unused) -> this.goToIsland((DSPlayer) sender),
                 ArgumentType.Literal("go")
         );
 
         this.addSyntax(
-                (sender, _) -> this.deleteIsland((DSPlayer) sender),
+                (sender, unused) -> this.deleteIsland((DSPlayer) sender),
                 ArgumentType.Literal("delete")
         );
 
         this.addSyntax(
-                (sender, _) -> this.permissions((DSPlayer) sender),
+                (sender, unused) -> this.permissions((DSPlayer) sender),
                 ArgumentType.Literal("permissions")
         );
 
@@ -61,7 +61,7 @@ public final class IslandCommand extends Command {
                 .singleEntity(true)
                 .onlyPlayers(true);
         this.addConditionalSyntax(
-                (sender, _) -> ((DSPlayer) sender).hasIsland(),
+                (sender, unused) -> ((DSPlayer) sender).hasIsland(),
                 (sender, context) -> this.invite((DSPlayer) sender, context, inviteTargetArgument),
                 ArgumentType.Literal("invite"),
                 inviteTargetArgument
@@ -75,7 +75,7 @@ public final class IslandCommand extends Command {
         );
 
         this.addSyntax(
-                (sender, _) -> this.leaveIsland((DSPlayer) sender),
+                (sender, unused) -> this.leaveIsland((DSPlayer) sender),
                 ArgumentType.Literal("leave")
         );
     }

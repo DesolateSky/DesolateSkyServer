@@ -73,6 +73,10 @@ public final class Tags {
         return Tag.NBT(key);
     }
 
+    public static @NotNull <E extends Enum<E>> Tag<E> Enum(@NotNull String key, @NotNull Class<E> enumClass) {
+        return Tag.String(key).map(name -> Enum.valueOf(enumClass, name), E::name);
+    }
+
     public static <T> @NotNull Tag<T> Structure(@NotNull String key, @NotNull TagSerializer<T> serializer) {
         return Tag.Structure(key, serializer);
     }

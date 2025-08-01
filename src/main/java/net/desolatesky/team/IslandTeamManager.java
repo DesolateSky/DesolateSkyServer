@@ -127,7 +127,7 @@ public final class IslandTeamManager {
 
     public CompletableFuture<IslandCreationResult> createTeam(DSPlayer owner, String name) {
         final AtomicBoolean cooldown = new AtomicBoolean(true);
-        DSPlayer.acquireAndSync(owner, _ -> {
+        DSPlayer.acquireAndSync(owner, unused -> {
             if (owner.cooldowns().isOnCooldown(Cooldowns.ISLAND_CREATION)) {
                 this.server.messageHandler().sendMessage(owner, Messages.ISLAND_CREATE_COOLDOWN, Map.of("cooldown", TextUtil.formatDuration(owner.cooldowns().getCooldownTime(Cooldowns.ISLAND_CREATION))));
                 cooldown.set(true);
@@ -173,7 +173,7 @@ public final class IslandTeamManager {
         messageHandler.sendMessage(player, Messages.DELETING_ISLAND);
         final UUID islandId = team.id();
         this.database.delete(islandId, team)
-                .thenAccept(_ -> {
+                .thenAccept(unused -> {
                     this.teams.invalidate(islandId);
                     player.acquirable().sync(p -> {
                         player.getInventory().clear();

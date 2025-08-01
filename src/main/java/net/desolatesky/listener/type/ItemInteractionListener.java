@@ -1,8 +1,8 @@
 package net.desolatesky.listener.type;
 
 import net.desolatesky.block.DSBlockRegistry;
+import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.handler.InteractionResult;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.DSItemRegistry;
@@ -68,7 +68,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
                 return EventHandlerResult.CONTINUE_LISTENING;
             }
             final Point placementPosition = event.getBlockPosition();
-            final InteractionResult result = blockHandler.onPlayerInteract(
+            final BlockHandlerResult result = blockHandler.onPlayerInteract(
                     player,
                     player.getDSInstance(),
                     block,
@@ -77,14 +77,12 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
                     event.getBlockFace(),
                     event.getCursorPosition()
             );
-            return switch (result) {
-                case PASSTHROUGH -> EventHandlerResult.CONTINUE_LISTENING;
-                case CONSUME_INTERACTION -> {
-                    event.setBlockingItemUse(true);
-                    event.setCancelled(true);
-                    yield EventHandlerResult.CONSUME_EVENT;
-                }
-            };
+            if (result.cancelEvent()) {
+                event.setCancelled(true);
+                event.setBlockingItemUse(true);
+            }
+            player.sendMessage("Result: " + result + " " + result.toEventHandlerResult());
+            return result.toEventHandlerResult();
         };
     }
 
@@ -98,7 +96,8 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             final Block clickedBlock = instance.getBlock(clickedPoint);
             final Point cursor = new Vec(0);
             if (blockId != null) {
-                if (this.tryPlaceBlock(player, instance, event.getHand(), itemStack, clickedPoint, clickedBlock, cursor, event.getBlockFace(), blockId)) {
+                final EventHandlerResult result = this.tryPlaceBlock(player, instance, event.getHand(), itemStack, clickedPoint, clickedBlock, cursor, event.getBlockFace(), blockId);
+                if (result.consumes()) {
                     return EventHandlerResult.CONSUME_EVENT;
                 }
                 return EventHandlerResult.CONTINUE_LISTENING;
@@ -254,7 +253,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
         breakingManager.pauseBreaking(player, pos);
     }
 
-    private boolean tryPlaceBlock(
+    private EventHandlerResult tryPlaceBlock(
             DSPlayer player,
             DSInstance instance,
             PlayerHand hand,
@@ -267,13 +266,12 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
     ) {
         final Block block = this.blockRegistry.create(blockId);
         if (block == null) {
-            return false;
+            return EventHandlerResult.CONTINUE_LISTENING;
         }
         final Point placePoint = clickedBlock.registry().isReplaceable() ? clickedPoint : clickedPoint.add(blockFace.toDirection().vec());
-        instance.setBlock(placePoint, block, true);
         final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
         if (blockHandler != null) {
-            blockHandler.onPlayerPlace(
+            final BlockHandlerResult.Place result = blockHandler.onPlayerPlace(
                     player,
                     instance,
                     block,
@@ -282,9 +280,17 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
                     blockFace,
                     cursor
             );
+            if (result.cancelEvent()) {
+                player.setItemInMainHand(itemStack);
+                return result.toEventHandlerResult();
+            } else {
+                instance.setBlock(placePoint, result.resultBlock(), true);
+            }
+        } else {
+            instance.setBlock(placePoint, block, true);
         }
         player.setItemInMainHand(itemStack.consume(1));
-        return true;
+        return EventHandlerResult.CONSUME_EVENT;
     }
 
 

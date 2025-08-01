@@ -2,7 +2,6 @@ package net.desolatesky.block.settings;
 
 import net.desolatesky.block.BlockKeys;
 import net.desolatesky.block.category.BlockCategories;
-import net.desolatesky.block.entity.custom.ComposterBlockEntity;
 import net.desolatesky.block.entity.custom.SifterBlockEntity;
 import net.desolatesky.item.DSItems;
 import net.desolatesky.item.ItemKeys;
@@ -30,13 +29,15 @@ public final class DSBlockSettings {
             .blockItem(ItemKeys.DUST_BLOCK).breakTime(500).build();
 
     public static final BlockSettings CRAFTING_TABLE = builder(Block.CRAFTING_TABLE).breakTime(PLANKS_BREAK_TIME).blockItem(ItemKeys.CRAFTING_TABLE).categories(BlockCategories.AXE_MINEABLE).build();
-    public static final BlockSettings DIRT = builder(Block.DIRT).breakTime(1_000).blockItem(ItemKeys.DIRT).categories(BlockCategories.SHOVEL_MINEABLE, BlockCategories.DIRT).build();
+    public static final BlockSettings DIRT = builder(Block.DIRT).breakTime(1_000).blockItem(ItemKeys.DIRT).categories(BlockCategories.SHOVEL_MINEABLE, BlockCategories.DIRT, BlockCategories.CROP_GROWABLE).build();
     public static final BlockSettings PETRIFIED_PLANKS = builder(Block.PALE_OAK_PLANKS).breakTime(PLANKS_BREAK_TIME).blockItem(ItemKeys.PETRIFIED_PLANKS).categories(BlockCategories.AXE_MINEABLE, BlockCategories.PLANKS).build();
     public static final BlockSettings PETRIFIED_SLAB = builder(Block.PALE_OAK_SLAB).breakTime(PLANKS_BREAK_TIME).blockItem(ItemKeys.PETRIFIED_SLAB).categories(BlockCategories.AXE_MINEABLE, BlockCategories.WOODEN_SLABS).build();
+    public static final BlockSettings WHEAT = builder(Block.WHEAT).breakTime(200).blockItem(ItemKeys.WHEAT_SEEDS).categories(BlockCategories.CROP).build();
 
     public static final BlockSettings WAXED_EXPOSED_COPPER_TRAPDOOR = trapdoor(Block.WAXED_EXPOSED_COPPER_TRAPDOOR).blockItem(ItemKeys.WAXED_EXPOSED_COPPER_TRAPDOOR).build();
     public static final BlockSettings WAXED_EXPOSED_CUT_COPPER_SLAB = builder(Block.WAXED_EXPOSED_CUT_COPPER_SLAB).breakTime(1_000).blockItem(ItemKeys.WAXED_EXPOSED_CUT_COPPER_SLAB).build();
     public static final BlockSettings UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB = builder(Block.WAXED_EXPOSED_CUT_COPPER_SLAB).unbreakable().blockItem(ItemKeys.WAXED_EXPOSED_CUT_COPPER_SLAB).build();
+
 
     private static BlockSettings.Builder trapdoor(Block block) {
         return BlockSettings.builder(block.key(), block.registry().material()).breakTime(1_000);

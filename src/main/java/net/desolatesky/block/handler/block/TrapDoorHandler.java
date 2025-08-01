@@ -1,8 +1,8 @@
 package net.desolatesky.block.handler.block;
 
 import net.desolatesky.block.BlockProperties;
+import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.handler.InteractionResult;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.instance.DSInstance;
 import net.minestom.server.coordinate.Point;
@@ -18,13 +18,13 @@ public class TrapDoorHandler extends DSBlockHandler {
     }
 
     @Override
-    public InteractionResult onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
+    public BlockHandlerResult onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
         if (player.isSneaking() && player.getItemInMainHand().material().isBlock()) {
-            return InteractionResult.PASSTHROUGH;
+            return BlockHandlerResult.PASS_THROUGH;
         }
         final Boolean open = BlockProperties.OPEN.get(block);
         if (open == null) {
-            return InteractionResult.PASSTHROUGH;
+            return BlockHandlerResult.PASS_THROUGH;
         }
         final Block newBlock;
         if (open) {
@@ -33,7 +33,8 @@ public class TrapDoorHandler extends DSBlockHandler {
             newBlock = BlockProperties.OPEN.set(block, true);
         }
         instance.setBlock(blockPosition, newBlock);
-        return InteractionResult.CONSUME_INTERACTION;
+        player.sendMessage("New trap door state: " + newBlock.getProperty(BlockProperties.OPEN.name()));
+        return BlockHandlerResult.CONSUME;
     }
 
 }

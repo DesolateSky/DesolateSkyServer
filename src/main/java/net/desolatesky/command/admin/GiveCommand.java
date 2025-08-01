@@ -25,7 +25,7 @@ public final class GiveCommand extends DSCommand {
         final ArgumentEntity playerArgument = new ArgumentEntity("player")
                 .onlyPlayers(true)
                 .singleEntity(true);
-        final Argument<String> argument = ArgumentType.ResourceLocation("item").setSuggestionCallback((_, context, callback) -> {
+        final Argument<String> argument = ArgumentType.ResourceLocation("item").setSuggestionCallback((unused, context, callback) -> {
             final String itemName = context.get("item");
             itemRegistry.getItems().values()
                     .stream()
@@ -57,7 +57,7 @@ public final class GiveCommand extends DSCommand {
 
     @Override
     public CommandCondition getCondition() {
-        return (sender, _) -> sender instanceof DSPlayer;
+        return (sender, unused) -> sender instanceof DSPlayer;
     }
 
 }

@@ -41,7 +41,7 @@ import java.util.random.RandomGenerator;
 public final class TeamInstance extends DSInstance {
 
     // blocks to random tick per section
-    private final int blocksToRandomTick = 3;
+    private final int blocksToRandomTick = 100;
 
     private static final Pos initialSpawnPoint = new Pos(0.5, 64, 0.5);
     private final RandomGenerator randomSource = new SplittableRandom();
@@ -85,7 +85,7 @@ public final class TeamInstance extends DSInstance {
     public CompletableFuture<Void> unload() {
         this.tickTask.cancel();
         return this.save()
-                .whenComplete((_, error) -> {
+                .whenComplete((unused, error) -> {
                     if (error != null) {
                         error.printStackTrace();
                     }

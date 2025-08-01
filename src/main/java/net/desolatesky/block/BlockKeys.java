@@ -20,6 +20,7 @@ public final class BlockKeys {
     public static final Key CRAFTING_TABLE = key(Block.CRAFTING_TABLE);
     public static final Key WAXED_EXPOSED_COPPER_TRAPDOOR = key(Block.WAXED_EXPOSED_COPPER_TRAPDOOR);
     public static final Key DIRT = key(Block.DIRT);
+    public static final Key WHEAT = key(Block.WHEAT);
 
 
     private static Key key(Block block) {

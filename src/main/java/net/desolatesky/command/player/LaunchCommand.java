@@ -14,14 +14,14 @@ public final class LaunchCommand extends Command {
         super("launch");
         this.messageHandler = messageHandler;
 
-        this.setCondition(((sender, _) -> {
+        this.setCondition(((sender, unused) -> {
             if (sender instanceof DSPlayer player) {
                 return !player.hasIsland();
             }
             return false;
         }));
 
-        this.setDefaultExecutor((sender, _) -> {
+        this.setDefaultExecutor((sender, unused) -> {
             if (sender instanceof DSPlayer player) {
                 this.launch(player);
             }

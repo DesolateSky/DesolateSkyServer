@@ -2,7 +2,7 @@ package net.desolatesky.menu.action;
 
 public interface ClickAction {
 
-    ClickAction CANCEL = _ -> Result.CANCEL;
+    ClickAction CANCEL = unused -> Result.CANCEL;
 
     Result onClick(ClickData data);
 

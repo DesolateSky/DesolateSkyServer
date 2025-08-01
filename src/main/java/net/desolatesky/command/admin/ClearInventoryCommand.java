@@ -12,9 +12,9 @@ public final class ClearInventoryCommand extends Command {
     public ClearInventoryCommand() {
         super("clearinventory");
 
-        this.setCondition((sender, _) -> sender instanceof DSPlayer player && player.hasPermission(PERMISSION));
+        this.setCondition((sender, unused) -> sender instanceof DSPlayer player && player.hasPermission(PERMISSION));
 
-        this.setDefaultExecutor((sender, _) -> {
+        this.setDefaultExecutor((sender, unused) -> {
             final DSPlayer player = (DSPlayer) sender;
             player.getInventory().clear();
             sender.sendMessage(Component.text("Cleared your inventory...").color(NamedTextColor.RED));

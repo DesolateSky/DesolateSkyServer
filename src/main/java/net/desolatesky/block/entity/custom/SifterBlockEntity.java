@@ -6,8 +6,8 @@ import net.desolatesky.block.DSBlock;
 import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.entity.BlockEntities;
 import net.desolatesky.block.entity.BlockEntity;
+import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.handler.InteractionResult;
 import net.desolatesky.block.handler.entity.BlockEntityHandler;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.entity.type.SifterBlockDisplayEntity;
@@ -66,7 +66,7 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
     private Block siftingBlock;
 
     public SifterBlockEntity(DesolateSkyServer server) {
-        super(server, HANDLER);
+        super(BlockKeys.SIFTER, server);
         this.blockRegistry = server.blockRegistry();
         this.blockEntities = server.blockEntities();
     }
@@ -86,17 +86,17 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
         });
     }
 
-    public InteractionResult click(DSPlayer player, DSInstance instance, Point blockPosition, boolean clickNearby) {
+    public BlockHandlerResult click(DSPlayer player, DSInstance instance, Point blockPosition, boolean clickNearby) {
         final ItemStack itemStack = player.getItemInMainHand();
         if (player.isSneaking()) {
-            return InteractionResult.PASSTHROUGH;
+            return BlockHandlerResult.PASS_THROUGH;
         }
         if (this.lastClick.plus(COOLDOWN).isAfter(Instant.now())) {
-            return InteractionResult.CONSUME_INTERACTION;
+            return BlockHandlerResult.CONSUME_CANCEL;
         }
         if (this.entity != null && !this.entity.isRemoved()) {
-            final AtomicReference<InteractionResult> result = new AtomicReference<>(InteractionResult.PASSTHROUGH);
-            this.entity.acquirable().sync(_ -> {
+            final AtomicReference<BlockHandlerResult> result = new AtomicReference<>(BlockHandlerResult.PASS_THROUGH);
+            this.entity.acquirable().sync(unused -> {
                 final boolean wasCompleted = this.isComplete();
                 this.addStage();
                 this.entity.setStage(this.stage);
@@ -112,21 +112,21 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
                 if (this.entity.isRemoved()) {
                     this.entity = null;
                 }
-                result.set(InteractionResult.CONSUME_INTERACTION);
+                result.set(BlockHandlerResult.CONSUME_CANCEL);
             });
             return result.get();
         }
         final Key blockKey = itemStack.getTag(ItemTags.BLOCK_ID);
         if (blockKey == null) {
-            return InteractionResult.PASSTHROUGH;
+            return BlockHandlerResult.PASS_THROUGH;
         }
         final Block block = this.server.blockRegistry().create(blockKey);
         if (block == null) {
-            return InteractionResult.PASSTHROUGH;
+            return BlockHandlerResult.PASS_THROUGH;
         }
         final LootGenerator lootGenerator = this.getLootGeneratorForBlock(block);
         if (lootGenerator == null) {
-            return InteractionResult.PASSTHROUGH;
+            return BlockHandlerResult.PASS_THROUGH;
         }
         this.siftingBlock = block;
         this.addStage();
@@ -136,7 +136,7 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
         if (clickNearby) {
             this.clickNearbySifters(player, instance, blockPosition, 1);
         }
-        return InteractionResult.CONSUME_INTERACTION;
+        return BlockHandlerResult.CONSUME_CANCEL;
     }
 
     private void clickNearbySifters(DSPlayer player, DSInstance instance, Point point, int radius) {
@@ -223,20 +223,22 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
         }
 
         @Override
-        public InteractionResult onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, SifterBlockEntity entity) {
+        public BlockHandlerResult onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, SifterBlockEntity entity) {
             return entity.click(player, instance, blockPosition, true);
         }
 
         @Override
-        public void onDestroy(DSInstance instance, Block block, Point blockPosition, SifterBlockEntity entity) {
+        public BlockHandlerResult onDestroy(DSInstance instance, Block block, Point blockPosition, SifterBlockEntity entity) {
             entity.entity.remove();
+            return BlockHandlerResult.CONSUME;
         }
 
         @Override
-        public void onPlayerDestroy(DSPlayer player, DSInstance instance, Block block, Point blockPosition, SifterBlockEntity entity) {
+        public BlockHandlerResult onPlayerDestroy(DSPlayer player, DSInstance instance, Block block, Point blockPosition, SifterBlockEntity entity) {
             if (entity.entity != null ) {
                 entity.entity.remove();
             }
+            return BlockHandlerResult.CONSUME;
         }
 
     }

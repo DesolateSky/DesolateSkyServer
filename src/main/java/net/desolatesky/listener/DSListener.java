@@ -58,7 +58,7 @@ public final class DSListener<E extends Event> {
 
         @SuppressWarnings("unchecked")
         public Builder<E> handler(Class<? extends E> eventClass, DSEventHandler<? extends E> handler) {
-            this.eventHandlers.computeIfAbsent((Class<E>) eventClass, _ -> new ArrayList<>()).add((DSEventHandler<E>) handler);
+            this.eventHandlers.computeIfAbsent((Class<E>) eventClass, unused -> new ArrayList<>()).add((DSEventHandler<E>) handler);
             return this;
         }
 

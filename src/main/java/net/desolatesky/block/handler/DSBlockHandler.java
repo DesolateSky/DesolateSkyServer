@@ -6,13 +6,13 @@ import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.DSItemRegistry;
-import net.desolatesky.item.handler.BasicItemHandler;
 import net.desolatesky.item.handler.ItemHandler;
 import net.desolatesky.item.handler.breaking.MiningLevel;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
@@ -42,14 +42,15 @@ public class DSBlockHandler implements Keyed {
         this(blockSettings.build());
     }
 
-    public void onPlace(
+    public BlockHandlerResult.Place onPlace(
             DSInstance instance,
             Block block,
             Point blockPosition
     ) {
+        return BlockHandlerResult.passthroughPlace(block);
     }
 
-    public void onPlayerPlace(
+    public BlockHandlerResult.Place onPlayerPlace(
             DSPlayer player,
             DSInstance instance,
             Block block,
@@ -58,24 +59,27 @@ public class DSBlockHandler implements Keyed {
             BlockFace face,
             Point cursorPosition
     ) {
+        return BlockHandlerResult.passthroughPlace(block);
     }
 
-    public void onDestroy(
+    public BlockHandlerResult onDestroy(
             DSInstance instance,
             Block block,
             Point blockPosition
     ) {
+        return BlockHandlerResult.PASS_THROUGH;
     }
 
-    public void onPlayerDestroy(
+    public BlockHandlerResult onPlayerDestroy(
             DSPlayer player,
             DSInstance instance,
             Block block,
             Point blockPosition
     ) {
+        return BlockHandlerResult.PASS_THROUGH;
     }
 
-    public InteractionResult onPlayerInteract(
+    public BlockHandlerResult onPlayerInteract(
             Player player,
             DSInstance instance,
             Block block,
@@ -84,20 +88,20 @@ public class DSBlockHandler implements Keyed {
             BlockFace face,
             Point cursorPosition
     ) {
-        return InteractionResult.PASSTHROUGH;
+        return BlockHandlerResult.PASS_THROUGH;
     }
 
-    public InteractionResult onBlockEntityInteract(
+    public BlockHandlerResult onBlockEntityInteract(
             BlockEntity<?> entity,
             DSInstance instance,
             Block block,
             Point blockPosition,
             BlockFace face
     ) {
-        return InteractionResult.PASSTHROUGH;
+        return BlockHandlerResult.PASS_THROUGH;
     }
 
-    public InteractionResult onPlayerPunch(
+    public BlockHandlerResult onPlayerPunch(
             Player player,
             DSInstance instance,
             Block block,
@@ -105,17 +109,17 @@ public class DSBlockHandler implements Keyed {
             BlockFace face,
             Point cursorPosition
     ) {
-        return InteractionResult.PASSTHROUGH;
+        return BlockHandlerResult.PASS_THROUGH;
     }
 
-    public InteractionResult onBlockEntityPunch(
+    public BlockHandlerResult onBlockEntityPunch(
             BlockEntity<?> entity,
             DSInstance instance,
             Block block,
             Point blockPosition,
             BlockFace face
     ) {
-        return InteractionResult.PASSTHROUGH;
+        return BlockHandlerResult.PASS_THROUGH;
     }
 
     public void onTick(

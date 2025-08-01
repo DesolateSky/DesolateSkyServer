@@ -53,6 +53,16 @@ public final class RandomUtil {
         return values[random.nextInt(values.length)];
     }
 
+    public static double randomDouble(RandomGenerator random, double min, double max) {
+        if (min == max) {
+            return min;
+        }
+        if (min > max) {
+            throw new IllegalArgumentException("Min must be less than max");
+        }
+        return random.nextDouble(min, max);
+    }
+
     public static <E> E randomElement(RandomGenerator random, E[] array) {
         if (array.length == 0) {
             throw new IllegalArgumentException("Array must have at least one element");
@@ -79,6 +89,23 @@ public final class RandomUtil {
         final int size = collection.size();
         final int index = random.nextInt(size);
         return collection.get(index);
+    }
+
+    /**
+     *
+     * @param random RandomGenerator instance to use for generating random numbers
+     * @param chance Chance of success, must be between 0 and 100
+     * @return true if the random chance is successful, false otherwise
+     */
+    public static boolean checkChance(RandomGenerator random, double chance) {
+        if (chance < 0) {
+            return false;
+        }
+        if (chance > 100) {
+            return true;
+        }
+        final double randomValue = random.nextDouble() * 100;
+        return randomValue < chance;
     }
 
 }

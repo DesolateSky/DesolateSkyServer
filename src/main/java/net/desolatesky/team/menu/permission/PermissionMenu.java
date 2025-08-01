@@ -50,7 +50,7 @@ public final class PermissionMenu extends PaginatedMenu {
         final Map<Integer, ClickAction> clickActions = new HashMap<>();
         final List<? extends MenuButton> permissionButtons = createPermissionButtons(messageHandler, team, role);
         final List<Pattern> patterns = List.of(BORDER_PATTERN);
-        final ClickAction defaultClickAction = _ -> ClickAction.Result.CANCEL;
+        final ClickAction defaultClickAction = unused -> ClickAction.Result.CANCEL;
         return new PermissionMenu(
                 INVENTORY_TYPE,
                 role.displayName().append(Component.text(" Permissions")),

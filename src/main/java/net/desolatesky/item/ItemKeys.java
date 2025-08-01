@@ -26,6 +26,7 @@ public final class ItemKeys {
     public static final Key FIBER_MESH = Namespace.key("fiber_mesh");
     public static final Key DEAD_LEAVES = Namespace.key("dead_leaves");
     public static final Key PETRIFIED_STICK = Namespace.key("petrified_stick");
+    public static final Key WHEAT_SEEDS = key(Material.WHEAT_SEEDS);
 
     // VANILLA
     public static final Key CRAFTING_TABLE = key(Material.CRAFTING_TABLE);

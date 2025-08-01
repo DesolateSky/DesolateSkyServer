@@ -20,6 +20,8 @@ public final class BlockCategories {
     public static final Category SWORD_MINEABLE = new BlockCategory(Namespace.key("sword_mineable"));
     public static final Category SHEARS_MINEABLE = new BlockCategory(Namespace.key("shears_mineable"));
     public static final Category WOODEN_SLABS = new BlockCategory(Namespace.key("wooden_slabs"));
+    public static final Category CROP_GROWABLE = new BlockCategory(Namespace.key("crop_growable"));
+    public static final Category CROP = new BlockCategory(Namespace.key("crop"));
 
 
     public static final Category DIRT = new BlockCategory(Namespace.key("dirt"));

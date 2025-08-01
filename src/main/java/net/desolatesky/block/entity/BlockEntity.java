@@ -2,6 +2,9 @@ package net.desolatesky.block.entity;
 
 import com.google.common.base.Preconditions;
 import net.desolatesky.DesolateSkyServer;
+import net.desolatesky.block.DSBlock;
+import net.desolatesky.block.DSBlockRegistry;
+import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.handler.entity.BlockEntityHandler;
 import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
@@ -19,18 +22,33 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
 
     public static final Duration UNBREAKABLE_BREAK_TIME = Duration.ofMillis(-1);
 
+    protected final Key key;
     protected final DesolateSkyServer server;
+    protected final DSBlockRegistry blockRegistry;
     protected final AtomicBoolean loaded = new AtomicBoolean(false);
     protected final BlockEntityHandler<E> handler;
 
-    public BlockEntity(DesolateSkyServer server, BlockEntityHandler<E> handler) {
-        Preconditions.checkArgument(this.getClass().isAssignableFrom(handler.entityClass()));
+    @SuppressWarnings("unchecked")
+    public BlockEntity(Key key, DesolateSkyServer server) {
+        this.key = key;
+        this.blockRegistry = server.blockRegistry();
+        final DSBlock block = this.blockRegistry.getBlock(key);
+        Preconditions.checkArgument(block != null, "Block with key %s does not exist in the registry", key);
+        final DSBlockHandler blockHandler = block.handler();
+        if (!(blockHandler instanceof BlockEntityHandler<?> entityHandler)) {
+            throw new IllegalArgumentException("Block with key " + key + " does not have a BlockEntityHandler");
+        }
+        Preconditions.checkArgument(this.getClass().isAssignableFrom(entityHandler.entityClass()));
         this.server = server;
-        this.handler = handler;
+        this.handler = (BlockEntityHandler<E>) entityHandler;
     }
 
     @Override
     public final void onPlace(@NotNull Placement placement) {
+        // player placements are handled separately by listeners
+        if (placement instanceof PlayerPlacement) {
+            return;
+        }
         if (!(placement.getInstance() instanceof final DSInstance instance)) {
             return;
         }
@@ -59,6 +77,10 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
 
     @Override
     public final void onDestroy(@NotNull Destroy destroy) {
+        // player destroy is handled separately by listeners
+        if (destroy instanceof PlayerDestroy) {
+            return;
+        }
         if (!(destroy.getInstance() instanceof final DSInstance instance)) {
             return;
         }
@@ -138,7 +160,7 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
 
     @Override
     public @NotNull Key getKey() {
-        return this.handler.key();
+        return this.key;
     }
 
     public abstract @Nullable Block save(DSInstance instance, Point point, Block block);

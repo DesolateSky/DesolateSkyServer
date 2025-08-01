@@ -1,8 +1,8 @@
 package net.desolatesky.listener.type;
 
 import net.desolatesky.block.DSBlockRegistry;
+import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.handler.InteractionResult;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.item.DSItemRegistry;
@@ -58,7 +58,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
             final Point cursor = new Vec(0);
             final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(clickedBlock);
             if (blockHandler != null) {
-                final InteractionResult result = blockHandler.onPlayerInteract(
+                final BlockHandlerResult result = blockHandler.onPlayerInteract(
                         player,
                         instance,
                         clickedBlock,
@@ -67,10 +67,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
                         event.getBlockFace(),
                         cursor
                 );
-                return switch (result) {
-                    case CONSUME_INTERACTION -> EventHandlerResult.CONSUME_EVENT;
-                    case PASSTHROUGH -> EventHandlerResult.CONTINUE_LISTENING;
-                };
+                return result.toEventHandlerResult();
             }
             return EventHandlerResult.CONTINUE_LISTENING;
         };
@@ -94,7 +91,12 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
                     final DSInstance instance = player.getDSInstance();
                     final Point cursor = new Vec(0);
                     final BlockFace blockFace = event.getBlockFace();
-                    blockHandler.onPlayerPlace(player, instance, block, event.getBlockPosition(), event.getHand(), blockFace, cursor);
+                    final BlockHandlerResult.Place result = blockHandler.onPlayerPlace(player, instance, block, event.getBlockPosition(), event.getHand(), blockFace, cursor);
+                    event.setBlock(result.resultBlock());
+                    if (result.cancelEvent()) {
+                        event.setCancelled(true);
+                    }
+                    return result.toEventHandlerResult();
                 }
                 return EventHandlerResult.CONSUME_EVENT;
             }
@@ -114,7 +116,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
             if (blockHandler == null) {
                 return EventHandlerResult.CONTINUE_LISTENING;
             }
-            final InteractionResult result = blockHandler.onPlayerPunch(
+            final BlockHandlerResult result = blockHandler.onPlayerPunch(
                     player,
                     instance,
                     block,
@@ -122,10 +124,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
                     event.getBlockFace(),
                     Vec.ZERO
             );
-            return switch (result) {
-                case CONSUME_INTERACTION -> EventHandlerResult.CONSUME_EVENT;
-                case PASSTHROUGH -> EventHandlerResult.CONTINUE_LISTENING;
-            };
+            return result.toEventHandlerResult();
         };
     }
 

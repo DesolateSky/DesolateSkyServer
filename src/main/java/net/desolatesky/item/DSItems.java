@@ -1,6 +1,8 @@
 package net.desolatesky.item;
 
 import net.desolatesky.block.BlockKeys;
+import net.desolatesky.block.entity.custom.crop.Crop;
+import net.desolatesky.block.entity.custom.crop.CropRarity;
 import net.desolatesky.util.ComponentUtil;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.component.DataComponents;
@@ -68,6 +70,10 @@ public final class DSItems {
             .customName(ComponentUtil.noItalics("Dead Leaves"))
             .build()));
 
+    public static final DSItem WHEAT_SEEDS = addDefault(DSItem.create(ItemKeys.WHEAT_SEEDS, ItemStack.builder(Material.WHEAT_SEEDS)
+                    .set(ItemTags.CROP, new Crop(7, CropRarity.COMMON))
+                    .set(ItemTags.BLOCK_ID, BlockKeys.WHEAT)
+            .build()));
 
     // vanilla
     public static final DSItem CRAFTING_TABLE = addDefault(DSItem.create(ItemStack.builder(Material.CRAFTING_TABLE).set(ItemTags.BLOCK_ID, BlockKeys.CRAFTING_TABLE).build()));

@@ -6,10 +6,9 @@ import net.desolatesky.block.BlockProperties;
 import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.category.BlockCategories;
 import net.desolatesky.block.entity.BlockEntity;
-import net.desolatesky.block.handler.InteractionResult;
+import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.entity.BlockEntityHandler;
 import net.desolatesky.block.settings.BlockSettings;
-import net.desolatesky.block.settings.DSBlockSettings;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.item.DSItem;
@@ -25,16 +24,12 @@ import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.loot.type.ItemStackLoot;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
-import net.desolatesky.util.Namespace;
-import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
-import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -62,7 +57,7 @@ public final class ComposterBlockEntity extends BlockEntity<ComposterBlockEntity
     private final DSItemRegistry itemRegistry;
 
     public ComposterBlockEntity(DesolateSkyServer server) {
-        super(server, HANDLER);
+        super(BlockKeys.COMPOSTER, server);
         this.itemRegistry = server.itemRegistry();
     }
 
@@ -88,9 +83,9 @@ public final class ComposterBlockEntity extends BlockEntity<ComposterBlockEntity
         }
 
         @Override
-        public InteractionResult onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, ComposterBlockEntity entity) {
+        public BlockHandlerResult onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, ComposterBlockEntity entity) {
             if (player.isSneaking()) {
-                return InteractionResult.PASSTHROUGH;
+                return BlockHandlerResult.PASS_THROUGH;
             }
             Double currentValue = block.getTag(BlockTags.COMPOSTER_LEVEL);
             if (currentValue == null) {
@@ -103,26 +98,26 @@ public final class ComposterBlockEntity extends BlockEntity<ComposterBlockEntity
                 final LootTable loot = this.loot();
                 final LootGenerator lootGenerator = loot.getGenerator(LOOT_GENERATOR_TYPE);
                 if (lootGenerator == null) {
-                    return InteractionResult.PASSTHROUGH;
+                    return BlockHandlerResult.PASS_THROUGH;
                 }
                 InventoryUtil.addItemsToInventory(player, lootGenerator.generateLoot(LootContext.create(loot.randomSource())), new InstancePoint<>(instance, blockPosition.add(0, 1, 0)));
-                return InteractionResult.PASSTHROUGH;
+                return BlockHandlerResult.PASS_THROUGH;
             }
 
             final ItemStack mainHand = player.getItemInMainHand();
             final DSItem item = entity.itemRegistry.getItem(mainHand);
             if (item == null) {
-                return InteractionResult.PASSTHROUGH;
+                return BlockHandlerResult.PASS_THROUGH;
             }
             final Double value = item.getTag(mainHand, ItemTags.COMPOSTER_VALUE);
             if (value == null || value <= 0) {
-                return InteractionResult.PASSTHROUGH;
+                return BlockHandlerResult.PASS_THROUGH;
             }
             player.setItemInMainHand(mainHand.consume(1));
             currentValue += value;
             final Block newBlock = BlockProperties.LEVEL.set(block, currentValue.intValue()).withTag(BlockTags.COMPOSTER_LEVEL, currentValue);
             instance.setBlock(blockPosition, newBlock);
-            return InteractionResult.CONSUME_INTERACTION;
+            return BlockHandlerResult.CONSUME;
         }
 
     }
