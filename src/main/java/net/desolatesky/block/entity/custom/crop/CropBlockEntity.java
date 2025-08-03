@@ -8,13 +8,13 @@ import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.handler.entity.BlockEntityHandler;
+import net.desolatesky.block.property.type.BlockProperty;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.RandomUtil;
 import net.kyori.adventure.key.Key;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.instance.block.Block;
@@ -35,9 +35,11 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
     protected Crop crop;
     protected double growthChance;
     protected int age;
+    protected final BlockProperty<Integer> ageProperty;
 
-    public CropBlockEntity(Key key, DesolateSkyServer server) {
+    public CropBlockEntity(Key key, DesolateSkyServer server, BlockProperty<Integer> ageProperty) {
         super(key, server);
+        this.ageProperty = ageProperty;
     }
 
     @Override
@@ -50,20 +52,35 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
     public void load(Placement placement, DSInstance instance) {
         final Block block = placement.getBlock();
         this.crop = block.getTag(BlockTags.CROP);
-        System.out.println("Loaded crop block: " + block);
         if (this.crop == null) {
+            System.out.println("No crop");
             return;
         }
+        System.out.println("Loading crop: " + this.crop);
         Double growthChance = block.getTag(BlockTags.CROP_GROWTH_CHANCE);
         if (growthChance == null) {
             growthChance = this.crop.rarity().minGrowthChance();
         }
         this.growthChance = growthChance;
         final Integer readAge = block.getTag(BlockTags.CROP_AGE);
+        System.out.println("Age: " + readAge);
         if (readAge == null) {
             return;
         }
         this.age = readAge;
+    }
+
+    protected void onMaxGrowth(DSInstance instance, Block block, Point blockPosition, boolean alreadyMax) {
+        if (alreadyMax) {
+            return;
+        }
+        // override
+        final Block newBlock = this.ageProperty.set(block, this.age).withTag(BlockTags.CROP_AGE, this.age);
+        instance.setBlock(blockPosition, newBlock);
+    }
+
+    public boolean isFullyGrown() {
+        return this.crop != null && this.age >= this.crop.maxAge();
     }
 
     protected void setAge(int age) {
@@ -74,9 +91,9 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
         this.age = Math.min(age, this.crop.maxAge());
     }
 
-    private static class Handler<T extends CropBlockEntity<T>> extends BlockEntityHandler<T> {
+    protected static class Handler<T extends CropBlockEntity<T>> extends BlockEntityHandler<T> {
 
-        public Handler(BlockSettings blockSettings, Class<T> entityClass) {
+        protected Handler(BlockSettings blockSettings, Class<T> entityClass) {
             super(blockSettings, entityClass);
         }
 
@@ -91,9 +108,7 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
                 return BlockHandlerResult.cancelPlace(block, true);
             }
             final ItemStack usedItem = player.getItemInMainHand();
-            System.out.println("Crop item placed: " + usedItem);
             final Crop crop = usedItem.getTag(ItemTags.CROP);
-            System.out.println("Crop placed: " + crop);
             if (crop == null) {
                 return BlockHandlerResult.cancelPlace(block, true);
             }
@@ -101,27 +116,28 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
             entity.setAge(0);
             final CropRarity cropRarity = crop.rarity();
             entity.growthChance = RandomUtil.randomDouble(instance.randomSource(), cropRarity.minGrowthChance(), cropRarity.maxGrowthChance());
-            return BlockHandlerResult.consumePlace(block, false);
+            return BlockHandlerResult.consumePlace(block.withTag(BlockTags.CROP, crop).withTag(BlockTags.CROP_AGE, entity.age), false);
         }
 
         @Override
         public void onRandomTick(DSInstance instance, Block block, Point blockPosition, T entity) {
             if (entity.crop == null) {
-//                System.out.println("Crop entity has no crop set, cannot grow");
                 return;
             }
             if (entity.age >= entity.crop.maxAge()) {
-//                System.out.println("Crop entity has reached max age, cannot grow further");
+                entity.onMaxGrowth(instance, block, blockPosition, true);
                 return;
             }
             if (!RandomUtil.checkChance(instance.randomSource(), entity.growthChance)) {
-//                System.out.println("Crop entity did not grow this tick, chance failed");
                 return;
             }
-            System.out.println("Crop entity is growing, current age: " + entity.age);
             final int newAge = entity.age + 1;
             entity.setAge(newAge);
-            final Block newBlock = BlockProperties.AGE.set(block, newAge).withTag(BlockTags.CROP_AGE, newAge);
+            if (entity.isFullyGrown()) {
+                entity.onMaxGrowth(instance, block, blockPosition, false);
+                return;
+            }
+            final Block newBlock = entity.ageProperty.set(block, newAge).withTag(BlockTags.CROP_AGE, newAge);
             instance.setBlock(blockPosition, newBlock);
         }
 

@@ -5,6 +5,7 @@ import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.player.DSPlayer;
+import net.kyori.adventure.sound.Sound;
 import net.minestom.server.adventure.audience.PacketGroupingAudience;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.instance.Instance;
@@ -20,6 +21,10 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class BreakingManager {
+
+    // Duration after which the break progress is reset if no hits are registered
+    private static final Duration BREAK_TIME_RESET_DURATION = Duration.ofMillis(1000);
+    private static final Duration HIT_SOUND_INTERVAL = Duration.ofMillis(200);
 
     private static final byte MAX_CRACK_PROGRESS = 10;
 
@@ -41,34 +46,51 @@ public final class BreakingManager {
             final DSInstance instance = breakingData.instance();
             final BlockVec blockPos = breakingData.blockPos();
             if (!player.isOnline()) {
-                resetBreakProgress(instance, breakingData.id(), blockPos);
+                sendResetBreakProgress(instance, breakingData.id(), blockPos);
                 return true;
             }
             final Instance playerInstance = player.getInstance();
             if (!Objects.equals(breakingData.instance(), playerInstance)) {
-                resetBreakProgress(instance, breakingData.id(), blockPos);
+                sendResetBreakProgress(instance, breakingData.id(), blockPos);
                 return true;
             }
             if (!instance.canBreakBlock(player, blockPos, breakingData.block())) {
-                resetBreakProgress(instance, breakingData.id(), blockPos);
+                sendResetBreakProgress(instance, breakingData.id(), blockPos);
                 return false;
             }
-            if (!breakingData.currentlyBreaking() || breakingData.lastHitTime() == null) {
+            if (breakingData.lastHitTime() == null) {
+                sendResetBreakProgress(instance, breakingData.id(), blockPos);
+                return true;
+            }
+            final Duration timeSinceLastHit = Duration.between(breakingData.lastHitTime(), Instant.now());
+            if (timeSinceLastHit.compareTo(BREAK_TIME_RESET_DURATION) > 0) {
+                sendResetBreakProgress(instance, breakingData.id(), blockPos);
+                return true;
+            }
+            if (!breakingData.currentlyBreaking())  {
                 return false;
             }
             final Block block = playerInstance.getBlock(blockPos);
             if (!Objects.equals(block, breakingData.block())) {
-                resetBreakProgress(instance, breakingData.id(), blockPos);
+                sendResetBreakProgress(instance, breakingData.id(), blockPos);
                 return true;
             }
             final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
             if (blockHandler == null) {
-                resetBreakProgress(instance, breakingData.id(), blockPos);
+                sendResetBreakProgress(instance, breakingData.id(), blockPos);
                 return false;
+            }
+            final Duration timeSinceLastSound = Duration.between(breakingData.lastSoundTime(), Instant.now());
+            if (timeSinceLastSound.compareTo(HIT_SOUND_INTERVAL) > 0) {
+                final Sound hitSound = blockHandler.settings().digSound();
+                if (hitSound != null) {
+                    player.playSound(hitSound, blockPos);
+                }
+                breakingData.setLastSoundTime(Instant.now());
             }
             final Duration breakTime = blockHandler.calculateBlockBreakTime(this.server, player, block);
             if (breakTime == null || breakTime.isNegative()) {
-                resetBreakProgress(instance, breakingData.id(), blockPos);
+                sendResetBreakProgress(instance, breakingData.id(), blockPos);
                 return false;
             }
             breakingData.hit();
@@ -78,10 +100,10 @@ public final class BreakingManager {
                 sendBreakProgress(instance, breakingData.id(), blockPos, progress);
                 return false;
             }
-            // get the face of the block the player is looking at
-
+            // get the face of the block the player is looking at (probably wrong)
             final BlockFace blockFace = BlockFace.fromDirection(player.getPosition().facing()).getOppositeFace();
             breakingData.instance().breakBlock(player, blockPos, block, blockFace);
+            sendResetBreakProgress(instance, breakingData.id(), blockPos);
             return true;
         });
     }
@@ -98,7 +120,7 @@ public final class BreakingManager {
             return;
         }
         if (previousData != null) {
-            resetBreakProgress(previousData.instance(), previousData.id(), previousData.blockPos());
+            sendResetBreakProgress(previousData.instance(), previousData.id(), previousData.blockPos());
             this.breakingDataMap.remove(player.getUuid());
         }
         final UUID playerId = player.getUuid();
@@ -112,7 +134,7 @@ public final class BreakingManager {
         if (breakingData == null || !breakingData.blockPos().equals(blockPos)) {
             return;
         }
-        resetBreakProgress(breakingData.instance(), breakingData.id(), blockPos);
+        sendResetBreakProgress(breakingData.instance(), breakingData.id(), blockPos);
         this.breakingDataMap.remove(playerId);
     }
 
@@ -125,7 +147,7 @@ public final class BreakingManager {
         breakingData.setCurrentlyBreaking(false);
     }
 
-    private static void resetBreakProgress(PacketGroupingAudience audience, int blockBreakId, BlockVec blockPos) {
+    private static void sendResetBreakProgress(PacketGroupingAudience audience, int blockBreakId, BlockVec blockPos) {
         audience.sendGroupedPacket(
                 new BlockBreakAnimationPacket(
                         blockBreakId,

@@ -35,12 +35,18 @@ public final class DSBlocks {
     public static final DSBlock CRAFTING_TABLE = create(Block.CRAFTING_TABLE, new CraftingTableHandler());
     public static final DSBlock WHEAT = create(Block.WHEAT, CropBlockEntity.createHandler(DSBlockSettings.WHEAT));
 
-    public static final DSBlock PETRIFIED_PLANKS = create(BlockKeys.PETRIFIED_PLANKS, Block.PALE_OAK_PLANKS, DSBlockSettings.PETRIFIED_PLANKS);
-    public static final DSBlock PETRIFIED_SLAB = create(BlockKeys.PETRIFIED_SLAB, Block.PALE_OAK_SLAB, DSBlockSettings.PETRIFIED_SLAB);
-    public static final DSBlock DUST_BLOCK = create(BlockKeys.DUST_BLOCK, blockBuilder(Block.NOTE_BLOCK).property(BlockProperties.INSTRUMENT, NoteBlockInstrument.HARP).property(BlockProperties.NOTE, 1).build(), DSBlockSettings.DUST_BLOCK);
-    public static final DSBlock DEBRIS_CATCHER = create(BlockKeys.DEBRIS_CATCHER, Block.COBWEB, DebrisCatcherBlockEntity.HANDLER);
-    public static final DSBlock SIFTER = create(BlockKeys.SIFTER, blockBuilder(Block.SCAFFOLDING).build(), SifterBlockEntity.HANDLER);
-    public static final DSBlock COMPOSTER = create(BlockKeys.COMPOSTER, blockBuilder(Block.COMPOSTER).build(), ComposterBlockEntity.HANDLER);
+    public static final DSBlock DUST_BLOCK = create(blockBuilder(Block.NOTE_BLOCK).property(BlockProperties.INSTRUMENT, NoteBlockInstrument.HARP).property(BlockProperties.NOTE, 1).build(), DSBlockSettings.DUST_BLOCK);
+    public static final DSBlock DEBRIS_CATCHER = create(Block.COBWEB, DebrisCatcherBlockEntity.HANDLER);
+    public static final DSBlock SIFTER = create(blockBuilder(Block.SCAFFOLDING).build(), SifterBlockEntity.HANDLER);
+    public static final DSBlock COMPOSTER = create(blockBuilder(Block.COMPOSTER).build(), ComposterBlockEntity.HANDLER);
+
+    // PETRIFIED WOOD
+    public static final DSBlock PETRIFIED_SAPLING = create(Block.PALE_OAK_SAPLING, CropBlockEntity.createHandler(DSBlockSettings.PETRIFIED_SAPLING));
+    public static final DSBlock PETRIFIED_LOG = create(Block.PALE_OAK_LOG, DSBlockSettings.PETRIFIED_LOG);
+public static final DSBlock STRIPPED_PETRIFIED_LOG = create(Block.STRIPPED_PALE_OAK_LOG, DSBlockSettings.STRIPPED_PETRIFIED_LOG);
+    public static final DSBlock PETRIFIED_LEAVES = create(Block.PALE_OAK_LEAVES, DSBlockSettings.PETRIFIED_LEAVES);
+    public static final DSBlock PETRIFIED_PLANKS = create(Block.PALE_OAK_PLANKS, DSBlockSettings.PETRIFIED_PLANKS);
+    public static final DSBlock PETRIFIED_SLAB = create(Block.PALE_OAK_SLAB, DSBlockSettings.PETRIFIED_SLAB);
 
     public void register(DSBlockRegistry registry) {
         DEFAULT_BLOCKS.values().forEach(registry::register);
@@ -55,20 +61,12 @@ public final class DSBlocks {
         return BlockBuilder.blockBuilder(block);
     }
 
-    private static DSBlock create(Key key, Block block, DSBlockHandler blockHandler) {
-        return addDefault(DSBlock.create(key, block, blockHandler));
-    }
-
     private static DSBlock create(Block block, DSBlockHandler blockHandler) {
-        return addDefault(DSBlock.create(block, blockHandler));
-    }
-
-    private static DSBlock create(Key key, Block block, BlockSettings blockSettings) {
-        return addDefault(DSBlock.create(key, block, new DSBlockHandler(blockSettings)));
+        return addDefault(DSBlock.create(blockHandler.key(), block, blockHandler));
     }
 
     private static DSBlock create(Block block, BlockSettings blockSettings) {
-        return addDefault(DSBlock.create(block, new DSBlockHandler(blockSettings)));
+        return addDefault(DSBlock.create(blockSettings.key(), block, new DSBlockHandler(blockSettings)));
     }
 
 

@@ -18,13 +18,16 @@ public class TrapDoorHandler extends DSBlockHandler {
     }
 
     @Override
-    public BlockHandlerResult onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
+    public BlockHandlerResult.InteractBlock onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
+        if (hand != PlayerHand.MAIN) {
+            return BlockHandlerResult.passthroughInteractBlock();
+        }
         if (player.isSneaking() && player.getItemInMainHand().material().isBlock()) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock();
         }
         final Boolean open = BlockProperties.OPEN.get(block);
         if (open == null) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock();
         }
         final Block newBlock;
         if (open) {
@@ -32,9 +35,7 @@ public class TrapDoorHandler extends DSBlockHandler {
         } else {
             newBlock = BlockProperties.OPEN.set(block, true);
         }
-        instance.setBlock(blockPosition, newBlock);
-        player.sendMessage("New trap door state: " + newBlock.getProperty(BlockProperties.OPEN.name()));
-        return BlockHandlerResult.CONSUME;
+        return BlockHandlerResult.consumeInteractBlock(newBlock, true);
     }
 
 }

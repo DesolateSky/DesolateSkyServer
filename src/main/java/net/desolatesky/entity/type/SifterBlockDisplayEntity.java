@@ -1,11 +1,15 @@
 package net.desolatesky.entity.type;
 
+import net.desolatesky.block.DSBlocks;
+import net.desolatesky.block.entity.custom.SifterBlockEntity;
+import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.entity.DSEntity;
 import net.desolatesky.entity.EntityKey;
 import net.desolatesky.entity.EntityKeys;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.PacketUtil;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -30,26 +34,19 @@ public final class SifterBlockDisplayEntity extends Entity implements DSEntity {
 
     private final Block block;
     private final Block displayBlock;
+    private final DSBlockHandler displayBlockHandler;
     private final Point sifterPosition;
-    private final net.desolatesky.block.entity.custom.SifterBlockEntity blockHandler;
+    private final SifterBlockEntity blockEntity;
     //    private int stage = 0;
     private Interaction interactionEntity;
 
-    public SifterBlockDisplayEntity(Block block, Block displayBlock, Point sifterPosition, net.desolatesky.block.entity.custom.SifterBlockEntity blockHandler) {
+    public SifterBlockDisplayEntity(Block block, Block displayBlock, DSBlockHandler displayBlockHandler, Point sifterPosition, SifterBlockEntity blockEntity) {
         super(EntityType.BLOCK_DISPLAY);
         this.block = block;
         this.displayBlock = displayBlock;
+        this.displayBlockHandler = displayBlockHandler;
         this.sifterPosition = sifterPosition;
-        this.blockHandler = blockHandler;
-        this.setup();
-    }
-
-    public SifterBlockDisplayEntity(Block block, Block displayBlock, Point sifterPosition, net.desolatesky.block.entity.custom.SifterBlockEntity blockHandler, UUID uuid) {
-        super(EntityType.BLOCK_DISPLAY, uuid);
-        this.block = block;
-        this.displayBlock = displayBlock;
-        this.sifterPosition = sifterPosition;
-        this.blockHandler = blockHandler;
+        this.blockEntity = blockEntity;
         this.setup();
     }
 
@@ -66,6 +63,7 @@ public final class SifterBlockDisplayEntity extends Entity implements DSEntity {
 
     public void setStage(int stage) {
         this.adjustPosition(stage);
+        PacketUtil.sendBlockBreak(this.instance, this.displayBlockHandler, this.getPosition(), this.displayBlock);
         final WorldEventPacket packet = new WorldEventPacket(2001, this.getPosition(), this.displayBlock.stateId(), false);
         this.getInstance().sendGroupedPacket(packet);
     }
@@ -169,7 +167,7 @@ public final class SifterBlockDisplayEntity extends Entity implements DSEntity {
             if (!(clicker instanceof final DSPlayer player)) {
                 return;
             }
-            SifterBlockDisplayEntity.this.blockHandler.click(player, player.getDSInstance(), SifterBlockDisplayEntity.this.sifterPosition, true);
+            SifterBlockDisplayEntity.this.blockEntity.click(player, player.getDSInstance(), SifterBlockDisplayEntity.this.sifterPosition, true);
         }
 
         @Override
@@ -177,7 +175,7 @@ public final class SifterBlockDisplayEntity extends Entity implements DSEntity {
             if (!(attacker instanceof final DSPlayer player)) {
                 return;
             }
-            SifterBlockDisplayEntity.this.blockHandler.click(player, player.getDSInstance(), SifterBlockDisplayEntity.this.sifterPosition, true);
+            SifterBlockDisplayEntity.this.blockEntity.click(player, player.getDSInstance(), SifterBlockDisplayEntity.this.sifterPosition, true);
         }
 
         @Override

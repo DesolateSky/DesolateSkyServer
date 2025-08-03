@@ -10,6 +10,7 @@ public final class BlockCategories {
     }
 
     public static final Category LOGS = new BlockCategory(Namespace.key("logs"));
+    public static final Category STRIPPED_LOGS = new BlockCategory(Namespace.key("stripped_logs"));
     public static final Category PLANKS = new BlockCategory(Namespace.key("planks"));
     public static final Category WOOD = new BlockCategory(Namespace.key("wood"));
     public static final Category LEAVES = new BlockCategory(Namespace.key("leaves"));
@@ -22,6 +23,7 @@ public final class BlockCategories {
     public static final Category WOODEN_SLABS = new BlockCategory(Namespace.key("wooden_slabs"));
     public static final Category CROP_GROWABLE = new BlockCategory(Namespace.key("crop_growable"));
     public static final Category CROP = new BlockCategory(Namespace.key("crop"));
+    public static final Category SAPLINGS = new BlockCategory(Namespace.key("saplings"));
 
 
     public static final Category DIRT = new BlockCategory(Namespace.key("dirt"));

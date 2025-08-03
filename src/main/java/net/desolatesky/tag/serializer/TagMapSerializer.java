@@ -1,6 +1,6 @@
 package net.desolatesky.tag.serializer;
 
-import net.desolatesky.util.Tags;
+import net.desolatesky.tag.Tags;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
 import net.minestom.server.tag.TagSerializer;

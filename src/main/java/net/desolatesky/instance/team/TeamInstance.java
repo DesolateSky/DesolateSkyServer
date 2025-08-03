@@ -2,12 +2,14 @@ package net.desolatesky.instance.team;
 
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.DSBlockRegistry;
+import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.instance.generator.StartingIslandGenerator;
 import net.desolatesky.instance.weather.WeatherManager;
+import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.team.IslandTeam;
 import net.desolatesky.team.role.RolePermissionType;
@@ -24,6 +26,7 @@ import net.minestom.server.instance.WorldBorder;
 import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
+import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.world.DimensionType;
@@ -48,6 +51,7 @@ public final class TeamInstance extends DSInstance {
     private final BreakingManager breakingManager;
     private final WeatherManager weatherManager;
     private final DSBlockRegistry blockRegistry;
+    private final DSItemRegistry itemRegistry;
     private final IslandTeam team;
     private InstancePoint<Pos> spawnPoint;
     private Task tickTask;
@@ -77,6 +81,7 @@ public final class TeamInstance extends DSInstance {
         this.spawnPoint = new InstancePoint<>(this, spawn);
         this.weatherManager = new WeatherManager(server.entityLootRegistry(), this, this.randomSource);
         this.blockRegistry = server.blockRegistry();
+        this.itemRegistry = server.itemRegistry();
         this.setGenerator(new StartingIslandGenerator(server.blockEntities(), this));
         this.setChunkSupplier(LightingChunk::new);
         this.setWorldBorder(new WorldBorder(50, spawn.x(), spawn.z(), 0, 0, 50));
@@ -148,7 +153,11 @@ public final class TeamInstance extends DSInstance {
 
     @Override
     public void breakBlock(DSPlayer player, BlockVec pos, Block block, BlockFace face) {
-        this.breakBlock(player, pos, face, true);
+        final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
+        if (blockHandler == null || !this.canBreakBlock(player, pos, block)) {
+            return;
+        }
+        blockHandler.playerDestroyBlock(this.itemRegistry, player, this, block, pos);
     }
 
     @Override

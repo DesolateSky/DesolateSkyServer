@@ -4,6 +4,7 @@ import net.desolatesky.instance.DSInstance;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.PhysicalClickType;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 
@@ -13,8 +14,8 @@ public final class ClickBlockActionData extends ToolActionData {
     private final Point blockPosition;
     private final PhysicalClickType clickType;
 
-    public ClickBlockActionData(DSPlayer player, DSInstance instance, ItemStack toolUsed, int amountOfToolsUsed, Block clickedBlock, Point blockPosition, PhysicalClickType clickType) {
-        super(player, instance, toolUsed, amountOfToolsUsed);
+    public ClickBlockActionData(DSPlayer player, DSInstance instance, ItemStack toolUsed, Block clickedBlock, Point blockPosition, PlayerHand hand, PhysicalClickType clickType) {
+        super(player, instance, toolUsed, hand);
         this.clickedBlock = clickedBlock;
         this.blockPosition = blockPosition;
         this.clickType = clickType;

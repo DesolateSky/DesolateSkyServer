@@ -43,7 +43,7 @@ public final class PermissionMenu extends PaginatedMenu {
 
     public static final Pattern BORDER_PATTERN = Pattern.border(List.of(MenuButton.simple(ItemStack.of(Material.GRAY_STAINED_GLASS_PANE).with(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, Collections.emptySet())).withCustomName(Component.empty()), true)));
 
-    public static PermissionMenu create(MessageHandler messageHandler, IslandTeam team, TeamRole role) {
+    public static PermissionMenu create(DSPlayer player, MessageHandler messageHandler, IslandTeam team, TeamRole role) {
         final Map<Integer, MenuButton> menuItems = new HashMap<>();
         menuItems.put(NEXT_PAGE_SLOT, nextPageButton(ItemStack.of(Material.ARROW).withCustomName(ComponentUtil.noItalics("Next Page"))));
         menuItems.put(PREVIOUS_PAGE_SLOT, previousPageButton(ItemStack.of(Material.ARROW).withCustomName(ComponentUtil.noItalics("Previous Page"))));
@@ -52,6 +52,7 @@ public final class PermissionMenu extends PaginatedMenu {
         final List<Pattern> patterns = List.of(BORDER_PATTERN);
         final ClickAction defaultClickAction = unused -> ClickAction.Result.CANCEL;
         return new PermissionMenu(
+                player,
                 INVENTORY_TYPE,
                 role.displayName().append(Component.text(" Permissions")),
                 menuItems,
@@ -99,7 +100,7 @@ public final class PermissionMenu extends PaginatedMenu {
                 return ClickAction.Result.CANCEL;
             }
             final RolePermissionDefinition definition = permission.definition();
-            final DSPlayer player = clickData.player();
+            final DSPlayer player = clickData.menu().player();
             if (InventoryUtil.isLeftClick(clickData.click())) {
                 if (definition.isTogglePermission()) {
                     role.togglePermission(messageHandler, team, player, type);
@@ -123,6 +124,7 @@ public final class PermissionMenu extends PaginatedMenu {
     private final TeamRole role;
 
     public PermissionMenu(
+            DSPlayer player,
             InventoryType type,
             Component title,
             Map<Integer, MenuButton> menuItems,
@@ -134,7 +136,7 @@ public final class PermissionMenu extends PaginatedMenu {
             IslandTeam team,
             TeamRole role
     ) {
-        super(type, title, menuItems, clickActions, pageItems, pageSlots, patterns, defaultClickAction);
+        super(player, type, title, menuItems, clickActions, pageItems, pageSlots, patterns, defaultClickAction);
         this.team = team;
         this.role = role;
     }

@@ -5,6 +5,7 @@ import net.desolatesky.menu.item.MenuButton;
 import net.desolatesky.menu.pattern.Pattern;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.inventory.click.Click;
 import net.minestom.server.tag.Tag;
@@ -26,7 +27,7 @@ public interface Menu {
 
     InventoryType inventoryType();
 
-    ClickResult click(DSPlayer player, Click click);
+    ClickResult click(AbstractInventory clickedInventory, Click click, int slot);
 
     void setItem(int slot, MenuButton item, boolean replace);
 
@@ -38,7 +39,15 @@ public interface Menu {
 
     void refresh(int slot);
 
-    void open(DSPlayer player);
+    void open();
+
+    DSPlayer player();
+
+    void onClose();
+
+    default boolean isForPlayer(DSPlayer player) {
+        return this.player().equals(player);
+    }
 
     enum ClickResult {
 
@@ -118,8 +127,8 @@ public interface Menu {
             return this;
         }
 
-        public Menu build() {
-            return new GUIMenu(this.inventoryType, this.title, this.items, this.clickActions, this.patterns, this.defaultClickAction);
+        public Menu build(DSPlayer player) {
+            return new GUIMenu(player, this.inventoryType, this.title, this.items, this.clickActions, this.patterns, this.defaultClickAction);
         }
 
     }

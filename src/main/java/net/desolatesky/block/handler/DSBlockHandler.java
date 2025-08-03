@@ -5,20 +5,26 @@ import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
+import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.handler.ItemHandler;
+import net.desolatesky.item.handler.ItemInteractionResult;
 import net.desolatesky.item.handler.breaking.MiningLevel;
+import net.desolatesky.listener.EventHandlerResult;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.InventoryUtil;
+import net.desolatesky.util.PacketUtil;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
-import net.minestom.server.MinecraftServer;
+import net.kyori.adventure.sound.Sound;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.network.packet.server.play.WorldEventPacket;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -70,6 +76,46 @@ public class DSBlockHandler implements Keyed {
         return BlockHandlerResult.PASS_THROUGH;
     }
 
+    public final BlockHandlerResult playerDestroyBlock(
+            DSItemRegistry itemRegistry,
+            DSPlayer player,
+            DSInstance instance,
+            Block block,
+            Point blockPosition
+    ) {
+        final ItemStack inHand = player.getItemInMainHand();
+        final ItemHandler itemHandler = itemRegistry.getItemHandler(inHand);
+        boolean passthrough = true;
+        if (itemHandler != null) {
+            final ItemInteractionResult itemHandlerResult = itemHandler.onBreakBlock(player, instance, inHand, block, blockPosition);
+            final ItemStack newItem = itemHandlerResult.newItem();
+            if (newItem != null) {
+                player.setItemInMainHand(newItem);
+            }
+            if (itemHandlerResult.cancel()) {
+                return BlockHandlerResult.CANCEL;
+            }
+            passthrough = false;
+        }
+        final BlockHandlerResult blockHandlerResult = this.onPlayerDestroy(player, instance, block, blockPosition);
+        if (blockHandlerResult.cancelEvent()) {
+            return BlockHandlerResult.CANCEL;
+        }
+        PacketUtil.sendBlockBreak(instance, this, blockPosition, block);
+        instance.setBlock(blockPosition, Block.AIR);
+        if (blockHandlerResult.consumeEvent()) {
+            return BlockHandlerResult.CONSUME;
+        }
+        final Collection<ItemStack> drops = this.generateDrops(itemRegistry, inHand, blockPosition, block);
+        final InstancePoint<? extends Point> instancePoint = new InstancePoint<>(instance, blockPosition);
+        InventoryUtil.addItemsToInventory(player, drops, instancePoint);
+        if (passthrough) {
+            return BlockHandlerResult.PASS_THROUGH;
+        } else {
+            return BlockHandlerResult.CONSUME;
+        }
+    }
+
     public BlockHandlerResult onPlayerDestroy(
             DSPlayer player,
             DSInstance instance,
@@ -79,7 +125,7 @@ public class DSBlockHandler implements Keyed {
         return BlockHandlerResult.PASS_THROUGH;
     }
 
-    public BlockHandlerResult onPlayerInteract(
+    public BlockHandlerResult.InteractBlock onPlayerInteract(
             Player player,
             DSInstance instance,
             Block block,
@@ -88,17 +134,17 @@ public class DSBlockHandler implements Keyed {
             BlockFace face,
             Point cursorPosition
     ) {
-        return BlockHandlerResult.PASS_THROUGH;
+        return BlockHandlerResult.passthroughInteractBlock(block);
     }
 
-    public BlockHandlerResult onBlockEntityInteract(
+    public BlockHandlerResult.InteractBlock onBlockEntityInteract(
             BlockEntity<?> entity,
             DSInstance instance,
             Block block,
             Point blockPosition,
             BlockFace face
     ) {
-        return BlockHandlerResult.PASS_THROUGH;
+        return BlockHandlerResult.passthroughInteractBlock(block);
     }
 
     public BlockHandlerResult onPlayerPunch(

@@ -8,12 +8,22 @@ version = "1.0.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://repo.hypera.dev/snapshots/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
+
+    maven(url = "https://central.sonatype.com/repository/maven-snapshots/") {
+        content {
+            includeModule("net.minestom", "minestom")
+            includeModule("net.minestom", "testing")
+        }
+    }
+
 }
 
 dependencies {
-    implementation("net.minestom:minestom:2025.07.30-1.21.8")
+//    implementation("net.minestom:minestom:2025.07.30-1.21.8")
+    implementation("net.minestom:minestom:dev")
     implementation("com.zaxxer:HikariCP:6.3.0")
     implementation("org.xerial:sqlite-jdbc:3.50.2.0")
     implementation("dev.hollowcube:schem:1.3.1")

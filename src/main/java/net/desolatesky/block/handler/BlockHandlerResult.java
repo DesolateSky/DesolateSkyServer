@@ -2,6 +2,7 @@ package net.desolatesky.block.handler;
 
 import net.desolatesky.listener.EventHandlerResult;
 import net.minestom.server.instance.block.Block;
+import org.jetbrains.annotations.Nullable;
 
 public interface BlockHandlerResult {
 
@@ -14,23 +15,56 @@ public interface BlockHandlerResult {
 
     boolean consumeEvent();
 
-    static Place passthroughPlace(Block resultBlock) {
+    static Place passthroughPlace() {
+        return Place.PASSTHROUGH_NULL;
+    }
+
+    static Place passthroughPlace(@Nullable Block resultBlock) {
         return new Place(false, false, resultBlock);
     }
 
-    static Place cancelPlace(Block resultBlock, boolean consumeEvent) {
+    static Place cancelPlace(@Nullable Block resultBlock, boolean consumeEvent) {
         return new Place(true, consumeEvent, resultBlock);
     }
 
-    static Place consumePlace(Block resultBlock, boolean cancelEvent) {
+    static Place consumePlace(@Nullable Block resultBlock, boolean cancelEvent) {
         return new Place(cancelEvent, true, resultBlock);
     }
+
+    static InteractBlock passthroughInteractBlock() {
+        return InteractBlock.PASSTHROUGH_NULL;
+    }
+
+    static InteractBlock passthroughInteractBlock(@Nullable Block resultBlock) {
+        return new InteractBlock(false, false, resultBlock);
+    }
+
+    static InteractBlock cancelInteractBlock(@Nullable Block resultBlock, boolean consumeEvent) {
+        return new InteractBlock(true, consumeEvent, resultBlock);
+    }
+
+    static InteractBlock consumeInteractBlock(@Nullable Block resultBlock, boolean cancelEvent) {
+        return new InteractBlock(cancelEvent, true, resultBlock);
+    }
+
 
     record Place(
             boolean cancelEvent,
             boolean consumeEvent,
-            Block resultBlock
+            @Nullable Block resultBlock
     ) implements BlockHandlerResult {
+
+        public static final Place PASSTHROUGH_NULL = new Place(false, false, null);
+
+    }
+
+    record InteractBlock(
+            boolean cancelEvent,
+            boolean consumeEvent,
+            @Nullable Block resultBlock
+    ) implements BlockHandlerResult {
+
+        public static final InteractBlock PASSTHROUGH_NULL = new InteractBlock(false, false, null);
 
     }
 

@@ -4,7 +4,6 @@ import net.desolatesky.item.DSItem;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.item.category.ItemCategory;
-import net.desolatesky.item.handler.BasicItemHandler;
 import net.desolatesky.item.handler.ItemHandler;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.item.ItemStack;
@@ -26,7 +25,7 @@ public final class ItemIngredient implements RecipeIngredient {
     public static final ItemIngredient EMPTY = new ItemIngredient(Key.key("empty"), 0, ItemStack::isAir, SlotDisplay.Empty.INSTANCE, null);
 
     public static ItemIngredient exact(ItemStack match) {
-        final Key key = Objects.requireNonNullElseGet(match.getTag(ItemTags.ID), () -> match.material().key());
+        final Key key = Objects.requireNonNullElseGet(match.getTag(ItemTags.ITEM_ID), () -> match.material().key());
         return new ItemIngredient(key, 1, itemStack -> itemStack.isSimilar(match), new SlotDisplay.ItemStack(match), new Ingredient(match.material()));
     }
 

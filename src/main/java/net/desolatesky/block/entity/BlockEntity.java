@@ -38,7 +38,7 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
         if (!(blockHandler instanceof BlockEntityHandler<?> entityHandler)) {
             throw new IllegalArgumentException("Block with key " + key + " does not have a BlockEntityHandler");
         }
-        Preconditions.checkArgument(this.getClass().isAssignableFrom(entityHandler.entityClass()));
+        Preconditions.checkArgument(entityHandler.entityClass().isAssignableFrom(this.getClass()), this.getClass().getName() + " is not assignable from " + entityHandler.entityClass().getName());
         this.server = server;
         this.handler = (BlockEntityHandler<E>) entityHandler;
     }
@@ -57,22 +57,6 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
             this.load(placement, instance);
             instance.addBlockEntity(placement.getBlockPosition());
         }
-//        @SuppressWarnings("unchecked") final E entity = (E) this;
-//        if (placement instanceof final PlayerPlacement playerPlacement) {
-//            final Point cursor = new Vec(playerPlacement.getCursorX(), playerPlacement.getCursorY(), playerPlacement.getCursorZ());
-//            this.handler.onPlayerPlace(
-//                    (DSPlayer) playerPlacement.getPlayer(),
-//                    instance,
-//                    playerPlacement.getBlock(),
-//                    playerPlacement.getBlockPosition(),
-//                    playerPlacement.getHand(),
-//                    playerPlacement.getBlockFace(),
-//                    cursor,
-//                    entity
-//            );
-//            return;
-//        }
-//        this.handler.onPlace(instance, placement.getBlock(), placement.getBlockPosition(), entity);
     }
 
     @Override
@@ -85,50 +69,13 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
             return;
         }
         instance.removeBlockEntity(destroy.getBlockPosition());
-//        @SuppressWarnings("unchecked") final E entity = (E) this;
-//        if (destroy instanceof final PlayerDestroy playerDestroy) {
-//            this.handler.onPlayerDestroy((DSPlayer) playerDestroy.getPlayer(), instance, playerDestroy.getBlock(), playerDestroy.getBlockPosition(), entity);
-//            return;
-//        }
-//        this.handler.onDestroy(instance, destroy.getBlock(), destroy.getBlockPosition());
     }
-
-//    public void onDestroy(@NotNull Destroy destroy, DSInstance instance) {
-//        if (destroy instanceof final PlayerDestroy playerDestroy) {
-//            final ItemStack toolUsed = playerDestroy.getPlayer().getItemInMainHand();
-//            final Point point = playerDestroy.getBlockPosition();
-//            final Block block = playerDestroy.getBlock();
-//            final Collection<ItemStack> drops = this.generateDrops(this.server.itemRegistry(), toolUsed, point, block);
-//            final WorldEventPacket packet = PacketUtil.blockBreakPacket(point, block);
-//            final DSPlayer player = (DSPlayer) playerDestroy.getPlayer();
-//            player.sendPacket(packet);
-//            if (!drops.isEmpty()) {
-//                final InstancePoint<Pos> instancePoint = new InstancePoint<>(instance, new Pos(point));
-//                drops.forEach(drop -> InventoryUtil.addItemToInventory(player, drop, instancePoint));
-//            }
-//        }
-//    }
 
     @Override
     public final boolean onInteract(@NotNull Interaction interaction) {
         if (!(interaction.getInstance() instanceof final DSInstance instance)) {
             return BlockHandler.super.onInteract(interaction);
         }
-//        @SuppressWarnings("unchecked") final E entity = (E) this;
-//        final InteractionResult result = this.handler.onPlayerInteract(
-//                (DSPlayer) interaction.getPlayer(),
-//                instance,
-//                interaction.getBlock(),
-//                interaction.getBlockPosition(),
-//                interaction.getHand(),
-//                interaction.getBlockFace(),
-//                interaction.getCursorPosition(),
-//                entity
-//        );
-//        return switch (result) {
-//            case PASSTHROUGH -> true;
-//            case CONSUME_INTERACTION -> false;
-//        };
         return false;
     }
 
@@ -166,5 +113,9 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
     public abstract @Nullable Block save(DSInstance instance, Point point, Block block);
 
     public abstract void load(Placement placement, DSInstance instance);
+
+    public DSBlockHandler blockHandler() {
+        return this.handler;
+    }
 
 }

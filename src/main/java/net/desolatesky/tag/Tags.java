@@ -1,13 +1,18 @@
-package net.desolatesky.util;
+package net.desolatesky.tag;
 
+import net.desolatesky.util.Namespace;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.BinaryTag;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
+import net.minestom.server.tag.TagReadable;
 import net.minestom.server.tag.TagSerializer;
+import net.minestom.server.tag.TagWritable;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 

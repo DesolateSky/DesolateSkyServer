@@ -45,7 +45,7 @@ public final class CraftingMenuListener implements DSEventHandlers<InventoryEven
                 return this.handlePlayerInventoryPreClick(event, eventPlayerInventory);
             }
             if (!(InventoryUtil.getClickedInventory(eventInventory, playerInventory, click) instanceof final CraftingMenu craftingMenu)) {
-                return EventHandlerResult.CONSUME_EVENT;
+                return EventHandlerResult.CONTINUE_LISTENING;
             }
             final boolean cancel = this.handlePreClick(event.getPlayer(), playerInventory, craftingMenu, craftingMenu.craftingHandler(), click);
             if (cancel) {

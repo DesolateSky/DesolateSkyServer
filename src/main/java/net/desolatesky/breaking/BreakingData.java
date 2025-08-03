@@ -18,6 +18,7 @@ public final class BreakingData {
     private final int id;
     private Duration currentBreakingTime = Duration.ZERO;
     private Instant lastHitTime;
+    private Instant lastSoundTime;
     private boolean currentlyBreaking = true;
 
     public BreakingData(DSInstance instance, DSPlayer player, BlockVec blockPos, Block block, int id, Instant lastHitTime) {
@@ -27,6 +28,7 @@ public final class BreakingData {
         this.block = block;
         this.id = id;
         this.lastHitTime = lastHitTime;
+        this.lastSoundTime = Instant.MIN;
     }
 
     public BreakingData(DSInstance instance, DSPlayer player, BlockVec blockPos, Block block, int id) {
@@ -59,6 +61,14 @@ public final class BreakingData {
 
     public void setLastHitTime(Instant lastHitTime) {
         this.lastHitTime = lastHitTime;
+    }
+
+    public Instant lastSoundTime() {
+        return this.lastSoundTime;
+    }
+
+    public void setLastSoundTime(Instant lastSoundTime) {
+        this.lastSoundTime = lastSoundTime;
     }
 
     public boolean currentlyBreaking() {

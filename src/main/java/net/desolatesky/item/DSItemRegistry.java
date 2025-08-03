@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import net.desolatesky.item.category.ItemCategory;
-import net.desolatesky.item.handler.BasicItemHandler;
 import net.desolatesky.item.handler.ItemHandler;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.item.ItemStack;
@@ -65,7 +64,7 @@ public final class DSItemRegistry {
     }
 
     public @Nullable ItemHandler getItemHandler(ItemStack itemStack) {
-        Key id = itemStack.getTag(ItemTags.ID);
+        Key id = itemStack.getTag(ItemTags.ITEM_ID);
         if (id == null) {
             id = itemStack.material().key();
         }
@@ -81,7 +80,7 @@ public final class DSItemRegistry {
     }
 
     public @Nullable DSItem getItem(ItemStack itemStack) {
-        Key id = itemStack.getTag(ItemTags.ID);
+        Key id = itemStack.getTag(ItemTags.ITEM_ID);
         if (id == null) {
             id = itemStack.material().key();
         }

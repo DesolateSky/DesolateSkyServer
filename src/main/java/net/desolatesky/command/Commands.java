@@ -2,6 +2,7 @@ package net.desolatesky.command;
 
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.command.admin.ClearInventoryCommand;
+import net.desolatesky.command.admin.FlyCommand;
 import net.desolatesky.command.admin.GiveCommand;
 import net.desolatesky.command.admin.StopCommand;
 import net.desolatesky.command.player.CraftCommand;
@@ -9,6 +10,7 @@ import net.desolatesky.command.player.DiscordCommand;
 import net.desolatesky.command.player.IslandCommand;
 import net.desolatesky.command.player.LaunchCommand;
 import net.desolatesky.command.player.SpawnCommand;
+import net.desolatesky.command.player.ToolMenuCommand;
 import net.minestom.server.command.CommandManager;
 
 public final class Commands {
@@ -24,7 +26,9 @@ public final class Commands {
                 new LaunchCommand(server.messageHandler()),
                 new SpawnCommand(server),
                 new CraftCommand(),
+                new ToolMenuCommand(server.itemRegistry(), server.toolPartRegistry()),
                 new GiveCommand(server.itemRegistry()),
+                new FlyCommand(),
                 new DiscordCommand()
         );
     }

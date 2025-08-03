@@ -22,7 +22,7 @@ import net.desolatesky.loot.generator.LootGeneratorType;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
-import net.desolatesky.util.Tags;
+import net.desolatesky.tag.Tags;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.ItemEntity;
@@ -33,6 +33,8 @@ import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -41,6 +43,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SifterBlockEntity.class);
 
     public static final BlockSettings SETTINGS = BlockSettings.builder(BlockKeys.SIFTER, DSItems.SIFTER.create())
             .breakTime(1_000)
@@ -80,22 +84,27 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
     }
 
     private void spawnEntity(DSInstance instance, Point position) {
-        this.entity = new SifterBlockDisplayEntity(this.siftingBlock, this.siftingBlock, position, this);
+        final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(this.siftingBlock);
+        if (blockHandler == null) {
+            LOGGER.warn("No block handler found for sifting block: {}", this.siftingBlock);
+            return;
+        }
+        this.entity = new SifterBlockDisplayEntity(this.siftingBlock, this.siftingBlock, blockHandler, position, this);
         this.entity.setInstance(instance, position.add(0, 1, 0)).thenRun(() -> {
             this.entity.setStage(this.stage);
         });
     }
 
-    public BlockHandlerResult click(DSPlayer player, DSInstance instance, Point blockPosition, boolean clickNearby) {
+    public BlockHandlerResult.InteractBlock click(DSPlayer player, DSInstance instance, Point blockPosition, boolean clickNearby) {
         final ItemStack itemStack = player.getItemInMainHand();
         if (player.isSneaking()) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock();
         }
         if (this.lastClick.plus(COOLDOWN).isAfter(Instant.now())) {
-            return BlockHandlerResult.CONSUME_CANCEL;
+            return BlockHandlerResult.consumeInteractBlock(null, true);
         }
         if (this.entity != null && !this.entity.isRemoved()) {
-            final AtomicReference<BlockHandlerResult> result = new AtomicReference<>(BlockHandlerResult.PASS_THROUGH);
+            final AtomicReference<BlockHandlerResult.InteractBlock> result = new AtomicReference<>(BlockHandlerResult.passthroughInteractBlock());
             this.entity.acquirable().sync(unused -> {
                 final boolean wasCompleted = this.isComplete();
                 this.addStage();
@@ -112,21 +121,21 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
                 if (this.entity.isRemoved()) {
                     this.entity = null;
                 }
-                result.set(BlockHandlerResult.CONSUME_CANCEL);
+                result.set(BlockHandlerResult.consumeInteractBlock(null, true));
             });
             return result.get();
         }
         final Key blockKey = itemStack.getTag(ItemTags.BLOCK_ID);
         if (blockKey == null) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock();
         }
         final Block block = this.server.blockRegistry().create(blockKey);
         if (block == null) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock();
         }
         final LootGenerator lootGenerator = this.getLootGeneratorForBlock(block);
         if (lootGenerator == null) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock();
         }
         this.siftingBlock = block;
         this.addStage();
@@ -136,7 +145,7 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
         if (clickNearby) {
             this.clickNearbySifters(player, instance, blockPosition, 1);
         }
-        return BlockHandlerResult.CONSUME_CANCEL;
+        return BlockHandlerResult.passthroughInteractBlock();
     }
 
     private void clickNearbySifters(DSPlayer player, DSInstance instance, Point point, int radius) {
@@ -223,7 +232,7 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
         }
 
         @Override
-        public BlockHandlerResult onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, SifterBlockEntity entity) {
+        public BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, SifterBlockEntity entity) {
             return entity.click(player, instance, blockPosition, true);
         }
 

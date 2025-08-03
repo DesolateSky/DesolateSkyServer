@@ -5,6 +5,7 @@ import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.player.DSPlayer;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.item.ItemStack;
 
 public abstract class ToolActionData {
@@ -12,19 +13,17 @@ public abstract class ToolActionData {
     protected final DSPlayer player;
     protected final DSInstance instance;
     protected final ItemStack toolUsed;
-    protected final int amountOfToolsUsed;
+    protected final PlayerHand hand;
     protected boolean cancelled = false;
 
     /**
      * @param toolUsed          the {@link ItemStack} used to actually break the block.
-     * @param amountOfToolsUsed A tool can have multiple of the same part, for example 2 diamond pickaxe heads.
-     *                          This is the amount of tools used, so if you have 2 diamond pickaxe heads, this will be 2.
      */
-    public ToolActionData(DSPlayer player, DSInstance instance, ItemStack toolUsed, int amountOfToolsUsed) {
+    public ToolActionData(DSPlayer player, DSInstance instance, ItemStack toolUsed, PlayerHand hand) {
         this.player = player;
         this.instance = instance;
         this.toolUsed = toolUsed;
-        this.amountOfToolsUsed = amountOfToolsUsed;
+        this.hand = hand;
     }
 
     public DSPlayer player() {
@@ -39,8 +38,8 @@ public abstract class ToolActionData {
         return this.toolUsed;
     }
 
-    public int amountOfToolsUsed() {
-        return this.amountOfToolsUsed;
+    public PlayerHand hand() {
+        return this.hand;
     }
 
     public boolean cancelled() {

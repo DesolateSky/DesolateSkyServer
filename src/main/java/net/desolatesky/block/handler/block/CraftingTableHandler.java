@@ -18,13 +18,13 @@ public class CraftingTableHandler extends DSBlockHandler {
     }
 
     @Override
-    public BlockHandlerResult onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
+    public BlockHandlerResult.InteractBlock onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
         if (player.isSneaking()) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock();
         }
         final CraftingMenu craftingMenu = new CraftingMenu();
         player.openInventory(craftingMenu);
-        return BlockHandlerResult.CONSUME_CANCEL;
+        return BlockHandlerResult.consumeInteractBlock(null, true);
     }
 
 }

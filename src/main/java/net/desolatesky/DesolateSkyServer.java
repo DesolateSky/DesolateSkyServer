@@ -25,6 +25,7 @@ import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.biome.Biomes;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.loot.ItemLootRegistry;
+import net.desolatesky.item.tool.registry.ToolPartRegistry;
 import net.desolatesky.listener.DSListener;
 import net.desolatesky.listener.type.BlockInteractionListener;
 import net.desolatesky.listener.type.ItemInteractionListener;
@@ -60,7 +61,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -125,6 +125,10 @@ public final class DesolateSkyServer {
 
     public EntityLootRegistry entityLootRegistry() {
         return this.registries.entityLootRegistry();
+    }
+
+    public ToolPartRegistry toolPartRegistry() {
+        return this.registries.toolPartRegistry();
     }
 
     public CraftingManager craftingManager() {
@@ -292,7 +296,8 @@ public final class DesolateSkyServer {
         final DSItemRegistry itemRegistry = DSItemRegistry.create(new HashMap<>());
         final ItemLootRegistry itemLootRegistry = ItemLootRegistry.create();
         final EntityLootRegistry entityLootRegistry = EntityLootRegistry.create();
-        return new DSRegistries(blockRegistry, itemRegistry, itemLootRegistry, entityLootRegistry);
+        final ToolPartRegistry toolPartRegistry = ToolPartRegistry.create();
+        return new DSRegistries(blockRegistry, itemRegistry, itemLootRegistry, entityLootRegistry, toolPartRegistry);
     }
 
     private DSBlockRegistry loadBlockRegistry() {

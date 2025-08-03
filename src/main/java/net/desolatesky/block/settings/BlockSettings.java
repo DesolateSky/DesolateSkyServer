@@ -8,6 +8,7 @@ import net.desolatesky.loot.table.LootTable;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
+import net.kyori.adventure.sound.Sound;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.tag.Tag;
@@ -20,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class BlockSettings implements Keyed {
 
@@ -31,19 +33,21 @@ public final class BlockSettings implements Keyed {
     private final @Nullable Key blockItemKey;
     private final MiningLevel miningLevel;
     private final @Unmodifiable Set<Category> categories;
+    private final @Nullable BlockSoundSettings soundSettings;
     /**
      * For when this block needs to be displayed in a menu
      */
     private final ItemStack menuItem;
     private final CompoundBinaryTag taggedSettings;
 
-    public BlockSettings(Key key, LootTable lootTable, Duration breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
+    public BlockSettings(Key key, LootTable lootTable, Duration breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, @Nullable BlockSoundSettings soundSettings, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
         this.key = key;
         this.lootTable = lootTable;
         this.breakTime = breakTime;
         this.blockItemKey = blockItemkey;
         this.miningLevel = miningLevel;
         this.categories = Set.copyOf(categories);
+        this.soundSettings = soundSettings;
         this.menuItem = menuItem;
         this.taggedSettings = taggedSettings;
     }
@@ -51,8 +55,8 @@ public final class BlockSettings implements Keyed {
     /**
      * @param breakTime break time in milliseconds
      */
-    public BlockSettings(Key key, LootTable lootTable, int breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
-        this(key, lootTable, Duration.ofMillis(breakTime), blockItemkey, miningLevel,categories, menuItem, taggedSettings);
+    public BlockSettings(Key key, LootTable lootTable, int breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, @Nullable BlockSoundSettings soundSettings, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
+        this(key, lootTable, Duration.ofMillis(breakTime), blockItemkey, miningLevel, categories, soundSettings, menuItem, taggedSettings);
     }
 
     @Override
@@ -84,7 +88,19 @@ public final class BlockSettings implements Keyed {
     }
 
     public @Unmodifiable Set<Category> categories() {
-        return Collections.unmodifiableSet(this.categories);
+        return this.categories;
+    }
+
+    public @Nullable BlockSoundSettings soundSettings() {
+        return this.soundSettings;
+    }
+
+    public @Nullable Sound breakSound() {
+        return this.soundSettings != null ? this.soundSettings.breakSound() : null;
+    }
+
+    public @Nullable Sound digSound() {
+        return this.soundSettings != null ? this.soundSettings.digSound() : null;
     }
 
     public boolean isCategory(Category category) {
@@ -115,6 +131,7 @@ public final class BlockSettings implements Keyed {
         private @Nullable Key blockItemKey = null;
         private MiningLevel miningLevel = MiningLevels.NONE;
         private final Set<Category> categories = new HashSet<>();
+        private @Nullable BlockSoundSettings soundSettings = null;
         private final ItemStack menuItem;
         private CompoundBinaryTag.Builder taggedSettings = CompoundBinaryTag.builder();
 
@@ -129,7 +146,6 @@ public final class BlockSettings implements Keyed {
         }
 
         /**
-         *
          * @param breakTime in milliseconds
          */
         public Builder breakTime(int breakTime) {
@@ -162,6 +178,18 @@ public final class BlockSettings implements Keyed {
             return this;
         }
 
+        public Builder soundSettings(@Nullable BlockSoundSettings soundSettings) {
+            this.soundSettings = soundSettings;
+            return this;
+        }
+
+        public Builder soundSettings(Consumer<BlockSoundSettings.Builder> soundSettingsConsumer) {
+            final BlockSoundSettings.Builder builder = BlockSoundSettings.builder();
+            soundSettingsConsumer.accept(builder);
+            this.soundSettings = builder.build();
+            return this;
+        }
+
         public Builder taggedSettings(CompoundBinaryTag taggedSettings) {
             this.taggedSettings = CompoundBinaryTag.builder();
             return this;
@@ -173,7 +201,7 @@ public final class BlockSettings implements Keyed {
         }
 
         public BlockSettings build() {
-            return new BlockSettings(this.key, this.lootTable, this.breakTime, this.blockItemKey, this.miningLevel, this.categories, this.menuItem, this.taggedSettings.build());
+            return new BlockSettings(this.key, this.lootTable, this.breakTime, this.blockItemKey, this.miningLevel, this.categories, this.soundSettings, this.menuItem, this.taggedSettings.build());
         }
 
     }

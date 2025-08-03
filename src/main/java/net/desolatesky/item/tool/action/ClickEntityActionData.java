@@ -4,6 +4,7 @@ import net.desolatesky.entity.DSEntity;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.PhysicalClickType;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.item.ItemStack;
 
 public final class ClickEntityActionData extends ToolActionData {
@@ -11,8 +12,8 @@ public final class ClickEntityActionData extends ToolActionData {
     private final DSEntity clickedEntity;
     private final PhysicalClickType clickType;
 
-    public ClickEntityActionData(DSPlayer player, DSInstance instance, ItemStack toolUsed, int amountOfToolsUsed, DSEntity clickedEntity, PhysicalClickType clickType) {
-        super(player, instance, toolUsed, amountOfToolsUsed);
+    public ClickEntityActionData(DSPlayer player, DSInstance instance, ItemStack toolUsed, PlayerHand hand, DSEntity clickedEntity, PhysicalClickType clickType) {
+        super(player, instance, toolUsed, hand);
         this.clickedEntity = clickedEntity;
         this.clickType = clickType;
     }

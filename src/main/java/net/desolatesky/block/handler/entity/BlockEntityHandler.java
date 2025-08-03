@@ -35,14 +35,14 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
      * Override this method to handle the placement of the block entity.
      */
     public BlockHandlerResult.Place onPlace(DSInstance instance, Block block, Point blockPosition, T entity) {
-        return BlockHandlerResult.passthroughPlace(block);
+        return BlockHandlerResult.passthroughPlace();
     }
 
     @Override
     public final BlockHandlerResult.Place onPlayerPlace(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
         final BlockHandler blockHandler = block.handler();
         if (!this.entityClass.isInstance(blockHandler)) {
-            return BlockHandlerResult.passthroughPlace(block);
+            return BlockHandlerResult.passthroughPlace();
         }
         return this.onPlayerPlace(player, instance, block, blockPosition, hand, face, cursorPosition, this.entityClass.cast(blockHandler));
     }
@@ -51,7 +51,7 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
      * Override this method to handle the placement of the block entity by a player.
      */
     public BlockHandlerResult.Place onPlayerPlace(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
-        return BlockHandlerResult.passthroughPlace(block);
+        return BlockHandlerResult.passthroughPlace();
     }
 
     @Override
@@ -87,10 +87,10 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     }
 
     @Override
-    public final BlockHandlerResult onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
+    public final BlockHandlerResult.InteractBlock onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
         final BlockHandler blockHandler = block.handler();
         if (!this.entityClass.isInstance(blockHandler)) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock(block);
         }
         return this.onPlayerInteract((DSPlayer) player, instance, block, blockPosition, hand, face, cursorPosition, this.entityClass.cast(blockHandler));
     }
@@ -98,14 +98,14 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     /**
      * Override this method to handle player interactions with the block entity.
      */
-    public BlockHandlerResult onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
-        return BlockHandlerResult.PASS_THROUGH;
+    public BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
+        return BlockHandlerResult.passthroughInteractBlock(block);
     }
 
     @Override
-    public final BlockHandlerResult onBlockEntityInteract(BlockEntity<?> actor, DSInstance instance, Block block, Point blockPosition, BlockFace face) {
+    public final BlockHandlerResult.InteractBlock onBlockEntityInteract(BlockEntity<?> actor, DSInstance instance, Block block, Point blockPosition, BlockFace face) {
         if (!this.entityClass.isInstance(actor)) {
-            return BlockHandlerResult.PASS_THROUGH;
+            return BlockHandlerResult.passthroughInteractBlock(block);
         }
         return this.onBlockEntityInteract(this.entityClass.cast(actor), instance, block, blockPosition, face, this.entityClass.cast(block.handler()));
     }
@@ -113,8 +113,8 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     /**
      * Override this method to handle interactions with the block entity by another block entity.
      */
-    public BlockHandlerResult onBlockEntityInteract(BlockEntity<?> actor, DSInstance instance, Block block, Point blockPosition, BlockFace face, T entity) {
-        return BlockHandlerResult.PASS_THROUGH;
+    public BlockHandlerResult.InteractBlock onBlockEntityInteract(BlockEntity<?> actor, DSInstance instance, Block block, Point blockPosition, BlockFace face, T entity) {
+        return BlockHandlerResult.passthroughInteractBlock(block);
     }
 
     @Override

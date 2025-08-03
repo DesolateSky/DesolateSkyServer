@@ -4,6 +4,7 @@ import net.desolatesky.menu.Menu;
 import net.desolatesky.menu.item.MenuButton;
 import net.desolatesky.menu.item.SimpleMenuButton;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface Pattern {
@@ -16,6 +17,10 @@ public interface Pattern {
 
     static Pattern border(MenuButton item) {
         return new BorderPattern(item);
+    }
+
+    static Pattern fill(MenuButton fillItem, Collection<Integer> excludeSlots) {
+        return new FillPattern(fillItem, excludeSlots);
     }
 
 }

@@ -4,7 +4,7 @@ import net.desolatesky.crafting.CraftingManager;
 import net.desolatesky.crafting.recipe.CraftingRecipe;
 import net.desolatesky.crafting.recipe.RecipeType;
 import net.desolatesky.util.InventoryUtil;
-import net.desolatesky.util.Tags;
+import net.desolatesky.tag.Tags;
 import net.desolatesky.util.array.ShiftedArray;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.click.Click;

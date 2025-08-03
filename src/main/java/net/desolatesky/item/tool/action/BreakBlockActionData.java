@@ -3,13 +3,14 @@ package net.desolatesky.item.tool.action;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.player.DSPlayer;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 
 import java.util.LinkedHashSet;
 import java.util.SequencedSet;
 
-public final class BreakActionData extends ToolActionData {
+public final class BreakBlockActionData extends ToolActionData {
 
     private final Point blockPosition;
     private final Block blockBroken;
@@ -17,11 +18,9 @@ public final class BreakActionData extends ToolActionData {
 
     /**
      * @param toolUsed          the {@link ItemStack} used to actually break the block.
-     * @param amountOfToolsUsed A tool can have multiple of the same part, for example 2 diamond pickaxe heads.
-     *                          This is the amount of tools used, so if you have 2 diamond pickaxe heads, this will be 2.
      */
-    public BreakActionData(DSPlayer player, DSInstance instance, Point blockPosition, Block blockBroken, ItemStack toolUsed, int amountOfToolsUsed) {
-        super(player, instance, toolUsed, amountOfToolsUsed);
+    public BreakBlockActionData(DSPlayer player, DSInstance instance, Point blockPosition, Block blockBroken, ItemStack toolUsed) {
+        super(player, instance, toolUsed, PlayerHand.MAIN);
         this.blockPosition = blockPosition;
         this.blockBroken = blockBroken;
         this.blockPositionsBroken = new LinkedHashSet<>();

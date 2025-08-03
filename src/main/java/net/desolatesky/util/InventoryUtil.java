@@ -35,6 +35,10 @@ public final class InventoryUtil {
         addItemToInventory(player.getInventory(), item, dropPosition);
     }
 
+    public static void addItemToInventory(DSPlayer player, ItemStack item) {
+        addItemToInventory(player, item, player.getInstancePosition());
+    }
+
     public static void addItemsToInventory(AbstractInventory inventory, Collection<ItemStack> items, InstancePoint<? extends Point> dropPosition) {
         for (final ItemStack item : items) {
             addItemToInventory(inventory, item, dropPosition);

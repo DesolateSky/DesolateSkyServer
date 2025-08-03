@@ -21,20 +21,25 @@ public final class Recipes {
                 {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
         }, DSItems.PETRIFIED_PLANKS::create));
         craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.exact(DSItems.PETRIFIED_LOG), ItemIngredient.EMPTY, ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
+        }, DSItems.PETRIFIED_PLANKS::create, 4));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
                 {ItemIngredient.exact(DSItems.PETRIFIED_PLANKS), ItemIngredient.exact(DSItems.PETRIFIED_PLANKS), ItemIngredient.exact(DSItems.PETRIFIED_PLANKS)},
                 {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY},
                 {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
         }, DSItems.PETRIFIED_SLAB::create, 6));
         craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
-                {ItemIngredient.exact(DSItems.DUST), ItemIngredient.exact(DSItems.DUST), ItemIngredient.EMPTY},
-                {ItemIngredient.exact(DSItems.DUST), ItemIngredient.exact(DSItems.DUST), ItemIngredient.EMPTY},
-                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
-        }, DSItems.DUST_BLOCK::create));
-        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
                 {ItemIngredient.tag(MaterialTags.MINECRAFT_PLANKS), ItemIngredient.tag(MaterialTags.MINECRAFT_PLANKS), ItemIngredient.EMPTY},
                 {ItemIngredient.tag(MaterialTags.MINECRAFT_PLANKS), ItemIngredient.tag(MaterialTags.MINECRAFT_PLANKS), ItemIngredient.EMPTY},
                 {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
         }, DSItems.CRAFTING_TABLE::create));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.exact(DSItems.DUST), ItemIngredient.exact(DSItems.DUST), ItemIngredient.EMPTY},
+                {ItemIngredient.exact(DSItems.DUST), ItemIngredient.exact(DSItems.DUST), ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
+        }, DSItems.DUST_BLOCK::create));
         craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
                 {ItemIngredient.exact(DSItems.FIBER), ItemIngredient.exact(DSItems.FIBER), ItemIngredient.EMPTY},
                 {ItemIngredient.exact(DSItems.FIBER), ItemIngredient.exact(DSItems.FIBER), ItemIngredient.EMPTY},
@@ -50,6 +55,26 @@ public final class Recipes {
                 {ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry), ItemIngredient.EMPTY, ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry)},
                 {ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry), ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry), ItemIngredient.category(ItemCategories.WOODEN_SLABS, itemRegistry)}
         }, DSItems.COMPOSTER::create));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.exact(DSItems.DEAD_LEAVES), ItemIngredient.exact(DSItems.DEAD_LEAVES), ItemIngredient.exact(DSItems.DEAD_LEAVES)},
+                {ItemIngredient.exact(DSItems.DEAD_LEAVES), ItemIngredient.exact(DSItems.LIFE_ESSENCE), ItemIngredient.exact(DSItems.DEAD_LEAVES)},
+                {ItemIngredient.exact(DSItems.DEAD_LEAVES), ItemIngredient.exact(DSItems.DEAD_LEAVES), ItemIngredient.exact(DSItems.DEAD_LEAVES)}
+        }, DSItems.PETRIFIED_SAPLING::create));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.exact(DSItems.SAND_CHUNK), ItemIngredient.exact(DSItems.SAND_CHUNK), ItemIngredient.EMPTY},
+                {ItemIngredient.exact(DSItems.SAND_CHUNK), ItemIngredient.exact(DSItems.SAND_CHUNK), ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
+        }, DSItems.SAND::create));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.exact(DSItems.GRAVEL_CHUNK), ItemIngredient.exact(DSItems.GRAVEL_CHUNK), ItemIngredient.EMPTY},
+                {ItemIngredient.exact(DSItems.GRAVEL_CHUNK), ItemIngredient.exact(DSItems.GRAVEL_CHUNK), ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
+        }, DSItems.GRAVEL::create));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.exact(DSItems.CLAY_BALL), ItemIngredient.exact(DSItems.CLAY_BALL), ItemIngredient.EMPTY},
+                {ItemIngredient.exact(DSItems.CLAY_BALL), ItemIngredient.exact(DSItems.CLAY_BALL), ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
+        }, DSItems.CLAY::create));
     }
 
 }

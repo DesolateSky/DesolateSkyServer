@@ -38,8 +38,8 @@ public final class PlayerData {
                     .map(tag -> {
                         try {
                             return TagStringIO.tagStringIO().asString(tag);
-                        } catch (IOException e) {
-                            LoggerFactory.getLogger(PlayerData.class).error("Failed to encode item stack to string", e);
+                        } catch (Exception e) {
+                            LoggerFactory.getLogger(PlayerData.class).error("Failed to encode item stack to string {}", tag, e);
                             return "";
                         }
                     })
@@ -74,9 +74,9 @@ public final class PlayerData {
                 savedInventory = inventoryJson.stream()
                         .map(nbt -> {
                             try {
-                                return TagStringIO.tagStringIO().asTag(nbt);
-                            } catch (IOException e) {
-                                LoggerFactory.getLogger(PlayerData.class).error("Failed to decode item stack from string", e);
+                                return TagStringIO.tagStringIO().asCompound(nbt);
+                            } catch (Exception e) {
+                                LoggerFactory.getLogger(PlayerData.class).error("Failed to decode item stack from string {}", nbt, e);
                                 return CompoundBinaryTag.empty();
                             }
                         })

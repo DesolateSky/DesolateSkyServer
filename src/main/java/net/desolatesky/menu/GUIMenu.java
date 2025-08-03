@@ -6,8 +6,10 @@ import net.desolatesky.menu.item.MenuButton;
 import net.desolatesky.menu.pattern.Pattern;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.InventoryType;
+import net.minestom.server.inventory.PlayerInventory;
 import net.minestom.server.inventory.click.Click;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,6 +18,7 @@ import java.util.Map;
 
 public class GUIMenu implements Menu {
 
+    protected final DSPlayer player;
     protected final InventoryType inventoryType;
     protected Component title;
     protected final Map<Integer, MenuButton> menuItems;
@@ -25,7 +28,16 @@ public class GUIMenu implements Menu {
 
     protected final Inventory inventory;
 
-    public GUIMenu(InventoryType inventoryType, Component title, Map<Integer, MenuButton> menuItems, Map<Integer, ClickAction> clickActions, List<Pattern> patterns, @Nullable ClickAction defaultClickAction) {
+    public GUIMenu(
+            DSPlayer player,
+            InventoryType inventoryType,
+            Component title,
+            Map<Integer, MenuButton> menuItems,
+            Map<Integer, ClickAction> clickActions,
+            List<Pattern> patterns,
+            @Nullable ClickAction defaultClickAction
+    ) {
+        this.player = player;
         this.inventoryType = inventoryType;
         this.title = title;
         this.menuItems = menuItems;
@@ -52,30 +64,39 @@ public class GUIMenu implements Menu {
     }
 
     @Override
-    public ClickResult click(DSPlayer player, Click click) {
-        final int slot = click.slot();
+    public ClickResult click(AbstractInventory clickedInventory, Click click, int slot) {
+        if (clickedInventory instanceof PlayerInventory) {
+            final ClickAction.Result result = this.click(clickedInventory, click, slot, this.defaultClickAction);
+            if (result == null) {
+                return ClickResult.CONTINUE;
+            }
+            if (result.cancel()) {
+                return ClickResult.CANCEL;
+            }
+            return ClickResult.CONTINUE;
+        }
         final MenuButton item = this.getItem(slot);
         ClickAction.Result currentResult = null;
         if (item != null) {
-            currentResult = this.click(player, click, item.action());
+            currentResult = this.click(clickedInventory, click, slot, item.action());
         }
         boolean cancel = currentResult != null && currentResult.cancel();
         if (currentResult == null || currentResult.allowOtherActions()) {
-            currentResult = this.click(player, click, this.getClickAction(slot));
+            currentResult = this.click(clickedInventory, click, slot, this.getClickAction(slot));
         }
         cancel = cancel || (currentResult != null && currentResult.cancel());
         if (currentResult == null || currentResult.allowOtherActions()) {
-            currentResult = this.click(player, click, this.defaultClickAction);
+            currentResult = this.click(clickedInventory, click, slot, this.defaultClickAction);
         }
         cancel = cancel || (currentResult != null && currentResult.cancel());
         return cancel ? ClickResult.CANCEL : ClickResult.CONTINUE;
     }
 
-    private @Nullable ClickAction.Result click(DSPlayer player, Click click, @Nullable ClickAction clickAction) {
+    private @Nullable ClickAction.Result click(AbstractInventory clickedInventory, Click click, int slot, @Nullable ClickAction clickAction) {
         if (clickAction == null) {
             return null;
         }
-        final ClickData clickData = new ClickData(this, player, click.slot(), click, this.inventory.getItemStack(click.slot()));
+        final ClickData clickData = new ClickData(this, clickedInventory, slot, click, this.inventory.getItemStack(click.slot()));
         return clickAction.onClick(clickData);
     }
 
@@ -90,9 +111,9 @@ public class GUIMenu implements Menu {
     }
 
     @Override
-    public void open(DSPlayer player) {
+    public void open() {
         this.refresh();
-        player.openInventory(this.inventory);
+        this.player.openInventory(this.inventory);
     }
 
     @Override
@@ -123,6 +144,16 @@ public class GUIMenu implements Menu {
     @Override
     public @Nullable ClickAction getClickAction(int slot) {
         return this.clickActions.get(slot);
+    }
+
+    @Override
+    public void onClose() {
+
+    }
+
+    @Override
+    public DSPlayer player() {
+        return this.player;
     }
 
 }

@@ -26,19 +26,27 @@ public final class DSItem implements Keyed {
     }
 
     public static DSItem create(ItemStack itemStack) {
-        final Key key = Objects.requireNonNullElse(itemStack.getTag(ItemTags.ID), itemStack.material().key());
+        final Key key = Objects.requireNonNullElse(itemStack.getTag(ItemTags.ITEM_ID), itemStack.material().key());
         return new DSItem(key, null, itemStack);
     }
 
     public static DSItem create(Key key, @Nullable ItemHandler itemHandler, ItemStack itemStack) {
         if (!key.equals(itemStack.material().key())) {
-            itemStack = itemStack.withTag(ItemTags.ID, key);
+            itemStack = itemStack.withTag(ItemTags.ITEM_ID, key);
         }
         return new DSItem(key, itemHandler, itemStack);
     }
 
     public static DSItem create(Key key, ItemStack itemStack) {
-        return new DSItem(key, null, itemStack);
+        return create(key, null, itemStack);
+    }
+
+    public static Key getIdFor(ItemStack itemStack) {
+        final Key key = itemStack.getTag(ItemTags.ITEM_ID);
+        if (key != null) {
+            return key;
+        }
+        return itemStack.material().key();
     }
 
     private DSItem(Key key, @Nullable ItemHandler itemHandler, ItemStack itemStack) {
@@ -73,6 +81,13 @@ public final class DSItem implements Keyed {
             return this.itemHandler.getTagData(itemStack, tag);
         }
         return itemStack.getTag(tag);
+    }
+
+    public <T> @Nullable T getTag(Tag<T> tag) {
+        if (this.itemHandler != null) {
+            return this.itemHandler.getTagData(this.itemStack, tag);
+        }
+        return this.itemStack.getTag(tag);
     }
 
     public @Nullable LootTable getLootTable(ItemLootRegistry lootRegistry) {

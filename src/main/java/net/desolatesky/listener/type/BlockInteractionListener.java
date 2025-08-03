@@ -4,7 +4,6 @@ import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.instance.DSInstance;
-import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.listener.DSEventHandler;
@@ -12,23 +11,17 @@ import net.desolatesky.listener.DSEventHandlers;
 import net.desolatesky.listener.DSListener;
 import net.desolatesky.listener.EventHandlerResult;
 import net.desolatesky.player.DSPlayer;
-import net.desolatesky.util.InventoryUtil;
-import net.desolatesky.util.PacketUtil;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.Event;
-import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
 import net.minestom.server.event.player.PlayerStartDiggingEvent;
 import net.minestom.server.event.player.PlayerUseItemOnBlockEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
-import net.minestom.server.network.packet.server.play.WorldEventPacket;
 import org.jetbrains.annotations.Contract;
-
-import java.util.Collection;
 
 public final class BlockInteractionListener implements DSEventHandlers<Event> {
 
@@ -46,7 +39,8 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
         return builder.handler(PlayerUseItemOnBlockEvent.class, this.useItemOnBlockHandler())
                 .handler(PlayerBlockPlaceEvent.class, this.blockPlaceHandler())
                 .handler(PlayerStartDiggingEvent.class, this.playerPunchBlockHandler())
-                .handler(PlayerBlockBreakEvent.class, this.blockBreakHandler());
+//                .handler(PlayerBlockBreakEvent.class, this.blockBreakHandler())
+                ;
     }
 
     private DSEventHandler<PlayerUseItemOnBlockEvent> useItemOnBlockHandler() {
@@ -58,7 +52,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
             final Point cursor = new Vec(0);
             final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(clickedBlock);
             if (blockHandler != null) {
-                final BlockHandlerResult result = blockHandler.onPlayerInteract(
+                final BlockHandlerResult.InteractBlock result = blockHandler.onPlayerInteract(
                         player,
                         instance,
                         clickedBlock,
@@ -67,6 +61,10 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
                         event.getBlockFace(),
                         cursor
                 );
+                final Block resultBlock = result.resultBlock();
+                if (resultBlock != null) {
+                    instance.setBlock(clickedPoint, resultBlock);
+                }
                 return result.toEventHandlerResult();
             }
             return EventHandlerResult.CONTINUE_LISTENING;
@@ -92,7 +90,10 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
                     final Point cursor = new Vec(0);
                     final BlockFace blockFace = event.getBlockFace();
                     final BlockHandlerResult.Place result = blockHandler.onPlayerPlace(player, instance, block, event.getBlockPosition(), event.getHand(), blockFace, cursor);
-                    event.setBlock(result.resultBlock());
+                    final Block resultBlock = result.resultBlock();
+                    if (resultBlock != null) {
+                        event.setBlock(resultBlock);
+                    }
                     if (result.cancelEvent()) {
                         event.setCancelled(true);
                     }
@@ -100,6 +101,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
                 }
                 return EventHandlerResult.CONSUME_EVENT;
             }
+            event.setCancelled(true);
             return EventHandlerResult.CONTINUE_LISTENING;
         };
     }
@@ -128,28 +130,48 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
         };
     }
 
-    private DSEventHandler<PlayerBlockBreakEvent> blockBreakHandler() {
-        return event -> {
-            final Block block = event.getBlock();
-            final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
-            if (blockHandler == null || blockHandler.isUnbreakable()) {
-                event.setCancelled(true);
-                return EventHandlerResult.CONSUME_EVENT;
-            }
-            if (!(event.getInstance() instanceof final DSInstance instance)) {
-                return EventHandlerResult.CONTINUE_LISTENING;
-            }
-            final DSPlayer player = (DSPlayer) event.getPlayer();
-            final Point blockPosition = event.getBlockPosition();
-            blockHandler.onPlayerDestroy(player, instance, block, blockPosition);
-            final Collection<ItemStack> drops = blockHandler.generateDrops(this.itemRegistry, player.getItemInMainHand(), blockPosition, block);
-            final WorldEventPacket packet = PacketUtil.blockBreakPacket(blockPosition, block);
-            instance.sendGroupedPacket(packet);
-            final InstancePoint<? extends Point> instancePoint = new InstancePoint<>(instance, blockPosition);
-            InventoryUtil.addItemsToInventory(player, drops, instancePoint);
-            return EventHandlerResult.CONTINUE_LISTENING;
-        };
-    }
+//    private DSEventHandler<PlayerBlockBreakEvent> blockBreakHandler() {
+//        return event -> {
+//            final Block block = event.getBlock();
+//            final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
+//            if (blockHandler == null || blockHandler.isUnbreakable()) {
+//                event.setCancelled(true);
+//                return EventHandlerResult.CONSUME_EVENT;
+//            }
+//            if (!(event.getInstance() instanceof final DSInstance instance)) {
+//                return EventHandlerResult.CONTINUE_LISTENING;
+//            }
+//            final DSPlayer player = (DSPlayer) event.getPlayer();
+//            final Point blockPosition = event.getBlockPosition();
+//            final ItemStack inHand = player.getItemInMainHand();
+//            final ItemHandler itemHandler = this.itemRegistry.getItemHandler(inHand);
+//            boolean passthrough = true;
+//            if (event.isCancelled()) {
+//                return EventHandlerResult.CONSUME_EVENT;
+//            }
+//            final BlockHandlerResult blockHandlerResult = blockHandler.playerDestroyBlock(this.itemRegistry, player, instance, block, blockPosition);
+//            if (blockHandlerResult.cancelEvent()) {
+//                event.setCancelled(true);
+//                if (blockHandlerResult.consumeEvent()) {
+//                    return EventHandlerResult.CONSUME_EVENT;
+//                }
+//                return EventHandlerResult.CONTINUE_LISTENING;
+//            }
+//            if (itemHandler != null) {
+//                final ItemInteractionResult result = itemHandler.onBreakBlock(player, instance, inHand, block, blockPosition);
+//                final ItemStack newItem = result.newItem();
+//                if (newItem != null) {
+//                    player.setItemInMainHand(newItem);
+//                }
+//                if (result.cancel()) {
+//                    event.setCancelled(true);
+//                }
+//                passthrough = result.passthrough();
+//            }
+//
+//            return EventHandlerResult.CONTINUE_LISTENING;
+//        };
+//    }
 
 
 }

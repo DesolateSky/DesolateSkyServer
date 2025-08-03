@@ -83,9 +83,9 @@ public final class ComposterBlockEntity extends BlockEntity<ComposterBlockEntity
         }
 
         @Override
-        public BlockHandlerResult onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, ComposterBlockEntity entity) {
+        public BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, ComposterBlockEntity entity) {
             if (player.isSneaking()) {
-                return BlockHandlerResult.PASS_THROUGH;
+                return BlockHandlerResult.passthroughInteractBlock();
             }
             Double currentValue = block.getTag(BlockTags.COMPOSTER_LEVEL);
             if (currentValue == null) {
@@ -94,30 +94,28 @@ public final class ComposterBlockEntity extends BlockEntity<ComposterBlockEntity
 
             if (currentValue >= MAX_LEVEL) {
                 final Block newBlock = BlockProperties.LEVEL.set(block, 0).withTag(BlockTags.COMPOSTER_LEVEL, 0.0);
-                instance.setBlock(blockPosition, newBlock);
                 final LootTable loot = this.loot();
                 final LootGenerator lootGenerator = loot.getGenerator(LOOT_GENERATOR_TYPE);
                 if (lootGenerator == null) {
-                    return BlockHandlerResult.PASS_THROUGH;
+                    return BlockHandlerResult.passthroughInteractBlock(newBlock);
                 }
                 InventoryUtil.addItemsToInventory(player, lootGenerator.generateLoot(LootContext.create(loot.randomSource())), new InstancePoint<>(instance, blockPosition.add(0, 1, 0)));
-                return BlockHandlerResult.PASS_THROUGH;
+                return BlockHandlerResult.passthroughInteractBlock(newBlock);
             }
 
             final ItemStack mainHand = player.getItemInMainHand();
             final DSItem item = entity.itemRegistry.getItem(mainHand);
             if (item == null) {
-                return BlockHandlerResult.PASS_THROUGH;
+                return BlockHandlerResult.passthroughInteractBlock();
             }
             final Double value = item.getTag(mainHand, ItemTags.COMPOSTER_VALUE);
             if (value == null || value <= 0) {
-                return BlockHandlerResult.PASS_THROUGH;
+                return BlockHandlerResult.passthroughInteractBlock();
             }
             player.setItemInMainHand(mainHand.consume(1));
             currentValue += value;
             final Block newBlock = BlockProperties.LEVEL.set(block, currentValue.intValue()).withTag(BlockTags.COMPOSTER_LEVEL, currentValue);
-            instance.setBlock(blockPosition, newBlock);
-            return BlockHandlerResult.CONSUME;
+            return BlockHandlerResult.consumeInteractBlock(newBlock, false);
         }
 
     }

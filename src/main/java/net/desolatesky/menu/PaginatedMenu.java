@@ -5,6 +5,7 @@ import net.desolatesky.menu.item.MenuButton;
 import net.desolatesky.menu.pattern.Pattern;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
@@ -43,6 +44,7 @@ public class PaginatedMenu extends GUIMenu {
     protected int currentPage;
 
     public PaginatedMenu(
+            DSPlayer player,
             InventoryType type,
             Component title,
             Map<Integer, MenuButton> menuItems,
@@ -52,7 +54,7 @@ public class PaginatedMenu extends GUIMenu {
             List<Pattern> patterns,
             @Nullable ClickAction defaultClickAction
     ) {
-        super(type, title, menuItems, clickActions, patterns, defaultClickAction);
+        super(player, type, title, menuItems, clickActions, patterns, defaultClickAction);
         this.pageItems = pageItems;
         this.indexToSlotMap = new TreeMap<>();
         for (int i = 0; i < pageSlots.size(); i++) {
@@ -81,8 +83,8 @@ public class PaginatedMenu extends GUIMenu {
     }
 
     @Override
-    public ClickResult click(DSPlayer player, Click click) {
-        return super.click(player, click);
+    public ClickResult click(AbstractInventory clickedInventory, Click click, int slot) {
+        return super.click(clickedInventory, click, slot);
     }
 
     @Override
@@ -91,8 +93,8 @@ public class PaginatedMenu extends GUIMenu {
     }
 
     @Override
-    public void open(DSPlayer player) {
-        super.open(player);
+    public void open() {
+        super.open();
     }
 
     @Override

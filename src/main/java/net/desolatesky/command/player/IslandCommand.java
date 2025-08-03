@@ -146,8 +146,8 @@ public final class IslandCommand extends Command {
             this.messageHandler.sendMessage(player, Messages.ISLAND_NOT_FOUND);
             return;
         }
-        final PermissionMenu menu = PermissionMenu.create(this.messageHandler, team, team.teamRoles().getRole(TeamRoles.OWNER_ID));
-        menu.open(player);
+        final PermissionMenu menu = PermissionMenu.create(player, this.messageHandler, team, team.teamRoles().getRole(TeamRoles.OWNER_ID));
+        menu.open();
     }
 
     private void invite(DSPlayer player, CommandContext context, ArgumentEntity targetArgument) {
