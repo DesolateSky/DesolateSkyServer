@@ -15,20 +15,23 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class CraftingRecipe implements Recipe<CraftingRecipe> {
 
     private final ItemIngredient[][] recipe;
-    private final Supplier<ItemStack> outputSupplier;
+    private final Function<ItemStack[][], ItemStack> outputSupplier;
+    private final ItemStack visualOutput;
     private final int resultAmount;
     private final int width;
     private final int height;
     private final MinestomRecipe minestomRecipe;
 
-    public CraftingRecipe(ItemIngredient[][] recipe, Supplier<ItemStack> outputSupplier, int resultAmount) {
+    public CraftingRecipe(ItemIngredient[][] recipe, Function<ItemStack[][], ItemStack> outputCreator, ItemStack visualOutput, int resultAmount) {
         this.recipe = recipe;
-        this.outputSupplier = outputSupplier;
+        this.outputSupplier = outputCreator;
+        this.visualOutput = visualOutput;
         this.resultAmount = resultAmount;
         final ItemIngredient[][] shiftedRecipe = new ItemIngredient[recipe.length][recipe[0].length];
         for (int i = 0; i < recipe.length; i++) {
@@ -42,8 +45,16 @@ public final class CraftingRecipe implements Recipe<CraftingRecipe> {
         this.minestomRecipe = new MinestomRecipe();
     }
 
+    public CraftingRecipe(ItemIngredient[][] recipe, Function<ItemStack[][], ItemStack> outputCreator, ItemStack visualOutput) {
+        this(recipe, outputCreator, visualOutput, 1);
+    }
+
+    public CraftingRecipe(ItemIngredient[][] recipe, Supplier<ItemStack> outputSupplier, int amount) {
+        this(recipe, input -> outputSupplier.get(), outputSupplier.get(), amount);
+    }
+
     public CraftingRecipe(ItemIngredient[][] recipe, Supplier<ItemStack> outputSupplier) {
-        this(recipe, outputSupplier, 1);
+        this(recipe, input -> outputSupplier.get(), outputSupplier.get());
     }
 
     public Result getCraftingResult(ItemStack[] input) {
@@ -81,10 +92,10 @@ public final class CraftingRecipe implements Recipe<CraftingRecipe> {
             }
         }
 
-        final ItemStack result = this.outputSupplier.get();
+        final ItemStack result = this.outputSupplier.apply(shifted);
         final int totalAmount = Math.min(result.maxStackSize(), this.resultAmount * minMatches);
         final int craftAmount = totalAmount / this.resultAmount;
-        return new Result(true, input, this.outputSupplier.get(), craftAmount);
+        return new Result(true, input, this.outputSupplier.apply(shifted), craftAmount);
     }
 
     public int getMatches(ItemStack itemStack, int row, int col) {
@@ -145,7 +156,7 @@ public final class CraftingRecipe implements Recipe<CraftingRecipe> {
                     CraftingRecipe.this.width,
                     CraftingRecipe.this.height,
                     ingredients,
-                    new SlotDisplay.ItemStack(CraftingRecipe.this.outputSupplier.get().withAmount(CraftingRecipe.this.resultAmount)),
+                    new SlotDisplay.ItemStack(CraftingRecipe.this.visualOutput.withAmount(CraftingRecipe.this.resultAmount)),
                     new SlotDisplay.Item(Material.CRAFTING_TABLE)
             ));
         }

@@ -3,6 +3,7 @@ package net.desolatesky.item.handler.breaking.calculator;
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.handler.DSBlockHandler;
+import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.item.handler.BasicItemHandler;
 import net.desolatesky.item.handler.ItemHandler;
 import net.minestom.server.instance.block.Block;
@@ -17,7 +18,7 @@ public interface BreakTimeCalculator {
     BreakTimeCalculator BLOCK_TIME = (server, unused, unused2, block) -> {
         final DSBlockHandler blockHandler = server.blockRegistry().getHandlerForBlock(block);
         if (blockHandler == null) {
-            return BlockEntity.UNBREAKABLE_BREAK_TIME;
+            return BlockSettings.UNBREAKABLE_BREAK_TIME;
         }
         return blockHandler.breakTime();
     };

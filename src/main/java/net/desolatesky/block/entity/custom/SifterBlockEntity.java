@@ -19,6 +19,7 @@ import net.desolatesky.item.ItemTags;
 import net.desolatesky.loot.LootContext;
 import net.desolatesky.loot.generator.LootGenerator;
 import net.desolatesky.loot.generator.LootGeneratorType;
+import net.desolatesky.loot.generator.LootGeneratorTypes;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
@@ -57,7 +58,6 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
     private static final Tag<Key> SIFTING_BLOCK_TAG = Tags.Key("sifting_block");
 
     public static final int MAX_STAGE = 8;
-    public static final LootGeneratorType LOOT_GENERATOR_TYPE = LootGeneratorType.create("sifter");
 
     public static final Duration COOLDOWN = Duration.ofMillis(400);
 
@@ -175,7 +175,7 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
             return;
         }
         final LootTable loot = blockHandler.loot();
-        final LootGenerator lootGenerator = loot.getGenerator(LOOT_GENERATOR_TYPE);
+        final LootGenerator lootGenerator = loot.getGenerator(LootGeneratorTypes.SIFTER);
         if (lootGenerator == null) {
             return;
         }
@@ -191,7 +191,7 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
     }
 
     private @Nullable LootGenerator getLootGeneratorForBlock(Block block) {
-        return this.blockRegistry.getLootTableForBlock(block, LootTable.EMPTY).getGenerator(LOOT_GENERATOR_TYPE);
+        return this.blockRegistry.getLootTableForBlock(block, LootTable.EMPTY).getGenerator(LootGeneratorTypes.SIFTER);
     }
 
     @Override

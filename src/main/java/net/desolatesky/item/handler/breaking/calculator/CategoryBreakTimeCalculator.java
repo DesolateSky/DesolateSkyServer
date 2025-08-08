@@ -3,6 +3,7 @@ package net.desolatesky.item.handler.breaking.calculator;
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.handler.DSBlockHandler;
+import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.item.category.ItemCategory;
 import net.desolatesky.item.handler.ItemHandler;
 import net.desolatesky.item.handler.breaking.MiningLevel;
@@ -27,12 +28,12 @@ public final class CategoryBreakTimeCalculator implements BreakTimeCalculator {
     public Duration calculateBreakTime(DesolateSkyServer server, ItemHandler itemHandler, ItemStack usedItem, Block block) {
         final DSBlockHandler blockHandler = server.blockRegistry().getHandlerForBlock(block);
         if (blockHandler == null || blockHandler.isUnbreakable()) {
-            return BlockEntity.UNBREAKABLE_BREAK_TIME;
+            return DSBlockHandler.UNBREAKABLE_BREAK_TIME;
         }
         double breakTime = blockHandler.settings().breakTime().toMillis();
         final MiningLevel miningLevel = itemHandler.getMiningLevelFor(block);
         if (!miningLevel.isAtLeast(blockHandler.miningLevel())) {
-            return BlockEntity.UNBREAKABLE_BREAK_TIME;
+            return DSBlockHandler.UNBREAKABLE_BREAK_TIME;
         }
         breakTime *= miningLevel.speedMultiplier();
         boolean isCategoryItem = false;

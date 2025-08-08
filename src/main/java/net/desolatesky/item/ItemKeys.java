@@ -24,7 +24,10 @@ public final class ItemKeys {
     public static final Key FIBER = Namespace.key("fiber");
     public static final Key FIBER_MESH = Namespace.key("fiber_mesh");
     public static final Key DEAD_LEAVES = Namespace.key("dead_leaves");
+    public static final Key DEAD_WHEAT_SEEDS = Namespace.key("dead_wheat_seeds");
     public static final Key WHEAT_SEEDS = key(Material.WHEAT_SEEDS);
+    public static final Key WHEAT = key(Material.WHEAT);
+    public static final Key PEBBLE = Namespace.key("pebble");
 
     // DUST
     public static final Key DIRT_CHUNK = Namespace.key("dirt_chunk");

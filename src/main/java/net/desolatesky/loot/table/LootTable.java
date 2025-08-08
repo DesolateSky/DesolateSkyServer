@@ -8,6 +8,7 @@ import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
@@ -51,4 +52,33 @@ public final class LootTable implements Keyed {
     public @NotNull Key key() {
         return this.key;
     }
+
+    public static Builder builder(Key key) {
+        return new Builder(key);
+    }
+
+    public static final class Builder {
+
+        private final Key key;
+        private final Map<LootGeneratorType, LootGenerator> generators = new HashMap<>();
+
+        private Builder(Key key) {
+            this.key = key;
+        }
+
+        public Builder generator(LootGeneratorType type, LootGenerator generator) {
+            this.generators.put(type, generator);
+            return this;
+        }
+
+        public LootTable build() {
+            return new LootTable(this.key, DEFAULT_RANDOM_SOURCE, this.generators);
+        }
+
+        public LootTable build(RandomGenerator randomSource) {
+            return new LootTable(this.key, randomSource, this.generators);
+        }
+
+    }
+
 }

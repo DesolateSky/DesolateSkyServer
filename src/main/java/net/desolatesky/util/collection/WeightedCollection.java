@@ -47,4 +47,25 @@ public final class WeightedCollection<E> {
         return this.map.higherEntry(value).getValue();
     }
 
+    public Pair<E, WeightedCollection<E>> nextWithRemaining() {
+        final double value = this.random.nextDouble() * this.total;
+        final var entry = this.map.higherEntry(value);
+        if (entry == null) {
+            throw new IllegalStateException("No entry found for the generated value: " + value);
+        }
+        final E result = entry.getValue();
+        final WeightedCollection<E> copy = this.copy();
+        copy.map.remove(entry.getKey());
+        copy.total -= entry.getKey();
+        return Pair.of(result, copy);
+    }
+
+    public WeightedCollection<E> copy() {
+        final WeightedCollection<E> copy = new WeightedCollection<>(this.random);
+        for (var entry : this.map.entrySet()) {
+            copy.add(entry.getKey(), entry.getValue());
+        }
+        return copy;
+    }
+
 }

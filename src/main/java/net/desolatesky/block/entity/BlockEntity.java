@@ -20,8 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHandler {
 
-    public static final Duration UNBREAKABLE_BREAK_TIME = Duration.ofMillis(-1);
-
     protected final Key key;
     protected final DesolateSkyServer server;
     protected final DSBlockRegistry blockRegistry;

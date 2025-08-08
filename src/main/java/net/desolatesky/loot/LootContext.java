@@ -6,10 +6,6 @@ public interface LootContext {
 
     RandomGenerator randomSource();
 
-    default int modifyTotalLootGenerated(int amount) {
-        return amount;
-    }
-
     LootContext perElementLootContext();
 
     static LootContext create(RandomGenerator randomSource) {

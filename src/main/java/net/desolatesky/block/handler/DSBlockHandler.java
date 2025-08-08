@@ -10,21 +10,22 @@ import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.handler.ItemHandler;
 import net.desolatesky.item.handler.ItemInteractionResult;
 import net.desolatesky.item.handler.breaking.MiningLevel;
-import net.desolatesky.listener.EventHandlerResult;
+import net.desolatesky.loot.LootContext;
+import net.desolatesky.loot.context.BlockBreakContext;
+import net.desolatesky.loot.generator.LootGenerator;
+import net.desolatesky.loot.generator.LootGeneratorTypes;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
 import net.desolatesky.util.PacketUtil;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
-import net.kyori.adventure.sound.Sound;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
-import net.minestom.server.network.packet.server.play.WorldEventPacket;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 public class DSBlockHandler implements Keyed {
 
@@ -106,7 +106,7 @@ public class DSBlockHandler implements Keyed {
         if (blockHandlerResult.consumeEvent()) {
             return BlockHandlerResult.CONSUME;
         }
-        final Collection<ItemStack> drops = this.generateDrops(itemRegistry, inHand, blockPosition, block);
+        final Collection<ItemStack> drops = this.generateDrops(instance, inHand, blockPosition, block);
         final InstancePoint<? extends Point> instancePoint = new InstancePoint<>(instance, blockPosition);
         InventoryUtil.addItemsToInventory(player, drops, instancePoint);
         if (passthrough) {
@@ -182,16 +182,13 @@ public class DSBlockHandler implements Keyed {
     ) {
     }
 
-    public Collection<ItemStack> generateDrops(DSItemRegistry itemRegistry, ItemStack toolUsed, Point point, Block block) {
-        final Key itemId = this.settings.blockItemKey();
-        if (itemId == null) {
+    public Collection<ItemStack> generateDrops(DSInstance instance, ItemStack toolUsed, Point point, Block block) {
+        final LootTable lootTable = this.settings.lootTable();
+        final LootGenerator lootGenerator = lootTable.getGenerator(LootGeneratorTypes.BLOCK_BREAK);
+        if (lootGenerator == null) {
             return Collections.emptyList();
         }
-        final ItemStack itemStack = itemRegistry.create(itemId);
-        if (itemStack == null) {
-            return Collections.emptyList();
-        }
-        return List.of(itemStack);
+        return lootGenerator.generateLoot(BlockBreakContext.createBlockBreakContext(instance, toolUsed, this, block, point));
     }
 
     public Duration calculateBlockBreakTime(DesolateSkyServer server, DSPlayer player, Block block) {

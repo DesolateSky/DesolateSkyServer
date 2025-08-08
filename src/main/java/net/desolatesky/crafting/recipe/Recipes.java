@@ -1,12 +1,15 @@
 package net.desolatesky.crafting.recipe;
 
 import net.desolatesky.block.MaterialTags;
+import net.desolatesky.block.entity.custom.crop.Crop;
 import net.desolatesky.crafting.CraftingManager;
 import net.desolatesky.crafting.ingredient.ItemIngredient;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.DSItems;
+import net.desolatesky.item.ItemTags;
 import net.desolatesky.item.category.ItemCategories;
 import net.desolatesky.item.category.ItemCategory;
+import net.minestom.server.item.ItemStack;
 
 public final class Recipes {
 
@@ -75,6 +78,21 @@ public final class Recipes {
                 {ItemIngredient.exact(DSItems.CLAY_BALL), ItemIngredient.exact(DSItems.CLAY_BALL), ItemIngredient.EMPTY},
                 {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
         }, DSItems.CLAY::create));
+        craftingManager.addRecipe(new CraftingRecipe(new ItemIngredient[][]{
+                {ItemIngredient.exact(DSItems.DEAD_WHEAT_SEEDS), ItemIngredient.exact(DSItems.LIFE_ESSENCE), ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY},
+                {ItemIngredient.EMPTY, ItemIngredient.EMPTY, ItemIngredient.EMPTY}
+        }, input -> {
+            final ItemStack wheatSeeds = input[0][0];
+            if (wheatSeeds.isAir()) {
+                return ItemStack.AIR;
+            }
+            final Crop crop = wheatSeeds.getTag(ItemTags.CROP);
+            if (crop == null) {
+                return ItemStack.AIR;
+            }
+            return DSItems.WHEAT_SEEDS.create().withTag(ItemTags.CROP, crop);
+        }, DSItems.WHEAT_SEEDS.create()));
     }
 
 }

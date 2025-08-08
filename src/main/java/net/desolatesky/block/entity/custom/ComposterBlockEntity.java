@@ -46,7 +46,7 @@ public final class ComposterBlockEntity extends BlockEntity<ComposterBlockEntity
             .blockItem(ItemKeys.COMPOSTER)
             .lootTable(LootTable.create(BlockKeys.COMPOSTER, Map.of(
                     ComposterBlockEntity.LOOT_GENERATOR_TYPE,
-                    ItemStackLootGenerator.create(ComposterBlockEntity.LOOT_GENERATOR_TYPE, List.of(new ItemStackLoot(DSItems.DIRT, 1, 1, 1)), 1, 1)
+                    ItemStackLootGenerator.create(List.of(new ItemStackLoot(DSItems.DIRT, 1, 1, 1)), 1, 1)
             )))
             .categories(BlockCategories.AXE_MINEABLE).build();
 

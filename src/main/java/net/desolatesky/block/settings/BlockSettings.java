@@ -1,9 +1,12 @@
 package net.desolatesky.block.settings;
 
 import net.desolatesky.category.Category;
+import net.desolatesky.item.DSItem;
 import net.desolatesky.item.DSItemRegistry;
 import net.desolatesky.item.handler.breaking.MiningLevel;
 import net.desolatesky.item.handler.breaking.MiningLevels;
+import net.desolatesky.loot.generator.ItemStackLootGenerator;
+import net.desolatesky.loot.generator.LootGeneratorTypes;
 import net.desolatesky.loot.table.LootTable;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -145,6 +148,12 @@ public final class BlockSettings implements Keyed {
             return this;
         }
 
+        public Builder withDropLootTable(DSItem item) {
+            return this.lootTable(LootTable.builder(this.key)
+                    .generator(LootGeneratorTypes.BLOCK_BREAK, ItemStackLootGenerator.forDrop(item))
+                    .build());
+        }
+
         /**
          * @param breakTime in milliseconds
          */
@@ -155,6 +164,14 @@ public final class BlockSettings implements Keyed {
 
         public Builder unbreakable() {
             this.breakTime = UNBREAKABLE_BREAK_TIME;
+            return this;
+        }
+
+        public Builder blockItem(DSItem item, boolean withLootTable) {
+            this.blockItemKey = item.key();
+            if (withLootTable) {
+                return this.withDropLootTable(item);
+            }
             return this;
         }
 

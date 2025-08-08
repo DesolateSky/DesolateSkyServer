@@ -18,6 +18,7 @@ public final class BlockKeys {
 
     public static final Key CRAFTING_TABLE = key(Block.CRAFTING_TABLE);
     public static final Key WAXED_EXPOSED_COPPER_TRAPDOOR = key(Block.WAXED_EXPOSED_COPPER_TRAPDOOR);
+    public static final Key UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB = Namespace.key("unbreakable_waxed_exposed_cut_copper_slab");
     public static final Key DIRT = key(Block.DIRT);
     public static final  Key SAND = key(Block.SAND);
     public static final Key GRAVEL = key(Block.GRAVEL);

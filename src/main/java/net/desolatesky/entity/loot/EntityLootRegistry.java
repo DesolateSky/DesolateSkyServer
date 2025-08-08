@@ -18,11 +18,10 @@ public final class EntityLootRegistry extends LootTableRegistry {
     public static final LootTable DEBRIS_ENTITY = LootTable.create(EntityKeys.DEBRIS_ENTITY.key(), Map.of(
             DebrisEntity.LOOT_GENERATOR_TYPE,
             ItemStackLootGenerator.create(
-                    DebrisEntity.LOOT_GENERATOR_TYPE,
                     List.of(
-                            new ItemStackLoot(DSItems.DUST, 1, 2, 3),
-                            new ItemStackLoot(DSItems.PETRIFIED_STICK, 1, 2, 3),
-                            new ItemStackLoot(DSItems.FIBER, 1, 2, 3),
+                            new ItemStackLoot(DSItems.DUST, 2, 2, 3),
+                            new ItemStackLoot(DSItems.PETRIFIED_STICK, 2, 2, 4),
+                            new ItemStackLoot(DSItems.FIBER, 1, 1, 1),
                             new ItemStackLoot(DSItems.DEAD_LEAVES, 1, 2, 3)
                     ),
                     1,

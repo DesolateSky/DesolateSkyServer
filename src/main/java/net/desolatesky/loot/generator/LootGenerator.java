@@ -1,14 +1,11 @@
 package net.desolatesky.loot.generator;
 
 import net.desolatesky.loot.LootContext;
-import net.kyori.adventure.key.Keyed;
 import net.minestom.server.item.ItemStack;
 
 import java.util.Collection;
 
-public interface LootGenerator extends Keyed {
-
-    LootGeneratorType type();
+public interface LootGenerator {
 
     Collection<ItemStack> generateLoot(LootContext context);
 

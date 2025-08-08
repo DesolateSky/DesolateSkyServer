@@ -17,9 +17,6 @@ public final class LootGeneratorType implements Keyed {
         return new LootGeneratorType(lootKey(key));
     }
 
-    public static final LootGeneratorType BLOCK = create("block");
-    public static final LootGeneratorType ENTITY = create("entity");
-
     public static Key lootKey(String key) {
         return Namespace.key("loot", key);
     }

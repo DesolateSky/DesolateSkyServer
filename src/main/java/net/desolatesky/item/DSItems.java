@@ -23,6 +23,8 @@ public final class DSItems {
         throw new UnsupportedOperationException();
     }
 
+    public static final DSItem AIR = DSItem.create(Material.AIR);
+
     // BLOCKS
     public static final DSItem DUST_BLOCK = addDefault(DSItem.create(ItemKeys.DUST_BLOCK, ItemHandlers.DUST_BLOCK, ItemStack.builder(Material.CLAY)
             .customName(ComponentUtil.noItalics("Dust Block"))
@@ -52,10 +54,22 @@ public final class DSItems {
     public static final DSItem DEAD_LEAVES = addDefault(DSItem.create(ItemKeys.DEAD_LEAVES, ItemHandlers.DEAD_LEAVES, ItemStack.builder(Material.LEAF_LITTER)
             .customName(ComponentUtil.noItalics("Dead Leaves"))
             .build()));
-
+    public static final DSItem DEAD_WHEAT_SEEDS = addDefault(DSItem.create(ItemKeys.DEAD_WHEAT_SEEDS, ItemStack.builder(Material.WHEAT_SEEDS)
+            .customName(ComponentUtil.noItalics("Dead Wheat Seeds"))
+            .set(ItemTags.CROP, new Crop(1, CropRarity.COMMON))
+            .set(DataComponents.ITEM_MODEL, ItemKeys.DEAD_WHEAT_SEEDS.asString())
+            .build()));
     public static final DSItem WHEAT_SEEDS = addDefault(DSItem.create(ItemKeys.WHEAT_SEEDS, ItemStack.builder(Material.WHEAT_SEEDS)
             .set(ItemTags.CROP, new Crop(7, CropRarity.COMMON))
             .set(ItemTags.BLOCK_ID, BlockKeys.WHEAT)
+            .build()));
+    public static final DSItem WHEAT = addDefault(DSItem.create(ItemKeys.WHEAT, ItemStack.builder(Material.WHEAT)
+            .customName(ComponentUtil.noItalics("Wheat"))
+            .set(ItemTags.BLOCK_ID, BlockKeys.WHEAT)
+            .build()));
+    public static final DSItem PEBBLE = addDefault(DSItem.create(ItemKeys.PEBBLE, ItemStack.builder(Material.PAPER)
+            .customName(ComponentUtil.noItalics("Pebble"))
+            .set(DataComponents.ITEM_MODEL, ItemKeys.PEBBLE.asString())
             .build()));
 
     // DUST

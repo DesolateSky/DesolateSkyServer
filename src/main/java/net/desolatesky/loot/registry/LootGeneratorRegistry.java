@@ -20,11 +20,6 @@ public final class LootGeneratorRegistry {
         this.generators = generators;
     }
 
-    public void register(LootGenerator generator) {
-        this.generators.computeIfAbsent(generator.type(), t -> new LootGeneratorMap(new HashMap<>()))
-                .generators.put(generator.key(), generator);
-    }
-
     public @Nullable LootGenerator getGenerator(LootGeneratorType type, Key key) {
         final LootGeneratorMap map = this.generators.get(type);
         if (map == null) {
