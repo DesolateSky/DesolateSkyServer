@@ -71,7 +71,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             final Point placementPosition = event.getBlockPosition();
             final BlockHandlerResult.InteractBlock result = blockHandler.onPlayerInteract(
                     player,
-                    player.getDSInstance(),
+                    player.getInstance(),
                     block,
                     placementPosition,
                     event.getHand(),
@@ -80,7 +80,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             );
             final Block resultBlock = result.resultBlock();
             if (resultBlock != null) {
-                player.getDSInstance().setBlock(placementPosition, resultBlock, true);
+                player.getInstance().setBlock(placementPosition, resultBlock, true);
             }
             if (result.cancelEvent()) {
                 event.setCancelled(true);
@@ -96,7 +96,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             final ItemStack itemStack = player.getItemInMainHand();
             final Key blockId = itemStack.getTag(ItemTags.BLOCK_ID);
             final Point clickedPoint = event.getPosition();
-            final DSInstance instance = player.getDSInstance();
+            final DSInstance instance = player.getInstance();
             final Block clickedBlock = instance.getBlock(clickedPoint);
             final Point cursor = new Vec(0);
             if (blockId != null) {
@@ -108,7 +108,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             }
             final ItemHandler itemHandler = this.itemRegistry.getItemHandler(itemStack);
             if (itemHandler != null) {
-                final ItemInteractionResult result = itemHandler.onInteractBlock(player, player.getDSInstance(), itemStack, event.getHand(), clickedPoint, clickedBlock, cursor, event.getBlockFace());
+                final ItemInteractionResult result = itemHandler.onInteractBlock(player, player.getInstance(), itemStack, event.getHand(), clickedPoint, clickedBlock, cursor, event.getBlockFace());
                 final ItemStack newItem = result.newItem();
                 if (newItem != null) {
                     player.setItemInHand(event.getHand(), newItem);
@@ -132,7 +132,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             if (!(event.getTarget() instanceof final DSEntity target)) {
                 return EventHandlerResult.CONTINUE_LISTENING;
             }
-            final ItemInteractionResult result = itemHandler.onInteractEntity(player, player.getDSInstance(), itemStack, event.getHand(), target);
+            final ItemInteractionResult result = itemHandler.onInteractEntity(player, player.getInstance(), itemStack, event.getHand(), target);
             final ItemStack newItem = result.newItem();
             if (newItem != null) {
                 player.setItemInHand(event.getHand(), newItem);
@@ -152,7 +152,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             if (itemHandler == null) {
                 return EventHandlerResult.CONTINUE_LISTENING;
             }
-            final ItemInteractionResult result = itemHandler.onInteractAir(player, player.getDSInstance(), itemStack, event.getHand());
+            final ItemInteractionResult result = itemHandler.onInteractAir(player, player.getInstance(), itemStack, event.getHand());
             final ItemStack newItem = result.newItem();
             if (newItem != null) {
                 player.setItemInHand(event.getHand(), newItem);
@@ -177,7 +177,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             if (!(event.getTarget() instanceof final DSEntity target)) {
                 return EventHandlerResult.CONTINUE_LISTENING;
             }
-            final ItemInteractionResult result = itemHandler.onPunchEntity(player, player.getDSInstance(), itemStack, target);
+            final ItemInteractionResult result = itemHandler.onPunchEntity(player, player.getInstance(), itemStack, target);
             final ItemStack newItem = result.newItem();
             if (newItem != null) {
                 player.setItemInHand(PlayerHand.MAIN, newItem);
@@ -200,7 +200,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
                 return EventHandlerResult.CONTINUE_LISTENING;
             }
             final Point targeted = player.getTargetBlockPosition((int) player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE).getValue());
-            final DSInstance instance = player.getDSInstance();
+            final DSInstance instance = player.getInstance();
             if (targeted != null) {
                 return EventHandlerResult.CONTINUE_LISTENING;
             }
@@ -224,7 +224,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             final ItemStack itemStack = player.getItemInMainHand();
             final ItemHandler itemHandler = this.itemRegistry.getItemHandler(itemStack);
 
-            final DSInstance instance = player.getDSInstance();
+            final DSInstance instance = player.getInstance();
             if (itemHandler == null) {
                 startBreaking(player, instance, event.getBlock(), event.getBlockPosition());
                 return EventHandlerResult.CONTINUE_LISTENING;
@@ -298,6 +298,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
         }
         final Point placePoint = clickedBlock.registry().isReplaceable() ? clickedPoint : clickedPoint.add(blockFace.toDirection().vec());
         final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
+        System.out.println("Got handler: " + blockHandler);
         if (blockHandler != null) {
             final BlockHandlerResult.Place result = blockHandler.onPlayerPlace(
                     player,

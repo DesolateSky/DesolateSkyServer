@@ -7,7 +7,7 @@ import net.minestom.server.entity.PlayerHand;
 
 public interface DSEntity {
 
-    DSInstance getDSInstance();
+    DSInstance getInstance();
 
     void onClick(DSEntity clicker, Point interactionPoint, PlayerHand hand);
 

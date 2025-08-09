@@ -129,7 +129,7 @@ public class DSPlayer extends Player implements DSEntity, InventoryHolder {
     }
 
     @Override
-    public DSInstance getDSInstance() {
+    public DSInstance getInstance() {
         return (DSInstance) super.getInstance();
     }
 

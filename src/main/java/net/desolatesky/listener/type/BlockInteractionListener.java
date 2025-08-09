@@ -47,7 +47,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
         return event -> {
             final DSPlayer player = (DSPlayer) event.getPlayer();
             final Point clickedPoint = event.getPosition();
-            final DSInstance instance = player.getDSInstance();
+            final DSInstance instance = player.getInstance();
             final Block clickedBlock = instance.getBlock(clickedPoint);
             final Point cursor = new Vec(0);
             final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(clickedBlock);
@@ -86,7 +86,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
                 event.setBlock(block);
                 final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
                 if (blockHandler != null) {
-                    final DSInstance instance = player.getDSInstance();
+                    final DSInstance instance = player.getInstance();
                     final Point cursor = new Vec(0);
                     final BlockFace blockFace = event.getBlockFace();
                     final BlockHandlerResult.Place result = blockHandler.onPlayerPlace(player, instance, block, event.getBlockPosition(), event.getHand(), blockFace, cursor);
@@ -113,7 +113,7 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
             }
             final Point targeted = event.getBlockPosition();
             final Block block = event.getBlock();
-            final DSInstance instance = player.getDSInstance();
+            final DSInstance instance = player.getInstance();
             final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
             if (blockHandler == null) {
                 return EventHandlerResult.CONTINUE_LISTENING;

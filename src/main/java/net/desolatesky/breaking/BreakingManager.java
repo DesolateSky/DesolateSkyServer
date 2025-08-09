@@ -109,7 +109,7 @@ public final class BreakingManager {
     }
 
     public void startBreaking(DSPlayer player, BlockVec blockPos, Block block) {
-        final DSInstance instance = player.getDSInstance();
+        final DSInstance instance = player.getInstance();
         if (instance == null) {
             return;
         }

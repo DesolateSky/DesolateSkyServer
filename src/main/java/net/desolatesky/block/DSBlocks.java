@@ -4,6 +4,7 @@ import net.desolatesky.block.entity.custom.ComposterBlockEntity;
 import net.desolatesky.block.entity.custom.DebrisCatcherBlockEntity;
 import net.desolatesky.block.entity.custom.SifterBlockEntity;
 import net.desolatesky.block.entity.custom.crop.CropBlockEntity;
+import net.desolatesky.block.entity.custom.powered.cable.CableBlockEntity;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.handler.block.CraftingTableHandler;
 import net.desolatesky.block.handler.block.TrapDoorHandler;
@@ -32,6 +33,8 @@ public final class DSBlocks {
     public static final DSBlock UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB = create(Block.WAXED_EXPOSED_CUT_COPPER_SLAB, DSBlockSettings.UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB);
     public static final DSBlock WAXED_EXPOSED_COPPER_TRAPDOOR = create(Block.WAXED_EXPOSED_COPPER_TRAPDOOR, new TrapDoorHandler(DSBlockSettings.WAXED_EXPOSED_COPPER_TRAPDOOR));
     public static final DSBlock DIRT = create(Block.DIRT, DSBlockSettings.DIRT);
+    public static final DSBlock SAND = create(Block.SAND, DSBlockSettings.SAND);
+    public static final DSBlock GRAVEL = create(Block.GRAVEL, DSBlockSettings.GRAVEL);
     public static final DSBlock CRAFTING_TABLE = create(Block.CRAFTING_TABLE, new CraftingTableHandler());
     public static final DSBlock WHEAT = create(Block.WHEAT, CropBlockEntity.createHandler(DSBlockSettings.WHEAT));
 
@@ -47,6 +50,9 @@ public static final DSBlock STRIPPED_PETRIFIED_LOG = create(Block.STRIPPED_PALE_
     public static final DSBlock PETRIFIED_LEAVES = create(Block.PALE_OAK_LEAVES, DSBlockSettings.PETRIFIED_LEAVES);
     public static final DSBlock PETRIFIED_PLANKS = create(Block.PALE_OAK_PLANKS, DSBlockSettings.PETRIFIED_PLANKS);
     public static final DSBlock PETRIFIED_SLAB = create(Block.PALE_OAK_SLAB, DSBlockSettings.PETRIFIED_SLAB);
+
+    // POWER
+    public static final DSBlock CABLE = create(Block.BARRIER, CableBlockEntity.createHandler(DSBlockSettings.CABLE));
 
     public void register(DSBlockRegistry registry) {
         DEFAULT_BLOCKS.values().forEach(registry::register);

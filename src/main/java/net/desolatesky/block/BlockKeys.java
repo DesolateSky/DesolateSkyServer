@@ -24,6 +24,7 @@ public final class BlockKeys {
     public static final Key GRAVEL = key(Block.GRAVEL);
     public static final Key CLAY = Namespace.key("clay");
     public static final Key WHEAT = key(Block.WHEAT);
+    public static final Key COBBLESTONE = key(Block.COBBLESTONE);
 
     // PETRIFIED WOOD
     public static final Key PETRIFIED_SAPLING = Namespace.key("petrified_sapling");
@@ -33,6 +34,7 @@ public final class BlockKeys {
     public static final Key PETRIFIED_PLANKS = Namespace.key("petrified_planks");
     public static final Key PETRIFIED_SLAB = Namespace.key("petrified_slab");
 
+    public static final Key CABLE = Namespace.key("cable");
 
     private static Key key(Block block) {
         return block.key();

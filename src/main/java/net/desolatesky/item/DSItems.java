@@ -3,7 +3,6 @@ package net.desolatesky.item;
 import net.desolatesky.block.BlockKeys;
 import net.desolatesky.block.entity.custom.crop.Crop;
 import net.desolatesky.block.entity.custom.crop.CropRarity;
-import net.desolatesky.item.handler.ItemHandler;
 import net.desolatesky.item.tool.ToolMaterial;
 import net.desolatesky.item.tool.part.ToolParts;
 import net.desolatesky.util.ComponentUtil;
@@ -97,6 +96,9 @@ public final class DSItems {
             .customName(ComponentUtil.noItalics("Copper Dust"))
             .set(DataComponents.ITEM_MODEL, ItemKeys.COPPER_DUST.asString())
             .build()));
+    public static final DSItem QUARTZ_CHUNK = addDefault(DSItem.create(ItemKeys.QUARTZ_CHUNK, ItemStack.builder(Material.QUARTZ)
+            .customName(ComponentUtil.noItalics("Quartz Chunk"))
+            .build()));
 
     // ESSENCE
     public static final DSItem LIFE_ESSENCE = addDefault(DSItem.create(ItemKeys.LIFE_ESSENCE, ItemStack.builder(Material.GLOW_INK_SAC)
@@ -159,13 +161,21 @@ public final class DSItems {
             .customName(ComponentUtil.noItalics("Wooden Axe"))
             .build()));
 
+    // POWER
+    public static final DSItem CABLE = addDefault(DSItem.create(ItemKeys.CABLE, ItemStack.builder(Material.PAPER)
+            .customName(ComponentUtil.noItalics("Cable"))
+            .set(DataComponents.ITEM_MODEL, ItemKeys.CABLE.asString())
+            .set(ItemTags.BLOCK_ID, BlockKeys.CABLE)
+            .build()));
+
     // vanilla
     public static final DSItem CRAFTING_TABLE = addDefault(DSItem.create(ItemStack.builder(Material.CRAFTING_TABLE).set(ItemTags.BLOCK_ID, BlockKeys.CRAFTING_TABLE).build()));
     public static final DSItem DIRT = addDefault(DSItem.create(ItemKeys.DIRT, ItemStack.builder(Material.DIRT).set(ItemTags.BLOCK_ID, BlockKeys.DIRT).build()));
     public static final DSItem SAND = addDefault(DSItem.create(ItemKeys.SAND, ItemStack.builder(Material.SAND).set(ItemTags.BLOCK_ID, BlockKeys.SAND).build()));
     public static final DSItem GRAVEL = addDefault(DSItem.create(ItemKeys.GRAVEL, ItemStack.builder(Material.GRAVEL).set(ItemTags.BLOCK_ID, BlockKeys.GRAVEL).build()));
     public static final DSItem CLAY = addDefault(DSItem.create(ItemKeys.CLAY, ItemStack.builder(Material.CLAY_BALL).set(ItemTags.BLOCK_ID, BlockKeys.CLAY).build()));
-
+    public static final DSItem FLINT = addDefault(DSItem.create(ItemKeys.FLINT, ItemStack.builder(Material.FLINT).build()));
+    public static final DSItem CHARCOAL = addDefault(DSItem.create(ItemKeys.CHARCOAL, ItemStack.builder(Material.CHARCOAL).build()));
 
     public static void register(DSItemRegistry itemRegistry) {
         defaultItems.values().forEach(itemRegistry::register);

@@ -36,6 +36,7 @@ public final class ItemKeys {
     public static final Key CLAY_BALL = key(Material.CLAY_BALL);
     public static final Key DUST = Namespace.key("dust");
     public static final Key COPPER_DUST = Namespace.key("copper_dust");
+    public static final Key QUARTZ_CHUNK = Namespace.key("quartz_chunk");
 
     // ESSENCE
     public static final Key LIFE_ESSENCE = Namespace.key("life_essence");
@@ -51,6 +52,8 @@ public final class ItemKeys {
     // VANILLA
     public static final Key CRAFTING_TABLE = key(Material.CRAFTING_TABLE);
     public static final Key STRING = key(Material.STRING);
+    public static final Key FLINT = key(Material.FLINT);
+    public static final Key CHARCOAL = key(Material.CHARCOAL);
 
     public static final Key WAXED_EXPOSED_COPPER_TRAPDOOR = key(Material.WAXED_EXPOSED_COPPER_TRAPDOOR);
     public static final Key WAXED_EXPOSED_CUT_COPPER_SLAB = key(Material.WAXED_EXPOSED_CUT_COPPER_SLAB);
@@ -85,6 +88,9 @@ public final class ItemKeys {
     public static final Key WOODEN_LARGE_TOOL_BINDING = Namespace.key("wooden_large_tool_binding");
     public static final Key WOODEN_LARGE_TOOL_HANDLE = Namespace.key("wooden_large_tool_handle");
     public static final Key WOODEN_BOW_LIMB = Namespace.key("wooden_bow_limb");
+
+    // POWER
+    public static final Key CABLE = Namespace.key("cable");
 
 
     private static Key key(Material material) {

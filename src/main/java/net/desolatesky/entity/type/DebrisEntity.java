@@ -5,6 +5,7 @@ import net.desolatesky.block.BlockProperties;
 import net.desolatesky.entity.DSEntity;
 import net.desolatesky.entity.EntityKey;
 import net.desolatesky.entity.EntityKeys;
+import net.desolatesky.entity.SimpleEntity;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
 import net.desolatesky.loot.LootContext;
@@ -37,7 +38,7 @@ import java.util.Collections;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
 
-public class DebrisEntity extends Entity implements DSEntity {
+public class DebrisEntity extends SimpleEntity {
 
     private static final float WIDTH = 1.0f;
     private static final float HEIGHT = 1.0f;
@@ -58,7 +59,7 @@ public class DebrisEntity extends Entity implements DSEntity {
     private final Interaction interactionEntity;
 
     public DebrisEntity(DSInstance dsInstance, LootTable lootTable) {
-        super(EntityType.ARMOR_STAND);
+        super(EntityType.ARMOR_STAND, EntityKeys.DEBRIS_ENTITY);
         this.dsInstance = dsInstance;
         this.lootTable = lootTable;
         this.randomPitch = this.randomGenerator.nextFloat(0, 360);
@@ -158,29 +159,14 @@ public class DebrisEntity extends Entity implements DSEntity {
     }
 
     @Override
-    public DSInstance getDSInstance() {
-        return this.dsInstance;
-    }
-
-    @Override
     public void setVelocity(@NotNull Vec velocity) {
         super.setVelocity(velocity);
     }
 
-    @Override
-    public @NotNull EntityKey key() {
-        return EntityKeys.DEBRIS_ENTITY;
-    }
-
-    @Override
-    public InstancePoint<Pos> getInstancePosition() {
-        return new InstancePoint<>(this.getInstance(), this.getPosition());
-    }
-
-    private class Display extends Entity implements DSEntity {
+    private class Display extends SimpleEntity {
 
         public Display(Direction direction, Point translation) {
-            super(EntityType.BLOCK_DISPLAY);
+            super(EntityType.BLOCK_DISPLAY, EntityKeys.DEBRIS_ENTITY);
             final BlockDisplayMeta blockMeta = (BlockDisplayMeta) this.getEntityMeta();
             final Block block = BlockBuilder.blockBuilder(Block.LEAF_LITTER)
                     .property(BlockProperties.FACING, direction)
@@ -196,11 +182,6 @@ public class DebrisEntity extends Entity implements DSEntity {
         }
 
         @Override
-        public DSInstance getDSInstance() {
-            return DebrisEntity.this.dsInstance;
-        }
-
-        @Override
         public void onClick(DSEntity clicker, Point interactionPoint, PlayerHand hand) {
             DebrisEntity.this.onClick(clicker, interactionPoint, hand);
         }
@@ -210,21 +191,12 @@ public class DebrisEntity extends Entity implements DSEntity {
             DebrisEntity.this.onPunch(attacker);
         }
 
-        @Override
-        public @NotNull EntityKey key() {
-            return DebrisEntity.this.key();
-        }
-
-        @Override
-        public InstancePoint<Pos> getInstancePosition() {
-            return new InstancePoint<>(DebrisEntity.this.getInstance(), this.getPosition());
-        }
     }
 
-    public class Interaction extends Entity implements DSEntity {
+    public class Interaction extends SimpleEntity {
 
         private Interaction() {
-            super(EntityType.INTERACTION);
+            super(EntityType.INTERACTION, EntityKeys.DEBRIS_ENTITY);
             final InteractionMeta interactionMeta = (InteractionMeta) this.getEntityMeta();
             interactionMeta.setNotifyAboutChanges(false);
             this.setNoGravity(true);
@@ -236,11 +208,6 @@ public class DebrisEntity extends Entity implements DSEntity {
         }
 
         @Override
-        public DSInstance getDSInstance() {
-            return DebrisEntity.this.dsInstance;
-        }
-
-        @Override
         public void onClick(DSEntity clicker, Point interactionPoint, PlayerHand hand) {
             DebrisEntity.this.onClick(clicker, interactionPoint, hand);
         }
@@ -248,16 +215,6 @@ public class DebrisEntity extends Entity implements DSEntity {
         @Override
         public void onPunch(DSEntity attacker) {
             DebrisEntity.this.onPunch(attacker);
-        }
-
-        @Override
-        public @NotNull EntityKey key() {
-            return DebrisEntity.this.key();
-        }
-
-        @Override
-        public InstancePoint<Pos> getInstancePosition() {
-            return new InstancePoint<>(DebrisEntity.this.getInstance(), this.getPosition());
         }
 
         public DebrisEntity getDebrisEntity() {

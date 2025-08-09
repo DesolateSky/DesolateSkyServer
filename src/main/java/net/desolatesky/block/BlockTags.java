@@ -1,10 +1,11 @@
 package net.desolatesky.block;
 
 import net.desolatesky.block.entity.custom.crop.Crop;
+import net.desolatesky.block.entity.custom.powered.cable.CableSettings;
 import net.desolatesky.tag.Tags;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.sound.Sound;
 import net.minestom.server.tag.Tag;
+import net.minestom.server.utils.Direction;
 
 public final class BlockTags {
 
@@ -18,5 +19,10 @@ public final class BlockTags {
     public static final Tag<Integer> CROP_AGE = Tags.Integer("crop_age");
     public static final Tag<Double> CROP_GROWTH_CHANCE = Tags.Double("crop_growth_chance");
     public static final Tag<Crop> CROP = Tags.Structure("crop", Crop.SERIALIZER);
+    public static final  Tag<Direction> DIRECTION_TAG = Tags.Enum("direction", Direction.class);
+
+
+    // TRANSIENT TAGS FOR BLOCK SETTINGS
+    public static final Tag<CableSettings> CABLE_SETTINGS = Tags.Transient("cable_settings");
 
 }

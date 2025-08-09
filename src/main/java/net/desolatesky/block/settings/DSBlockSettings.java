@@ -4,6 +4,7 @@ import net.desolatesky.block.BlockKeys;
 import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.category.BlockCategories;
 import net.desolatesky.block.entity.custom.crop.CropLootGenerator;
+import net.desolatesky.block.entity.custom.powered.cable.CableSettings;
 import net.desolatesky.item.DSItem;
 import net.desolatesky.item.DSItems;
 import net.desolatesky.item.ItemKeys;
@@ -45,10 +46,9 @@ public final class DSBlockSettings {
                     .digSound(Sounds.BLOCK_SAND_HIT)
             )
             .blockItem(ItemKeys.DUST_BLOCK).breakTime(1_000).build();
-
     public static final BlockSettings CRAFTING_TABLE = builder(Block.CRAFTING_TABLE).breakTime(PLANKS_BREAK_TIME).blockItem(DSItems.CRAFTING_TABLE, true).categories(BlockCategories.AXE_MINEABLE).build();
     public static final BlockSettings DIRT = builder(Block.DIRT).breakTime(1_000)
-            .lootTable(LootTable.builder(BlockKeys.DUST_BLOCK)
+            .lootTable(LootTable.builder(BlockKeys.DIRT)
                     .generator(
                             LootGeneratorTypes.SIFTER,
                             ItemStackLootGenerator.create(List.of(
@@ -64,6 +64,33 @@ public final class DSBlockSettings {
             )
             .blockItem(DSItems.DIRT, false)
             .categories(BlockCategories.SHOVEL_MINEABLE, BlockCategories.DIRT, BlockCategories.CROP_GROWABLE).build();
+    public static final BlockSettings SAND = builder(Block.SAND).breakTime(1_000)
+            .lootTable(LootTable.builder(BlockKeys.SAND)
+                    .generator(
+                            LootGeneratorTypes.SIFTER,
+                            ItemStackLootGenerator.create(List.of(
+                                    new ItemStackLoot(DSItems.CHARCOAL, 1, 0, 1),
+                                    new ItemStackLoot(DSItems.QUARTZ_CHUNK, 1, 0, 1)
+                            ), 0, 1)
+                    )
+                    .generator(LootGeneratorTypes.BLOCK_BREAK, ItemStackLootGenerator.forDrop(DSItems.SAND))
+                    .build()
+            )
+            .blockItem(DSItems.SAND, false)
+            .categories(BlockCategories.SHOVEL_MINEABLE).build();
+    public static final BlockSettings GRAVEL = builder(Block.GRAVEL).breakTime(1_000)
+            .lootTable(LootTable.builder(BlockKeys.GRAVEL)
+                    .generator(
+                            LootGeneratorTypes.SIFTER,
+                            ItemStackLootGenerator.create(List.of(
+                                    new ItemStackLoot(DSItems.FLINT, 1, 0, 1)
+                            ), 0, 1)
+                    )
+                    .generator(LootGeneratorTypes.BLOCK_BREAK, ItemStackLootGenerator.forDrop(DSItems.GRAVEL))
+                    .build()
+            )
+            .blockItem(DSItems.GRAVEL, false)
+            .categories(BlockCategories.SHOVEL_MINEABLE).build();
     public static final BlockSettings WHEAT = builder(Block.WHEAT).breakTime(200)
             .lootTable(LootTable.builder(BlockKeys.WHEAT)
                     .generator(
@@ -105,6 +132,13 @@ public final class DSBlockSettings {
     public static final BlockSettings PETRIFIED_PLANKS = builder(BlockKeys.PETRIFIED_PLANKS, DSItems.PETRIFIED_PLANKS).breakTime(PLANKS_BREAK_TIME).blockItem(DSItems.PETRIFIED_PLANKS, true).categories(BlockCategories.AXE_MINEABLE, BlockCategories.PLANKS).build();
     public static final BlockSettings PETRIFIED_SLAB = builder(BlockKeys.PETRIFIED_SLAB, DSItems.PETRIFIED_SLAB).breakTime(PLANKS_BREAK_TIME).blockItem(DSItems.PETRIFIED_SAPLING, true).categories(BlockCategories.AXE_MINEABLE, BlockCategories.WOODEN_SLABS).build();
 
+
+    // POWER
+    public static final BlockSettings CABLE = builder(BlockKeys.CABLE, DSItems.CABLE)
+            .breakTime(3_000)
+            .blockItem(DSItems.CABLE, true)
+            .tag(BlockTags.CABLE_SETTINGS, new CableSettings(Block.CYAN_TERRACOTTA))
+            .build();
 
     private static BlockSettings.Builder trapdoor(Block block) {
         return BlockSettings.builder(block.key(), block.registry().material()).breakTime(1_000);

@@ -1,7 +1,6 @@
 package net.desolatesky.player.listener;
 
 import net.desolatesky.DesolateSkyServer;
-import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.DSInstanceManager;
 import net.desolatesky.instance.lobby.LobbyInstance;
@@ -18,20 +17,13 @@ import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.event.Event;
-import net.minestom.server.event.EventFilter;
-import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
-import net.minestom.server.event.player.PlayerCancelDiggingEvent;
 import net.minestom.server.event.player.PlayerDisconnectEvent;
-import net.minestom.server.event.player.PlayerFinishDiggingEvent;
 import net.minestom.server.event.player.PlayerLoadedEvent;
 import net.minestom.server.event.player.PlayerMoveEvent;
-import net.minestom.server.event.player.PlayerStartDiggingEvent;
 import net.minestom.server.event.server.ServerListPingEvent;
-import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.network.packet.server.play.RecipeBookSettingsPacket;
 import net.minestom.server.ping.Status;
@@ -138,7 +130,7 @@ public final class PlayerListener implements DSEventHandlers<Event> {
     private DSEventHandler<PlayerMoveEvent> playerMoveHandler() {
         return event -> {
             final DSPlayer player = (DSPlayer) event.getPlayer();
-            final DSInstance instance = player.getDSInstance();
+            final DSInstance instance = player.getInstance();
             if (player.getPosition().y() < -64) {
                 player.teleport(instance.getSpawnPointFor(player));
             }

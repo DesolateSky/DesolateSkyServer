@@ -15,6 +15,7 @@ import net.kyori.adventure.sound.Sound;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.tag.Tag;
+import net.minestom.server.tag.TagHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -41,9 +42,9 @@ public final class BlockSettings implements Keyed {
      * For when this block needs to be displayed in a menu
      */
     private final ItemStack menuItem;
-    private final CompoundBinaryTag taggedSettings;
+    private final TagHandler taggedSettings;
 
-    public BlockSettings(Key key, LootTable lootTable, Duration breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, @Nullable BlockSoundSettings soundSettings, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
+    public BlockSettings(Key key, LootTable lootTable, Duration breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, @Nullable BlockSoundSettings soundSettings, ItemStack menuItem, TagHandler taggedSettings) {
         this.key = key;
         this.lootTable = lootTable;
         this.breakTime = breakTime;
@@ -58,7 +59,7 @@ public final class BlockSettings implements Keyed {
     /**
      * @param breakTime break time in milliseconds
      */
-    public BlockSettings(Key key, LootTable lootTable, int breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, @Nullable BlockSoundSettings soundSettings, ItemStack menuItem, CompoundBinaryTag taggedSettings) {
+    public BlockSettings(Key key, LootTable lootTable, int breakTime, @Nullable Key blockItemkey, MiningLevel miningLevel, Set<Category> categories, @Nullable BlockSoundSettings soundSettings, ItemStack menuItem, TagHandler taggedSettings) {
         this(key, lootTable, Duration.ofMillis(breakTime), blockItemkey, miningLevel, categories, soundSettings, menuItem, taggedSettings);
     }
 
@@ -115,7 +116,11 @@ public final class BlockSettings implements Keyed {
     }
 
     public <T> @Nullable T getSetting(Tag<T> tag) {
-        return tag.read(this.taggedSettings);
+        return this.taggedSettings.getTag(tag);
+    }
+
+    public TagHandler taggedSettings() {
+        return this.taggedSettings;
     }
 
     public static Builder builder(Key key, ItemStack menuItem) {
@@ -136,7 +141,7 @@ public final class BlockSettings implements Keyed {
         private final Set<Category> categories = new HashSet<>();
         private @Nullable BlockSoundSettings soundSettings = null;
         private final ItemStack menuItem;
-        private CompoundBinaryTag.Builder taggedSettings = CompoundBinaryTag.builder();
+        private TagHandler taggedSettings = TagHandler.newHandler();
 
         private Builder(Key key, ItemStack menuItem) {
             this.key = key;
@@ -207,18 +212,18 @@ public final class BlockSettings implements Keyed {
             return this;
         }
 
-        public Builder taggedSettings(CompoundBinaryTag taggedSettings) {
-            this.taggedSettings = CompoundBinaryTag.builder();
+        public Builder taggedSettings(TagHandler taggedSettings) {
+            this.taggedSettings = taggedSettings;
             return this;
         }
 
         public <T> Builder tag(Tag<T> tag, T value) {
-            tag.write(this.taggedSettings, value);
+            this.taggedSettings.setTag(tag, value);
             return this;
         }
 
         public BlockSettings build() {
-            return new BlockSettings(this.key, this.lootTable, this.breakTime, this.blockItemKey, this.miningLevel, this.categories, this.soundSettings, this.menuItem, this.taggedSettings.build());
+            return new BlockSettings(this.key, this.lootTable, this.breakTime, this.blockItemKey, this.miningLevel, this.categories, this.soundSettings, this.menuItem, this.taggedSettings);
         }
 
     }
