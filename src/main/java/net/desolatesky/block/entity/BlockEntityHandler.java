@@ -1,6 +1,5 @@
-package net.desolatesky.block.handler.entity;
+package net.desolatesky.block.entity;
 
-import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.block.settings.BlockSettings;
@@ -26,15 +25,16 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     public final BlockHandlerResult.Place onPlace(DSInstance instance, Block block, Point blockPosition) {
         final BlockHandler blockHandler = block.handler();
         if (!this.entityClass.isInstance(blockHandler)) {
-            return BlockHandlerResult.passthroughPlace(block);
+            return BlockHandlerResult.passthroughPlace();
         }
-        return this.onPlace(instance, block, blockPosition, this.entityClass.cast(blockHandler));
+        final T blockEntity = this.entityClass.cast(blockHandler);
+        return this.onPlace(instance, block, blockPosition, blockEntity);
     }
 
     /**
      * Override this method to handle the placement of the block entity.
      */
-    public BlockHandlerResult.Place onPlace(DSInstance instance, Block block, Point blockPosition, T entity) {
+    protected BlockHandlerResult.Place onPlace(DSInstance instance, Block block, Point blockPosition, T entity) {
         return BlockHandlerResult.passthroughPlace();
     }
 
@@ -44,13 +44,14 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
         if (!this.entityClass.isInstance(blockHandler)) {
             return BlockHandlerResult.passthroughPlace();
         }
-        return this.onPlayerPlace(player, instance, block, blockPosition, hand, face, cursorPosition, this.entityClass.cast(blockHandler));
+        final T blockEntity = this.entityClass.cast(blockHandler);
+        return this.onPlayerPlace(player, instance, block, blockPosition, hand, face, cursorPosition, blockEntity);
     }
 
     /**
      * Override this method to handle the placement of the block entity by a player.
      */
-    public BlockHandlerResult.Place onPlayerPlace(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
+    protected BlockHandlerResult.Place onPlayerPlace(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
         return BlockHandlerResult.passthroughPlace();
     }
 
@@ -66,7 +67,7 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     /**
      * Override this method to handle the destruction of the block entity.
      */
-    public BlockHandlerResult onDestroy(DSInstance instance, Block block, Point blockPosition, T entity) {
+    protected BlockHandlerResult onDestroy(DSInstance instance, Block block, Point blockPosition, T entity) {
         return BlockHandlerResult.PASS_THROUGH;
     }
 
@@ -82,7 +83,7 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     /**
      * Override this method to handle the destruction of the block entity by a player.
      */
-    public BlockHandlerResult onPlayerDestroy(DSPlayer player, DSInstance instance, Block block, Point blockPosition, T entity) {
+    protected BlockHandlerResult onPlayerDestroy(DSPlayer player, DSInstance instance, Block block, Point blockPosition, T entity) {
         return BlockHandlerResult.PASS_THROUGH;
     }
 
@@ -90,7 +91,7 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     public final BlockHandlerResult.InteractBlock onPlayerInteract(Player player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition) {
         final BlockHandler blockHandler = block.handler();
         if (!this.entityClass.isInstance(blockHandler)) {
-            return BlockHandlerResult.passthroughInteractBlock(block);
+            return BlockHandlerResult.passthroughInteractBlock();
         }
         return this.onPlayerInteract((DSPlayer) player, instance, block, blockPosition, hand, face, cursorPosition, this.entityClass.cast(blockHandler));
     }
@@ -98,8 +99,8 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     /**
      * Override this method to handle player interactions with the block entity.
      */
-    public BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
-        return BlockHandlerResult.passthroughInteractBlock(block);
+    protected BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
+        return BlockHandlerResult.passthroughInteractBlock();
     }
 
     @Override
@@ -113,8 +114,21 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     /**
      * Override this method to handle interactions with the block entity by another block entity.
      */
-    public BlockHandlerResult.InteractBlock onBlockEntityInteract(BlockEntity<?> actor, DSInstance instance, Block block, Point blockPosition, BlockFace face, T entity) {
-        return BlockHandlerResult.passthroughInteractBlock(block);
+    protected BlockHandlerResult.InteractBlock onBlockEntityInteract(BlockEntity<?> actor, DSInstance instance, Block block, Point blockPosition, BlockFace face, T entity) {
+        return BlockHandlerResult.passthroughInteractBlock();
+    }
+
+    @Override
+    public final BlockHandlerResult onUpdate(DSInstance instance, Point sourcePoint, Block sourceBlock, Point updatedPoint, Block updatedBlock) {
+        final BlockHandler blockHandler = updatedBlock.handler();
+        if (!this.entityClass.isInstance(blockHandler)) {
+            return BlockHandlerResult.PASS_THROUGH;
+        }
+        return this.onUpdate(instance, sourcePoint, sourceBlock, updatedPoint, updatedBlock, this.entityClass.cast(blockHandler));
+    }
+
+    protected BlockHandlerResult onUpdate(DSInstance instance, Point sourcePoint, Block sourceBlock, Point updatedPoint, Block updatedBlock, T entity) {
+        return BlockHandlerResult.PASS_THROUGH;
     }
 
     @Override
@@ -129,7 +143,7 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     /**
      * Override this method to handle the tick event for the block entity.
      */
-    public void onTick(DSInstance instance, Block block, Point blockPosition, T entity) {
+    protected void onTick(DSInstance instance, Block block, Point blockPosition, T entity) {
 
     }
 
@@ -145,7 +159,7 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     /**
      * Override this method to handle the random tick event for the block entity.
      */
-    public void onRandomTick(DSInstance instance, Block block, Point blockPosition, T entity) {
+    protected void onRandomTick(DSInstance instance, Block block, Point blockPosition, T entity) {
 
     }
 

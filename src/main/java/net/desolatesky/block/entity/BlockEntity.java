@@ -5,7 +5,6 @@ import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.DSBlock;
 import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.handler.entity.BlockEntityHandler;
 import net.desolatesky.category.Category;
 import net.desolatesky.instance.DSInstance;
 import net.kyori.adventure.key.Key;
@@ -15,7 +14,6 @@ import net.minestom.server.instance.block.BlockHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHandler {
@@ -43,10 +41,6 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
 
     @Override
     public final void onPlace(@NotNull Placement placement) {
-        // player placements are handled separately by listeners
-        if (placement instanceof PlayerPlacement) {
-            return;
-        }
         if (!(placement.getInstance() instanceof final DSInstance instance)) {
             return;
         }
@@ -74,7 +68,7 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
         if (!(interaction.getInstance() instanceof final DSInstance instance)) {
             return BlockHandler.super.onInteract(interaction);
         }
-        return false;
+        return true;
     }
 
     @Override

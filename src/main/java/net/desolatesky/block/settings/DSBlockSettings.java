@@ -135,9 +135,9 @@ public final class DSBlockSettings {
 
     // POWER
     public static final BlockSettings CABLE = builder(BlockKeys.CABLE, DSItems.CABLE)
-            .breakTime(3_000)
+            .breakTime(100)
             .blockItem(DSItems.CABLE, true)
-            .tag(BlockTags.CABLE_SETTINGS, new CableSettings(Block.CYAN_TERRACOTTA))
+            .tag(BlockTags.CABLE_SETTINGS, new CableSettings(Block.CYAN_TERRACOTTA, Block.BLUE_TERRACOTTA, 1000, 10))
             .build();
 
     private static BlockSettings.Builder trapdoor(Block block) {

@@ -7,6 +7,7 @@ import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
+import net.desolatesky.instance.chunk.DSChunk;
 import net.desolatesky.instance.generator.StartingIslandGenerator;
 import net.desolatesky.instance.weather.WeatherManager;
 import net.desolatesky.item.DSItemRegistry;
@@ -75,7 +76,7 @@ public final class TeamInstance extends DSInstance {
     }
 
     private TeamInstance(DesolateSkyServer server, IslandTeam team, Path worldFolderPath, Pos spawn) {
-        super(team.id(), worldFolderPath, DimensionType.OVERWORLD, new AnvilLoader(worldFolderPath));
+        super(server.blockRegistry(), team.id(), worldFolderPath, DimensionType.OVERWORLD, new AnvilLoader(worldFolderPath));
         this.breakingManager = new BreakingManager(server, new HashMap<>(), server.blockRegistry());
         this.team = team;
         this.spawnPoint = new InstancePoint<>(this, spawn);
@@ -83,7 +84,7 @@ public final class TeamInstance extends DSInstance {
         this.blockRegistry = server.blockRegistry();
         this.itemRegistry = server.itemRegistry();
         this.setGenerator(new StartingIslandGenerator(server.blockEntities(), this));
-        this.setChunkSupplier(LightingChunk::new);
+        this.setChunkSupplier((instance, chunkX, chunkZ) -> new DSChunk(this.blockRegistry, (DSInstance) instance, chunkX, chunkZ));
         this.setWorldBorder(new WorldBorder(50, spawn.x(), spawn.z(), 0, 0, 50));
     }
 
@@ -113,10 +114,12 @@ public final class TeamInstance extends DSInstance {
     }
 
     private void load() {
-        this.tickTask = this.scheduler().scheduleTask(this::onTick, TaskSchedule.nextTick(), TaskSchedule.nextTick());
+        this.tickTask = this.scheduler().scheduleTask(this::tick, TaskSchedule.nextTick(), TaskSchedule.nextTick());
     }
 
-    private void onTick() {
+    @Override
+    protected void tick() {
+        super.tick();
         this.weatherManager.tick();
         this.breakingManager.tick();
         this.randomTick();

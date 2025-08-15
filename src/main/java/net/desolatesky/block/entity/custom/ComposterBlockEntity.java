@@ -7,7 +7,7 @@ import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.category.BlockCategories;
 import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.handler.BlockHandlerResult;
-import net.desolatesky.block.handler.entity.BlockEntityHandler;
+import net.desolatesky.block.entity.BlockEntityHandler;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
@@ -83,7 +83,7 @@ public final class ComposterBlockEntity extends BlockEntity<ComposterBlockEntity
         }
 
         @Override
-        public BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, ComposterBlockEntity entity) {
+        protected BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, ComposterBlockEntity entity) {
             if (player.isSneaking()) {
                 return BlockHandlerResult.passthroughInteractBlock();
             }

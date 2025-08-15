@@ -1,13 +1,12 @@
 package net.desolatesky.block.entity.custom.crop;
 
 import net.desolatesky.DesolateSkyServer;
-import net.desolatesky.block.BlockProperties;
 import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.category.BlockCategories;
 import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.handler.entity.BlockEntityHandler;
+import net.desolatesky.block.entity.BlockEntityHandler;
 import net.desolatesky.block.property.type.BlockProperty;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.instance.DSInstance;
@@ -98,7 +97,7 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
         }
 
         @Override
-        public BlockHandlerResult.Place onPlayerPlace(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
+        protected BlockHandlerResult.Place onPlayerPlace(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, T entity) {
             final Block under = instance.getBlock(blockPosition.sub(0, 1, 0));
             final DSBlockHandler blockHandler = entity.blockRegistry.getHandlerForBlock(under);
             if (blockHandler == null) {
@@ -120,7 +119,7 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
         }
 
         @Override
-        public void onRandomTick(DSInstance instance, Block block, Point blockPosition, T entity) {
+        protected void onRandomTick(DSInstance instance, Block block, Point blockPosition, T entity) {
             if (entity.crop == null) {
                 return;
             }

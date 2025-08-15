@@ -36,6 +36,8 @@ import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.Contract;
 
+import java.util.Objects;
+
 public final class ItemInteractionListener implements DSEventHandlers<Event> {
 
     private final DSBlockRegistry blockRegistry;
@@ -99,7 +101,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
             final DSInstance instance = player.getInstance();
             final Block clickedBlock = instance.getBlock(clickedPoint);
             final Point cursor = new Vec(0);
-            if (blockId != null) {
+            if (blockId != null && event.getHand() == PlayerHand.MAIN) {
                 final EventHandlerResult result = this.tryPlaceBlock(player, instance, event.getHand(), itemStack, clickedPoint, clickedBlock, cursor, event.getBlockFace(), blockId);
                 if (result.consumes()) {
                     return EventHandlerResult.CONSUME_EVENT;
@@ -314,9 +316,7 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
                 return result.toEventHandlerResult();
             } else {
                 final Block resultBlock = result.resultBlock();
-                if (resultBlock != null) {
-                    instance.setBlock(placePoint, resultBlock, true);
-                }
+                instance.setBlock(placePoint, Objects.requireNonNullElse(resultBlock, block), true);
             }
         } else {
             instance.setBlock(placePoint, block, true);

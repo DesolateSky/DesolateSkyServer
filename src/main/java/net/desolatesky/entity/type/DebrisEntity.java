@@ -51,7 +51,6 @@ public class DebrisEntity extends SimpleEntity {
     };
 
     private final RandomGenerator randomGenerator = new SplittableRandom();
-    private final DSInstance dsInstance;
     private final Collection<Display> displays = new ArrayList<>();
     private final LootTable lootTable;
     private final float randomPitch;
@@ -60,7 +59,6 @@ public class DebrisEntity extends SimpleEntity {
 
     public DebrisEntity(DSInstance dsInstance, LootTable lootTable) {
         super(EntityType.ARMOR_STAND, EntityKeys.DEBRIS_ENTITY);
-        this.dsInstance = dsInstance;
         this.lootTable = lootTable;
         this.randomPitch = this.randomGenerator.nextFloat(0, 360);
         this.randomYaw = this.randomGenerator.nextFloat(0, 360);

@@ -36,41 +36,10 @@ public final class BlockInteractionListener implements DSEventHandlers<Event> {
     @Override
     @Contract("_ -> param1")
     public DSListener.Builder<Event> register(DSListener.Builder<Event> builder) {
-        return builder.handler(PlayerUseItemOnBlockEvent.class, this.useItemOnBlockHandler())
-                .handler(PlayerBlockPlaceEvent.class, this.blockPlaceHandler())
+        return builder.handler(PlayerBlockPlaceEvent.class, this.blockPlaceHandler())
                 .handler(PlayerStartDiggingEvent.class, this.playerPunchBlockHandler())
-//                .handler(PlayerBlockBreakEvent.class, this.blockBreakHandler())
                 ;
     }
-
-    private DSEventHandler<PlayerUseItemOnBlockEvent> useItemOnBlockHandler() {
-        return event -> {
-            final DSPlayer player = (DSPlayer) event.getPlayer();
-            final Point clickedPoint = event.getPosition();
-            final DSInstance instance = player.getInstance();
-            final Block clickedBlock = instance.getBlock(clickedPoint);
-            final Point cursor = new Vec(0);
-            final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(clickedBlock);
-            if (blockHandler != null) {
-                final BlockHandlerResult.InteractBlock result = blockHandler.onPlayerInteract(
-                        player,
-                        instance,
-                        clickedBlock,
-                        clickedPoint,
-                        event.getHand(),
-                        event.getBlockFace(),
-                        cursor
-                );
-                final Block resultBlock = result.resultBlock();
-                if (resultBlock != null) {
-                    instance.setBlock(clickedPoint, resultBlock);
-                }
-                return result.toEventHandlerResult();
-            }
-            return EventHandlerResult.CONTINUE_LISTENING;
-        };
-    }
-
 
     private DSEventHandler<PlayerBlockPlaceEvent> blockPlaceHandler() {
         return event -> {

@@ -2,7 +2,7 @@ package net.desolatesky.block.entity.custom.powered;
 
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.entity.BlockEntity;
-import net.desolatesky.block.handler.entity.BlockEntityHandler;
+import net.desolatesky.block.entity.BlockEntityHandler;
 import net.desolatesky.block.settings.BlockSettings;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.utils.Direction;
@@ -28,7 +28,9 @@ public abstract class PoweredBlockEntity<E extends PoweredBlockEntity<E>> extend
 
     protected abstract int getTotalElectricity();
 
-    public abstract int getMaxElectricity();
+    public abstract int getMaxPower();
+
+    protected abstract int getTransferRate();
 
     protected static abstract class Handler<E extends PoweredBlockEntity<E>> extends BlockEntityHandler<E> {
 

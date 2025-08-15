@@ -1,6 +1,7 @@
 package net.desolatesky.block.handler;
 
 import net.desolatesky.DesolateSkyServer;
+import net.desolatesky.block.DSBlockRegistry;
 import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.category.Category;
@@ -27,6 +28,8 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
+import net.minestom.server.utils.Direction;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -134,7 +137,7 @@ public class DSBlockHandler implements Keyed {
             BlockFace face,
             Point cursorPosition
     ) {
-        return BlockHandlerResult.passthroughInteractBlock(block);
+        return BlockHandlerResult.passthroughInteractBlock();
     }
 
     public BlockHandlerResult.InteractBlock onBlockEntityInteract(
@@ -144,7 +147,7 @@ public class DSBlockHandler implements Keyed {
             Point blockPosition,
             BlockFace face
     ) {
-        return BlockHandlerResult.passthroughInteractBlock(block);
+        return BlockHandlerResult.passthroughInteractBlock();
     }
 
     public BlockHandlerResult onPlayerPunch(
@@ -180,6 +183,10 @@ public class DSBlockHandler implements Keyed {
             Block block,
             Point blockPosition
     ) {
+    }
+
+    public BlockHandlerResult onUpdate(DSInstance instance, Point sourcePoint, Block sourceBlock, Point updatedPoint, Block updatedBlock) {
+        return BlockHandlerResult.PASS_THROUGH;
     }
 
     public Collection<ItemStack> generateDrops(DSInstance instance, ItemStack toolUsed, Point point, Block block) {

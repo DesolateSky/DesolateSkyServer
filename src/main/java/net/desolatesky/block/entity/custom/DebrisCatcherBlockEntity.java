@@ -3,21 +3,17 @@ package net.desolatesky.block.entity.custom;
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.BlockKeys;
 import net.desolatesky.block.entity.TransientBlockEntity;
-import net.desolatesky.block.handler.entity.BlockEntityHandler;
+import net.desolatesky.block.entity.BlockEntityHandler;
 import net.desolatesky.block.settings.BlockSettings;
-import net.desolatesky.block.settings.DSBlockSettings;
 import net.desolatesky.entity.type.DebrisEntity;
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.item.DSItems;
 import net.desolatesky.item.ItemKeys;
-import net.desolatesky.util.Namespace;
-import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.ItemEntity;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
@@ -68,7 +64,7 @@ public final class DebrisCatcherBlockEntity extends TransientBlockEntity<DebrisC
         }
 
         @Override
-        public void onTick(DSInstance instance, Block block, Point blockPosition, DebrisCatcherBlockEntity entity) {
+        protected void onTick(DSInstance instance, Block block, Point blockPosition, DebrisCatcherBlockEntity entity) {
             if (entity.tickNum++ % 20 == 0) {
                 collectDebris(blockPosition, instance);
             }

@@ -1,8 +1,6 @@
 package net.desolatesky.block.entity;
 
 import net.desolatesky.DesolateSkyServer;
-import net.desolatesky.block.handler.entity.BlockEntityHandler;
-import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.instance.DSInstance;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;

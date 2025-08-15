@@ -47,7 +47,6 @@ public interface BlockHandlerResult {
         return new InteractBlock(cancelEvent, true, resultBlock);
     }
 
-
     record Place(
             boolean cancelEvent,
             boolean consumeEvent,

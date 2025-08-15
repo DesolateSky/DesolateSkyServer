@@ -2,6 +2,7 @@ package net.desolatesky.entity;
 
 import net.desolatesky.instance.DSInstance;
 import net.desolatesky.instance.InstancePoint;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;

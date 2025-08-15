@@ -8,7 +8,7 @@ import net.desolatesky.block.entity.BlockEntities;
 import net.desolatesky.block.entity.BlockEntity;
 import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.handler.entity.BlockEntityHandler;
+import net.desolatesky.block.entity.BlockEntityHandler;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.entity.type.SifterBlockDisplayEntity;
 import net.desolatesky.instance.DSInstance;
@@ -18,7 +18,6 @@ import net.desolatesky.item.ItemKeys;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.loot.LootContext;
 import net.desolatesky.loot.generator.LootGenerator;
-import net.desolatesky.loot.generator.LootGeneratorType;
 import net.desolatesky.loot.generator.LootGeneratorTypes;
 import net.desolatesky.loot.table.LootTable;
 import net.desolatesky.player.DSPlayer;
@@ -232,18 +231,18 @@ public class SifterBlockEntity extends BlockEntity<SifterBlockEntity> {
         }
 
         @Override
-        public BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, SifterBlockEntity entity) {
+        protected BlockHandlerResult.InteractBlock onPlayerInteract(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, SifterBlockEntity entity) {
             return entity.click(player, instance, blockPosition, true);
         }
 
         @Override
-        public BlockHandlerResult onDestroy(DSInstance instance, Block block, Point blockPosition, SifterBlockEntity entity) {
+        protected BlockHandlerResult onDestroy(DSInstance instance, Block block, Point blockPosition, SifterBlockEntity entity) {
             entity.entity.remove();
             return BlockHandlerResult.CONSUME;
         }
 
         @Override
-        public BlockHandlerResult onPlayerDestroy(DSPlayer player, DSInstance instance, Block block, Point blockPosition, SifterBlockEntity entity) {
+        protected BlockHandlerResult onPlayerDestroy(DSPlayer player, DSInstance instance, Block block, Point blockPosition, SifterBlockEntity entity) {
             if (entity.entity != null ) {
                 entity.entity.remove();
             }
