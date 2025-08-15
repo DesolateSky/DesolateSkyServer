@@ -9,10 +9,27 @@ import net.minestom.server.utils.Direction;
 
 public abstract class PoweredBlockEntity<E extends PoweredBlockEntity<E>> extends BlockEntity<E> {
 
-    protected int stored;
+    private int stored;
 
     public PoweredBlockEntity(Key key, DesolateSkyServer server) {
         super(key, server);
+        this.stored = 0;
+    }
+
+    protected void setStored(int amount) {
+        this.stored = Math.max(0, Math.min(amount, this.getMaxPower()));
+    }
+
+    protected void subtractStored(int amount) {
+        this.setStored(this.stored - amount);
+    }
+
+    protected void addStored(int amount) {
+        this.setStored(this.stored + amount);
+    }
+
+    protected int getStored() {
+        return this.stored;
     }
 
     @Override

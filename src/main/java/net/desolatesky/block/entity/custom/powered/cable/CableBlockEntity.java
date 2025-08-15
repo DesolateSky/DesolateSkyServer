@@ -25,7 +25,6 @@ import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +52,6 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
 
     public CableBlockEntity(Key key, DesolateSkyServer server) {
         super(key, server);
-        MinecraftServer.getConnectionManager().getOnlinePlayerByUsername("Fisher2911").sendMessage(Component.text("New Cable"));
         this.cableSettings = Objects.requireNonNull(this.blockHandler().getSetting(BlockTags.CABLE_SETTINGS));
     }
 
@@ -110,7 +108,6 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         if (direction != this.direction && !inputConnection) {
             this.setDirection(direction);
         }
-        MinecraftServer.getConnectionManager().getOnlinePlayerByUsername("Fisher2911").sendMessage("Direction between is " + direction);
         final SimpleEntity displayEntity = new SimpleEntity(EntityType.BLOCK_DISPLAY, ENTITY_KEY);
         displayEntity.setInstance(instance, point);
         displayEntity.editEntityMeta(BlockDisplayMeta.class, data -> {
@@ -131,8 +128,7 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         return switch (direction) {
             case UP, DOWN -> new Vec(CABLE_SCALE, importantPartSize, CABLE_SCALE);
             case NORTH, SOUTH -> new Vec(CABLE_SCALE, CABLE_SCALE, importantPartSize);
-            case EAST -> new Vec(importantPartSize, CABLE_SCALE, CABLE_SCALE);
-            case WEST -> new Vec(importantPartSize, CABLE_SCALE, CABLE_SCALE);
+            case EAST, WEST -> new Vec(importantPartSize, CABLE_SCALE, CABLE_SCALE);
         };
     }
 
@@ -154,8 +150,7 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         if (mainDisplay == null) {
             return;
         }
-        final Integer mainPower = this.receivedElectricalFlows.get(this.direction);
-        this.glowDisplay(mainDisplay, mainPower != null && mainPower > 0);
+        this.glowDisplay(mainDisplay, this.getStored() > 0);
         for (Direction otherDirection : Direction.values()) {
             if (otherDirection == this.direction) {
                 continue;
@@ -202,6 +197,16 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         if (display != null) {
             display.remove();
         }
+    }
+
+    @Override
+    protected List<Direction> getOutputDirections() {
+        return List.of(this.direction);
+    }
+
+    @Override
+    protected int getFlow(Direction direction) {
+        return direction == this.direction ? Math.min(this.getStored(), this.cableSettings.transferRate()) : 0;
     }
 
     protected static class Handler extends PowerBlockEntity.Handler<CableBlockEntity> {

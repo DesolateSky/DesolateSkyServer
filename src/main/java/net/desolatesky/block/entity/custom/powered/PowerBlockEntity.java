@@ -10,20 +10,16 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class PowerBlockEntity<E extends PowerBlockEntity<E>> extends PoweredBlockEntity<E> {
 
-    protected final Map<Direction, Integer> receivedElectricalFlows;
-
     public PowerBlockEntity(Key key, DesolateSkyServer server) {
         super(key, server);
-        this.receivedElectricalFlows = new HashMap<>();
     }
 
     /**
-     *
      * @return amount of electricity consumed
      */
     @Override
@@ -35,22 +31,18 @@ public abstract class PowerBlockEntity<E extends PowerBlockEntity<E>> extends Po
             return 0;
         }
         final int transfer = Math.min(allowed, amount);
-        this.receivedElectricalFlows.merge(direction, transfer, Integer::sum);
+        this.addStored(transfer);
         return transfer;
     }
 
     @Override
     protected int getTotalElectricity() {
-        int total = this.stored;
-        for (int value : this.receivedElectricalFlows.values()) {
-            total += value;
-        }
-        return total;
+        return this.getStored();
     }
 
-    protected int getFlow(Direction direction) {
-        return this.receivedElectricalFlows.getOrDefault(direction, 0);
-    }
+    protected abstract List<Direction> getOutputDirections();
+
+    protected abstract int getFlow(Direction direction);
 
     public boolean canTransferPowerTo(Point sourcePoint, Block sourceBlock, Point destination, PowerBlockEntity<?> destinationBlockEntity) {
         if (sourcePoint.distanceSquared(destination) != 1) {
@@ -82,14 +74,18 @@ public abstract class PowerBlockEntity<E extends PowerBlockEntity<E>> extends Po
 
         @Override
         protected void onTick(DSInstance instance, Block block, Point blockPosition, E entity) {
-            entity.receivedElectricalFlows.replaceAll(((direction, amount) -> {
+            final List<Direction> outputDirections = entity.getOutputDirections();
+            final AtomicInteger transferred = new AtomicInteger(0);
+            outputDirections.forEach(direction -> {
                 final Block neighbor = instance.getBlock(blockPosition.add(direction.vec()));
                 if (!(neighbor.handler() instanceof final PoweredBlockEntity<?> powered)) {
-                    return amount;
+                    return;
                 }
-                final int received = powered.consumeElectricity(direction, Math.min(entity.getTransferRate(), amount));
-                return Math.max(0, amount - received);
-            }));
+                final int transferAmount = entity.getStored();
+                final int received = powered.consumeElectricity(direction, Math.min(entity.getTransferRate(), transferAmount));
+                transferred.addAndGet(received);
+            });
+            entity.subtractStored(Math.max(0, transferred.get()));
         }
 
     }
