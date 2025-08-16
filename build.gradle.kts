@@ -24,7 +24,6 @@ repositories {
 dependencies {
     implementation("net.minestom:minestom:2025.08.12-1.21.8")
     implementation("com.zaxxer:HikariCP:6.3.0")
-//    implementation("dev.hollowcube:schem:1.3.1")
     implementation("org.slf4j:slf4j-simple:2.0.17")
     implementation("dev.lu15:luckperms-minestom:5.4-SNAPSHOT")
     implementation("org.spongepowered:configurate-hocon:4.1.2")
