@@ -10,3 +10,11 @@ I will never make this repository not public, but I cannot guarantee that in the
 Additionally, I am a college student so I don't have a lot of free time to dedicate to this project during school. 
 
 Here is the YouTube channel where I occasionally post features: [https://www.youtube.com/@DesolateSkyMc](https://www.youtube.com/@DesolateSkyMc).
+
+Libraries used:
+- [Minestom](https://github.com/Minestom/Minestom)
+- [HikariCP](https://github.com/brettwooldridge/HikariCP)
+- [LooFifteen LuckPerms fork for Minestom](https://github.com/LooFifteen/LuckPerms)
+- [Configurate](https://github.com/SpongePowered/Configurate)
+- [JOML](https://github.com/JOML-CI/JOML)
+- [MongoDB Java driver](https://www.mongodb.com/docs/drivers/java/sync/current/get-started/#std-label-java-get-started)
