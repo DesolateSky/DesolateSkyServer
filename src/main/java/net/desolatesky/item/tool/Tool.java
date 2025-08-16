@@ -88,13 +88,11 @@ public final class Tool {
                 })
                 .sorted(Comparator.comparingInt(itemStackToolPartPair -> itemStackToolPartPair.second().type().order()))
                 .toList();
-        System.out.println("Tool part items: " + toolPartItems);
         final List<Component> description = new ArrayList<>();
         Key toolModelKey = null;
         for (final Pair<ItemStack, ToolPart> toolPair : toolPartItems) {
             final ItemStack toolPartItem = toolPair.first();
             final ToolPart toolPart = toolPair.second();
-            System.out.println("Tool part item: " + toolPartItem.get(DataComponents.CUSTOM_NAME));
             description.add(toolPart.getDisplayName(toolPartItem));
             description.addAll(toolPart.getDescription(toolPartItem));
             final ToolPartType type = toolPart.type();
@@ -105,7 +103,6 @@ public final class Tool {
         if (toolModelKey == null) {
             throw new IllegalStateException("Tool model key not found for tool: " + this.itemKey);
         }
-        System.out.println("Tool model key: " + toolModelKey);
         return item.create()
                 .withTag(ItemTags.ITEM_ID, this.itemKey)
                 .withTag(ItemTags.TOOL, this)

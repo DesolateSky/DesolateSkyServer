@@ -52,17 +52,14 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
         final Block block = placement.getBlock();
         this.crop = block.getTag(BlockTags.CROP);
         if (this.crop == null) {
-            System.out.println("No crop");
             return;
         }
-        System.out.println("Loading crop: " + this.crop);
         Double growthChance = block.getTag(BlockTags.CROP_GROWTH_CHANCE);
         if (growthChance == null) {
             growthChance = this.crop.rarity().minGrowthChance();
         }
         this.growthChance = growthChance;
         final Integer readAge = block.getTag(BlockTags.CROP_AGE);
-        System.out.println("Age: " + readAge);
         if (readAge == null) {
             return;
         }
@@ -119,7 +116,7 @@ public class CropBlockEntity<T extends CropBlockEntity<T>> extends BlockEntity<T
         }
 
         @Override
-        protected void onRandomTick(DSInstance instance, Block block, Point blockPosition, T entity) {
+        protected void onRandomTick(long tick, DSInstance instance, Block block, Point blockPosition, T entity) {
             if (entity.crop == null) {
                 return;
             }

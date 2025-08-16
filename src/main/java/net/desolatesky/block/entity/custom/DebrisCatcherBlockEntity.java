@@ -27,7 +27,6 @@ public final class DebrisCatcherBlockEntity extends TransientBlockEntity<DebrisC
     public static final BlockEntityHandler<DebrisCatcherBlockEntity> HANDLER = new Handler();
 
     private static final double COLLECTION_RANGE = 4;
-    private long tickNum = 0;
 
     public DebrisCatcherBlockEntity(DesolateSkyServer server) {
         super(BlockKeys.DEBRIS_CATCHER, server);
@@ -64,8 +63,8 @@ public final class DebrisCatcherBlockEntity extends TransientBlockEntity<DebrisC
         }
 
         @Override
-        protected void onTick(DSInstance instance, Block block, Point blockPosition, DebrisCatcherBlockEntity entity) {
-            if (entity.tickNum++ % 20 == 0) {
+        protected void onTick(long tick, DSInstance instance, Block block, Point blockPosition, DebrisCatcherBlockEntity entity) {
+            if (tick % 20 == 0) {
                 collectDebris(blockPosition, instance);
             }
         }

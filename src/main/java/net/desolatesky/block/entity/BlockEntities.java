@@ -3,13 +3,14 @@ package net.desolatesky.block.entity;
 import net.desolatesky.DesolateSkyServer;
 import net.desolatesky.block.BlockKeys;
 import net.desolatesky.block.BlockProperties;
-import net.desolatesky.block.DSBlocks;
 import net.desolatesky.block.entity.custom.ComposterBlockEntity;
 import net.desolatesky.block.entity.custom.DebrisCatcherBlockEntity;
 import net.desolatesky.block.entity.custom.SifterBlockEntity;
 import net.desolatesky.block.entity.custom.crop.CropBlockEntity;
 import net.desolatesky.block.entity.custom.crop.SaplingBlockEntity;
 import net.desolatesky.block.entity.custom.powered.cable.CableBlockEntity;
+import net.desolatesky.block.entity.custom.powered.generator.SolarPanelBlockEntity;
+import net.desolatesky.block.entity.custom.powered.machine.CobblestoneGeneratorBlockEntity;
 import net.desolatesky.structure.tree.TreeStructure;
 import net.desolatesky.structure.tree.type.petrified.PetrifiedTreeLeavesPlacer;
 import net.desolatesky.structure.tree.type.petrified.PetrifiedTreeTrunkPlacer;
@@ -35,11 +36,14 @@ public final class BlockEntities {
         blockManager.registerHandler(BlockKeys.SIFTER, () -> new SifterBlockEntity(server));
         blockManager.registerHandler(BlockKeys.COMPOSTER, () -> new ComposterBlockEntity(server));
         blockManager.registerHandler(BlockKeys.WHEAT, () -> new CropBlockEntity<>(BlockKeys.WHEAT, server, BlockProperties.AGE));
-        blockManager.registerHandler(BlockKeys.CABLE, () -> new CableBlockEntity(BlockKeys.CABLE, server));
         blockManager.registerHandler(BlockKeys.PETRIFIED_SAPLING, () -> new SaplingBlockEntity(BlockKeys.PETRIFIED_SAPLING, server, TreeStructure.createTreeStructure(
                 new PetrifiedTreeTrunkPlacer(0, 0, 1, 3, server.blockEntities()),
                 new PetrifiedTreeLeavesPlacer(1, 1, 2, 3, server.blockEntities())
         )));
+
+        blockManager.registerHandler(BlockKeys.CABLE, () -> new CableBlockEntity(BlockKeys.CABLE, server));
+        blockManager.registerHandler(BlockKeys.SOLAR_PANEL, () -> new SolarPanelBlockEntity(BlockKeys.SOLAR_PANEL, server));
+        blockManager.registerHandler(BlockKeys.COBBLESTONE_GENERATOR, () -> new CobblestoneGeneratorBlockEntity(BlockKeys.COBBLESTONE_GENERATOR, server));
     }
 
     public @Nullable BlockEntity<?> getBlockEntity(Key key) {

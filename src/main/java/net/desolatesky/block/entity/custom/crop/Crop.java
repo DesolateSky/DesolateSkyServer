@@ -23,7 +23,6 @@ public record Crop(int maxAge, CropRarity rarity) {
 
         @Override
         public @Nullable Crop read(@NotNull TagReadable reader) {
-            System.out.println(reader.hasTag(MAX_AGE_TAG) + " " + reader.hasTag(CROP_RARITY_TAG));
             final Integer maxAge = reader.getTag(MAX_AGE_TAG);
             if (maxAge == null) {
                 return null;

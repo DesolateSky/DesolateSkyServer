@@ -91,6 +91,8 @@ public final class ItemKeys {
 
     // POWER
     public static final Key CABLE = Namespace.key("cable");
+    public static final Key SOLAR_PANEL = Namespace.key("solar_panel");
+    public static final Key COBBLESTONE_GENERATOR = Namespace.key("cobblestone_generator");
 
 
     private static Key key(Material material) {

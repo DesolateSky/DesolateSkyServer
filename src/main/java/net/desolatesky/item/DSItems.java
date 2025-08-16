@@ -41,7 +41,16 @@ public final class DSItems {
     public static final DSItem COMPOSTER = addDefault(DSItem.create(ItemKeys.COMPOSTER, ItemStack.builder(Material.COMPOSTER)
             .set(ItemTags.BLOCK_ID, BlockKeys.COMPOSTER)
             .build()));
-
+    public static final DSItem SOLAR_PANEL = addDefault(DSItem.create(ItemKeys.SOLAR_PANEL, ItemStack.builder(Material.PAPER)
+            .customName(ComponentUtil.noItalics("Solar Panel"))
+            .set(DataComponents.ITEM_MODEL, ItemKeys.SOLAR_PANEL.asString())
+            .set(ItemTags.BLOCK_ID, BlockKeys.SOLAR_PANEL)
+            .build()));
+    public static final DSItem COBBLESTONE_GENERATOR = addDefault(DSItem.create(ItemKeys.COBBLESTONE_GENERATOR, ItemStack.builder(Material.PAPER)
+            .set(DataComponents.ITEM_MODEL, ItemKeys.COBBLESTONE_GENERATOR.asString())
+            .customName(ComponentUtil.noItalics("Cobblestone Generator"))
+            .set(ItemTags.BLOCK_ID, BlockKeys.COBBLESTONE_GENERATOR)
+            .build()));
 
     // ITEMS
     public static final DSItem FIBER = addDefault(DSItem.create(ItemKeys.FIBER, ItemStack.builder(Material.TALL_DRY_GRASS)
@@ -170,6 +179,7 @@ public final class DSItems {
 
     // vanilla
     public static final DSItem CRAFTING_TABLE = addDefault(DSItem.create(ItemStack.builder(Material.CRAFTING_TABLE).set(ItemTags.BLOCK_ID, BlockKeys.CRAFTING_TABLE).build()));
+    public static final DSItem COBBLESTONE = addDefault(DSItem.create(ItemStack.builder(Material.COBBLESTONE).set(ItemTags.BLOCK_ID, BlockKeys.COBBLESTONE).build()));
     public static final DSItem DIRT = addDefault(DSItem.create(ItemKeys.DIRT, ItemStack.builder(Material.DIRT).set(ItemTags.BLOCK_ID, BlockKeys.DIRT).build()));
     public static final DSItem SAND = addDefault(DSItem.create(ItemKeys.SAND, ItemStack.builder(Material.SAND).set(ItemTags.BLOCK_ID, BlockKeys.SAND).build()));
     public static final DSItem GRAVEL = addDefault(DSItem.create(ItemKeys.GRAVEL, ItemStack.builder(Material.GRAVEL).set(ItemTags.BLOCK_ID, BlockKeys.GRAVEL).build()));

@@ -29,6 +29,7 @@ import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.utils.Direction;
+import net.minestom.server.utils.time.Tick;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -172,6 +173,7 @@ public class DSBlockHandler implements Keyed {
     }
 
     public void onTick(
+            long tick,
             DSInstance instance,
             Block block,
             Point blockPosition
@@ -179,6 +181,7 @@ public class DSBlockHandler implements Keyed {
     }
 
     public void onRandomTick(
+            long tick,
             DSInstance instance,
             Block block,
             Point blockPosition

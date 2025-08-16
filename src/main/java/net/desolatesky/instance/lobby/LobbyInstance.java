@@ -27,7 +27,6 @@ public final class LobbyInstance extends DSInstance {
 
     public static LobbyInstance createLobby(DesolateSkyServer server, UUID uuid, Path worldFolderPath, Pos spawnPoint, Region region) {
         final Path worldPath = worldFolderPath.resolve("world");
-        System.out.println("World exists: " + worldPath.toFile().exists());
         final LobbyInstance lobbyInstance = new LobbyInstance(server, uuid, worldPath, spawnPoint, region);
         lobbyInstance.load();
         return lobbyInstance;
@@ -70,14 +69,9 @@ public final class LobbyInstance extends DSInstance {
 
     }
 
-    private void load() {
-        this.scheduler().scheduleTask(this::onTick, TaskSchedule.nextTick(), TaskSchedule.nextTick());
+    @Override
+    protected void onTick() {
     }
-
-    private void onTick() {
-        this.breakingManager.tick();
-    }
-
 
     @Override
     public BreakingManager breakingManager() {

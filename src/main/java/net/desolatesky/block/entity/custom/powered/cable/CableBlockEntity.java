@@ -5,6 +5,7 @@ import net.desolatesky.block.BlockKeys;
 import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.entity.BlockEntityHandler;
 import net.desolatesky.block.entity.custom.powered.PowerBlockEntity;
+import net.desolatesky.block.entity.custom.powered.PoweredBlockEntity;
 import net.desolatesky.block.handler.BlockHandlerResult;
 import net.desolatesky.block.settings.BlockSettings;
 import net.desolatesky.entity.EntityKey;
@@ -14,7 +15,6 @@ import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.DirectionUtil;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.EntityType;
@@ -61,7 +61,7 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
     }
 
     @Override
-    protected int getTransferRate() {
+    public int getTransferRate() {
         return this.cableSettings.transferRate();
     }
 
@@ -71,7 +71,7 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
             LOGGER.warn("Cable block entity at {} has no direction set, cannot save", point);
             return block;
         }
-        return super.save(instance, point, block).withTag(BlockTags.DIRECTION_TAG, this.direction)
+        return super.save(instance, point, block).withTag(BlockTags.DIRECTION, this.direction)
                 .withTag(BlockTags.CONNECTIONS_TAG, new ArrayList<>(this.connectionDisplays.keySet()));
     }
 
@@ -81,7 +81,7 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         if (this.direction != null) {
             return; // Already loaded
         }
-        this.setDirection(placement.getBlock().getTag(BlockTags.DIRECTION_TAG));
+        this.setDirection(placement.getBlock().getTag(BlockTags.DIRECTION));
         if (this.direction == null) {
             return;
         }
@@ -99,13 +99,13 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
     }
 
     /**
-     * @param inputConnection If this entity is caused by being an input from another cable
+     * @param outputConnection If this entity is caused by being an output to another entity
      */
-    private void spawnDisplay(DSInstance instance, Point point, Direction direction, boolean inputConnection) {
-        if ((direction == this.direction || direction.opposite() == this.direction) && inputConnection) {
+    private void spawnDisplay(DSInstance instance, Point point, Direction direction, boolean outputConnection) {
+        if ((direction == this.direction || direction.opposite() == this.direction) && outputConnection) {
             return;
         }
-        if (direction != this.direction && !inputConnection) {
+        if (direction != this.direction && !outputConnection) {
             this.setDirection(direction);
         }
         final SimpleEntity displayEntity = new SimpleEntity(EntityType.BLOCK_DISPLAY, ENTITY_KEY);
@@ -113,9 +113,9 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         displayEntity.editEntityMeta(BlockDisplayMeta.class, data -> {
             data.setHasNoGravity(true);
             data.setGlowColorOverride(Color.BLUE.getRGB());
-            data.setBlockState(inputConnection ? this.cableSettings.inputDisplayBlock() : this.cableSettings.outputDisplayBlock());
-            data.setScale(getScaleFromDirection(direction, inputConnection));
-            data.setTranslation(getTranslationFromDirection(direction, inputConnection));
+            data.setBlockState(outputConnection ? this.cableSettings.outputDisplayBlock() : this.cableSettings.inputDisplayBlock());
+            data.setScale(getScaleFromDirection(direction, outputConnection));
+            data.setTranslation(getTranslationFromDirection(direction, outputConnection));
         });
         final SimpleEntity previous = this.connectionDisplays.put(direction, displayEntity);
         if (previous != null) {
@@ -123,8 +123,8 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         }
     }
 
-    private static Vec getScaleFromDirection(Direction direction, boolean inputConnection) {
-        final double importantPartSize = inputConnection ? 0.5 - CABLE_SCALE / 2.0 : 1;
+    private static Vec getScaleFromDirection(Direction direction, boolean outputConnection) {
+        final double importantPartSize = outputConnection ? 0.5 - CABLE_SCALE / 2.0 : 1;
         return switch (direction) {
             case UP, DOWN -> new Vec(CABLE_SCALE, importantPartSize, CABLE_SCALE);
             case NORTH, SOUTH -> new Vec(CABLE_SCALE, CABLE_SCALE, importantPartSize);
@@ -132,8 +132,8 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         };
     }
 
-    private static Vec getTranslationFromDirection(Direction direction, boolean inputConnection) {
-        final double importantPartTranslation = inputConnection ? 0.5 + CABLE_SCALE / 2.0 : 0;
+    private static Vec getTranslationFromDirection(Direction direction, boolean outputConnection) {
+        final double importantPartTranslation = outputConnection ? 0.5 + CABLE_SCALE / 2.0 : 0;
         final double commonTranslation = 0.5 - CABLE_SCALE / 2;
         return switch (direction) {
             case UP -> new Vec(commonTranslation, importantPartTranslation, commonTranslation);
@@ -161,11 +161,11 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
             if (display == null) {
                 continue;
             }
-            if (!(neighbor.handler() instanceof final PowerBlockEntity<?> powerNeighbor)) {
+            if (!(neighbor.handler() instanceof final PoweredBlockEntity<?> powerNeighbor)) {
                 this.glowDisplay(display, false);
                 continue;
             }
-            if (!powerNeighbor.canTransferPowerTo(neighborPoint, neighbor, point, this)) {
+            if (!powerNeighbor.isFull()) {
                 this.glowDisplay(display, false);
                 continue;
             }
@@ -200,13 +200,18 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
     }
 
     @Override
-    protected List<Direction> getOutputDirections() {
-        return List.of(this.direction);
+    public int getFlowInDirection(Direction direction) {
+        return this.canFlowInDirection(direction) ? Math.min(this.getStored(), this.cableSettings.transferRate()) : 0;
     }
 
     @Override
-    protected int getFlow(Direction direction) {
-        return direction == this.direction ? Math.min(this.getStored(), this.cableSettings.transferRate()) : 0;
+    public boolean canFlowInDirection(Direction direction) {
+        return direction != this.direction.opposite();
+    }
+
+    @Override
+    public int getTickInterval() {
+        return this.cableSettings.tickInterval();
     }
 
     protected static class Handler extends PowerBlockEntity.Handler<CableBlockEntity> {
@@ -218,14 +223,14 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         @Override
         protected BlockHandlerResult.Place onPlace(DSInstance instance, Block block, Point blockPosition, CableBlockEntity entity) {
             entity.spawnDisplay(instance, blockPosition, Direction.UP, false);
+            this.checkDisplays(instance, blockPosition, block, entity);
             return BlockHandlerResult.passthroughPlace(block);
         }
 
         @Override
         protected BlockHandlerResult.Place onPlayerPlace(DSPlayer player, DSInstance instance, Block block, Point blockPosition, PlayerHand hand, BlockFace face, Point cursorPosition, CableBlockEntity entity) {
             entity.spawnDisplay(instance, blockPosition, face.toDirection().opposite(), false);
-            entity.consumeElectricity(entity.direction, entity.cableSettings.transferRate() * 50);
-            System.out.println("Placed cable facing " + entity.direction + " with power " + entity.getTotalElectricity() + " " + (entity.cableSettings.transferRate()));
+            this.checkDisplays(instance, blockPosition, block, entity);
             return BlockHandlerResult.passthroughPlace(block);
         }
 
@@ -242,25 +247,51 @@ public class CableBlockEntity extends PowerBlockEntity<CableBlockEntity> {
         }
 
         @Override
-        protected BlockHandlerResult onUpdate(DSInstance instance, Point sourcePoint, Block sourceBlock, Point updatedPoint, Block updatedBlock, CableBlockEntity entity) {
-            final Direction direction = DirectionUtil.getDirectionBetween(updatedPoint, sourcePoint);
-            if (!(sourceBlock.handler() instanceof final CableBlockEntity sourceEntity)) {
-                entity.removeDisplay(direction);
-                return BlockHandlerResult.PASS_THROUGH;
+        protected BlockHandlerResult onUpdate(DSInstance instance, Point point, Block block, Point causePoint, Block causeBlock, CableBlockEntity entity) {
+            return this.checkDisplays(instance, point, block, causePoint, entity);
+        }
+
+        private BlockHandlerResult checkDisplays(DSInstance instance, Point point, Block block, CableBlockEntity entity) {
+            for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
+                if (direction == entity.direction || direction == entity.direction.opposite()) {
+                    continue;
+                }
+                final Point neighborPosition = point.add(direction.vec());
+                this.checkDisplays(instance, point, block, neighborPosition, entity);
             }
-            final Direction sourceDirection = sourceEntity.direction;
-            if (sourceDirection == entity.direction || sourceDirection.opposite() == entity.direction) {
-                return BlockHandlerResult.PASS_THROUGH;
-            }
-            entity.spawnDisplay(instance, updatedPoint, direction, true);
             return BlockHandlerResult.PASS_THROUGH;
         }
 
+        private BlockHandlerResult checkDisplays(DSInstance instance, Point point, Block block, Point connectionPoint, CableBlockEntity entity) {
+            final Direction direction = DirectionUtil.getDirectionBetween(point, connectionPoint);
+            if (direction == entity.direction) {
+                return BlockHandlerResult.PASS_THROUGH;
+            }
+            final Block connectionBlock = instance.getBlock(connectionPoint);
+            if (!(connectionBlock.handler() instanceof final PoweredBlockEntity<?> connectionEntity)) {
+                entity.removeDisplay(direction);
+                return BlockHandlerResult.PASS_THROUGH;
+            }
+            if (!connectionEntity.canReceivePowerFrom(direction)) {
+                return BlockHandlerResult.PASS_THROUGH;
+            }
+            if (connectionEntity instanceof final CableBlockEntity cableBlockEntity) {
+                final Direction sourceDirection = cableBlockEntity.direction;
+                if (sourceDirection == entity.direction || sourceDirection.opposite() == entity.direction) {
+                    return BlockHandlerResult.PASS_THROUGH;
+                }
+            }
+            entity.spawnDisplay(instance, point, direction, true);
+            return BlockHandlerResult.PASS_THROUGH;
+        }
+
+
         @Override
-        protected void onTick(DSInstance instance, Block block, Point blockPosition, CableBlockEntity entity) {
-            super.onTick(instance, block, blockPosition, entity);
+        protected void onTick(long tick, DSInstance instance, Block block, Point blockPosition, CableBlockEntity entity) {
+            super.onTick(tick, instance, block, blockPosition, entity);
             entity.glowDisplays(instance, blockPosition);
         }
+
     }
 
 }

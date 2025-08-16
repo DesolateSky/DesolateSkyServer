@@ -10,82 +10,44 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 public abstract class PowerBlockEntity<E extends PowerBlockEntity<E>> extends PoweredBlockEntity<E> {
 
     public PowerBlockEntity(Key key, DesolateSkyServer server) {
         super(key, server);
     }
 
-    /**
-     * @return amount of electricity consumed
-     */
-    @Override
-    protected int consumeElectricity(Direction direction, int amount) {
-        final int total = this.getTotalElectricity();
-        final int max = this.getMaxPower();
-        final int allowed = max - total;
-        if (allowed <= 0) {
-            return 0;
-        }
-        final int transfer = Math.min(allowed, amount);
-        this.addStored(transfer);
-        return transfer;
-    }
+    public abstract int getTransferRate();
 
-    @Override
-    protected int getTotalElectricity() {
-        return this.getStored();
-    }
+    public abstract int getFlowInDirection(Direction direction);
 
-    protected abstract List<Direction> getOutputDirections();
+    public abstract boolean canFlowInDirection(Direction direction);
 
-    protected abstract int getFlow(Direction direction);
-
-    public boolean canTransferPowerTo(Point sourcePoint, Block sourceBlock, Point destination, PowerBlockEntity<?> destinationBlockEntity) {
-        if (sourcePoint.distanceSquared(destination) != 1) {
+    public boolean canTransferPowerTo(Point point, Block block, Point destination, PowerBlockEntity<?> destinationBlockEntity) {
+        if (point.distanceSquared(destination) != 1) {
             return false;
         }
-        final Direction direction = DirectionUtil.getDirectionBetween(sourcePoint, destination);
+        final Direction direction = DirectionUtil.getDirectionBetween(point, destination);
         if (direction == null) {
             return false;
         }
-        final int available = Math.max(0, destinationBlockEntity.getMaxPower() - destinationBlockEntity.getTotalElectricity());
-        return available != 0 && this.getFlow(direction) > 0;
+        final int available = Math.max(0, destinationBlockEntity.getMaxPower() - destinationBlockEntity.getStored());
+        return available != 0 && this.getFlowInDirection(direction) > 0;
     }
 
     @Override
     public @NotNull Block save(DSInstance instance, Point point, Block block) {
-        return block;
+        return super.save(instance, point, block);
     }
 
     @Override
     public void load(Placement placement, DSInstance instance) {
-
+        super.load(placement, instance);
     }
 
     protected static class Handler<E extends PowerBlockEntity<E>> extends PoweredBlockEntity.Handler<E> {
 
         public Handler(BlockSettings blockSettings, Class<E> entityClass) {
             super(blockSettings, entityClass);
-        }
-
-        @Override
-        protected void onTick(DSInstance instance, Block block, Point blockPosition, E entity) {
-            final List<Direction> outputDirections = entity.getOutputDirections();
-            final AtomicInteger transferred = new AtomicInteger(0);
-            outputDirections.forEach(direction -> {
-                final Block neighbor = instance.getBlock(blockPosition.add(direction.vec()));
-                if (!(neighbor.handler() instanceof final PoweredBlockEntity<?> powered)) {
-                    return;
-                }
-                final int transferAmount = entity.getStored();
-                final int received = powered.consumeElectricity(direction, Math.min(entity.getTransferRate(), transferAmount));
-                transferred.addAndGet(received);
-            });
-            entity.subtractStored(Math.max(0, transferred.get()));
         }
 
     }

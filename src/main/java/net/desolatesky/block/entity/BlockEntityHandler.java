@@ -119,47 +119,47 @@ public abstract class BlockEntityHandler<T extends BlockEntity<T>> extends DSBlo
     }
 
     @Override
-    public final BlockHandlerResult onUpdate(DSInstance instance, Point sourcePoint, Block sourceBlock, Point updatedPoint, Block updatedBlock) {
-        final BlockHandler blockHandler = updatedBlock.handler();
+    public final BlockHandlerResult onUpdate(DSInstance instance, Point point, Block block, Point causePoint, Block causeBlock) {
+        final BlockHandler blockHandler = block.handler();
         if (!this.entityClass.isInstance(blockHandler)) {
             return BlockHandlerResult.PASS_THROUGH;
         }
-        return this.onUpdate(instance, sourcePoint, sourceBlock, updatedPoint, updatedBlock, this.entityClass.cast(blockHandler));
+        return this.onUpdate(instance, point, block, causePoint, causeBlock, this.entityClass.cast(blockHandler));
     }
 
-    protected BlockHandlerResult onUpdate(DSInstance instance, Point sourcePoint, Block sourceBlock, Point updatedPoint, Block updatedBlock, T entity) {
+    protected BlockHandlerResult onUpdate(DSInstance instance, Point point, Block block, Point causePoint, Block causeBlock, T entity) {
         return BlockHandlerResult.PASS_THROUGH;
     }
 
     @Override
-    public final void onTick(DSInstance instance, Block block, Point blockPosition) {
+    public final void onTick(long tick, DSInstance instance, Block block, Point blockPosition) {
         final BlockHandler blockHandler = block.handler();
         if (!this.entityClass.isInstance(blockHandler)) {
             return;
         }
-        this.onTick(instance, block, blockPosition, this.entityClass.cast(blockHandler));
+        this.onTick(tick, instance, block, blockPosition, this.entityClass.cast(blockHandler));
     }
 
     /**
      * Override this method to handle the tick event for the block entity.
      */
-    protected void onTick(DSInstance instance, Block block, Point blockPosition, T entity) {
+    protected void onTick(long tick, DSInstance instance, Block block, Point blockPosition, T entity) {
 
     }
 
     @Override
-    public final void onRandomTick(DSInstance instance, Block block, Point blockPosition) {
+    public final void onRandomTick(long tick, DSInstance instance, Block block, Point blockPosition) {
         final BlockHandler blockHandler = block.handler();
         if (!this.entityClass.isInstance(blockHandler)) {
             return;
         }
-        this.onRandomTick(instance, block, blockPosition, this.entityClass.cast(blockHandler));
+        this.onRandomTick(tick, instance, block, blockPosition, this.entityClass.cast(blockHandler));
     }
 
     /**
      * Override this method to handle the random tick event for the block entity.
      */
-    protected void onRandomTick(DSInstance instance, Block block, Point blockPosition, T entity) {
+    protected void onRandomTick(long tick, DSInstance instance, Block block, Point blockPosition, T entity) {
 
     }
 

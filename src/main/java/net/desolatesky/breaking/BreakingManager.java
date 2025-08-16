@@ -73,7 +73,7 @@ public final class BreakingManager {
             final Block block = playerInstance.getBlock(blockPos);
             if (!Objects.equals(block, breakingData.block())) {
                 sendResetBreakProgress(instance, breakingData.id(), blockPos);
-                return true;
+                return false;
             }
             final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
             if (blockHandler == null) {
@@ -91,7 +91,7 @@ public final class BreakingManager {
             final Duration breakTime = blockHandler.calculateBlockBreakTime(this.server, player, block);
             if (breakTime == null || breakTime.isNegative()) {
                 sendResetBreakProgress(instance, breakingData.id(), blockPos);
-                return false;
+                return true;
             }
             breakingData.hit();
             final Duration currentBreakDuration = breakingData.currentBreakingTime();

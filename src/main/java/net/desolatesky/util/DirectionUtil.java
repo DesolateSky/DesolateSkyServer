@@ -2,8 +2,14 @@ package net.desolatesky.util;
 
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.utils.Direction;
+import org.jetbrains.annotations.Unmodifiable;
+
+import java.util.Arrays;
+import java.util.List;
 
 public final class DirectionUtil {
+
+    public static final @Unmodifiable List<Direction> ALL_DIRECTIONS = Arrays.stream(Direction.values()).toList();
 
     private DirectionUtil() {
         throw new UnsupportedOperationException();

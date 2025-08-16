@@ -35,6 +35,8 @@ public final class BlockKeys {
     public static final Key PETRIFIED_SLAB = Namespace.key("petrified_slab");
 
     public static final Key CABLE = Namespace.key("cable");
+    public static final Key SOLAR_PANEL = Namespace.key("solar_panel");
+    public static final Key COBBLESTONE_GENERATOR = Namespace.key("cobblestone_generator");
 
     private static Key key(Block block) {
         return block.key();

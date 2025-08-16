@@ -53,6 +53,10 @@ public final class DSBlock implements Keyed {
         return this.blockHandler;
     }
 
+    public boolean is(Block block) {
+        return this.key.equals(getIdFor(block));
+    }
+
     @Override
     public @NotNull Key key() {
         return this.key;

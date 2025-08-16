@@ -55,7 +55,6 @@ public final class TeamInstance extends DSInstance {
     private final DSItemRegistry itemRegistry;
     private final IslandTeam team;
     private InstancePoint<Pos> spawnPoint;
-    private Task tickTask;
 
     public static @Nullable TeamInstance load(DesolateSkyServer server, InstanceManager instanceManager, IslandTeam team, Path worldFolderPath) {
         final Path worldPath = worldFolderPath.resolve(team.id().toString()).resolve("world");
@@ -88,17 +87,6 @@ public final class TeamInstance extends DSInstance {
         this.setWorldBorder(new WorldBorder(50, spawn.x(), spawn.z(), 0, 0, 50));
     }
 
-    public CompletableFuture<Void> unload() {
-        this.tickTask.cancel();
-        return this.save()
-                .whenComplete((unused, error) -> {
-                    if (error != null) {
-                        error.printStackTrace();
-                    }
-                    MinecraftServer.getInstanceManager().unregisterInstance(this);
-                });
-    }
-
     public Point initialSpawnPoint() {
         return initialSpawnPoint;
     }
@@ -113,13 +101,8 @@ public final class TeamInstance extends DSInstance {
         this.weatherManager.handlePlayerLeave(player);
     }
 
-    private void load() {
-        this.tickTask = this.scheduler().scheduleTask(this::tick, TaskSchedule.nextTick(), TaskSchedule.nextTick());
-    }
-
     @Override
-    protected void tick() {
-        super.tick();
+    protected void onTick() {
         this.weatherManager.tick();
         this.breakingManager.tick();
         this.randomTick();
@@ -149,7 +132,7 @@ public final class TeamInstance extends DSInstance {
                 if (blockHandler == null) {
                     continue;
                 }
-                blockHandler.onRandomTick(this, block, blockPoint);
+                blockHandler.onRandomTick(this.currentTick(), this, block, blockPoint);
             }
         }
     }

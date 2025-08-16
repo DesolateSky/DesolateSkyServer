@@ -24,5 +24,6 @@ public final class BlockProperties {
     public static final IntegerBlockProperty LEVEL = new IntegerBlockProperty("level");
     public static final IntegerBlockProperty AGE = new IntegerBlockProperty("age");
     public static final IntegerBlockProperty STAGE = new IntegerBlockProperty("stage");
+    public static final BooleanBlockProperty INVERTED = new BooleanBlockProperty("inverted");
 
 }

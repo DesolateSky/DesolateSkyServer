@@ -300,7 +300,6 @@ public final class ItemInteractionListener implements DSEventHandlers<Event> {
         }
         final Point placePoint = clickedBlock.registry().isReplaceable() ? clickedPoint : clickedPoint.add(blockFace.toDirection().vec());
         final DSBlockHandler blockHandler = this.blockRegistry.getHandlerForBlock(block);
-        System.out.println("Got handler: " + blockHandler);
         if (blockHandler != null) {
             final BlockHandlerResult.Place result = blockHandler.onPlayerPlace(
                     player,

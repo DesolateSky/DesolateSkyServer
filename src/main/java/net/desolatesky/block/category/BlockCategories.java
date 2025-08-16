@@ -25,6 +25,8 @@ public final class BlockCategories {
     public static final Category CROP = new BlockCategory(Namespace.key("crop"));
     public static final Category SAPLINGS = new BlockCategory(Namespace.key("saplings"));
 
+    public static final Category STONE = new BlockCategory(Namespace.key("stone"));
+    public static final Category COBBLESTONE = new BlockCategory(Namespace.key("cobblestone"));
 
     public static final Category DIRT = new BlockCategory(Namespace.key("dirt"));
 

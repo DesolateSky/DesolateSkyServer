@@ -1,10 +1,12 @@
 package net.desolatesky.block.settings;
 
 import net.desolatesky.block.BlockKeys;
+import net.desolatesky.block.BlockProperties;
 import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.category.BlockCategories;
 import net.desolatesky.block.entity.custom.crop.CropLootGenerator;
 import net.desolatesky.block.entity.custom.powered.cable.CableSettings;
+import net.desolatesky.block.entity.custom.powered.generator.PowerGeneratorSettings;
 import net.desolatesky.item.DSItem;
 import net.desolatesky.item.DSItems;
 import net.desolatesky.item.ItemKeys;
@@ -112,6 +114,8 @@ public final class DSBlockSettings {
     public static final BlockSettings WAXED_EXPOSED_COPPER_TRAPDOOR = trapdoor(Block.WAXED_EXPOSED_COPPER_TRAPDOOR).build();
     public static final BlockSettings WAXED_EXPOSED_CUT_COPPER_SLAB = builder(Block.WAXED_EXPOSED_CUT_COPPER_SLAB).breakTime(1_000).blockItem(ItemKeys.WAXED_EXPOSED_CUT_COPPER_SLAB).build();
     public static final BlockSettings UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB = builder(BlockKeys.UNBREAKABLE_WAXED_EXPOSED_CUT_COPPER_SLAB, ItemStack.of(Material.WAXED_EXPOSED_CUT_COPPER_SLAB)).unbreakable().build();
+    public static final BlockSettings COBBLESTONE = builder(Block.COBBLESTONE).breakTime(1_000).blockItem(DSItems.COBBLESTONE, true).categories(BlockCategories.PICKAXE_MINEABLE, BlockCategories.COBBLESTONE).build();
+
 
     // PETRIFIED WOOD
     public static final BlockSettings PETRIFIED_SAPLING = builder(BlockKeys.PETRIFIED_SAPLING, DSItems.PETRIFIED_SAPLING).breakTime(3_000).blockItem(DSItems.PETRIFIED_SAPLING, true).categories(BlockCategories.SAPLINGS).build();
@@ -135,9 +139,21 @@ public final class DSBlockSettings {
 
     // POWER
     public static final BlockSettings CABLE = builder(BlockKeys.CABLE, DSItems.CABLE)
-            .breakTime(100)
+            .breakTime(500)
             .blockItem(DSItems.CABLE, true)
-            .tag(BlockTags.CABLE_SETTINGS, new CableSettings(Block.CYAN_TERRACOTTA, Block.BLUE_TERRACOTTA, 1000, 10))
+            .tag(BlockTags.CABLE_SETTINGS, new CableSettings(Block.BLUE_TERRACOTTA, Block.CYAN_TERRACOTTA, 1_000, 10, 10))
+            .build();
+    public static final BlockSettings SOLAR_PANEL = builder(BlockKeys.SOLAR_PANEL, DSItems.SOLAR_PANEL)
+            .breakTime(1_000)
+            .blockItem(DSItems.SOLAR_PANEL, true)
+            .tag(BlockTags.POWER_GENERATOR_SETTINGS, new PowerGeneratorSettings(20_000, 10, 10, 10))
+            .build();
+    public static final BlockSettings COBBLESTONE_GENERATOR = builder(BlockKeys.COBBLESTONE_GENERATOR, DSItems.COBBLESTONE_GENERATOR)
+            .breakTime(1_000)
+            .blockItem(DSItems.COBBLESTONE_GENERATOR, true)
+            .tag(BlockTags.MAX_POWER, 1_000)
+            .tag(BlockTags.REQUIRED_POWER, 200)
+            .tag(BlockTags.TICK_INTERVAL, 10)
             .build();
 
     private static BlockSettings.Builder trapdoor(Block block) {

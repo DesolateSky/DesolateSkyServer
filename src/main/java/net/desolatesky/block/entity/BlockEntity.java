@@ -82,7 +82,7 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
 
         }
         @SuppressWarnings("unchecked") final E entity = (E) this;
-        this.handler.onTick(instance, tick.getBlock(), tick.getBlockPosition(), entity);
+        this.handler.onTick(instance.currentTick(), instance, tick.getBlock(), tick.getBlockPosition(), entity);
     }
 
     public final void randomTick(@NotNull Tick randomTick) {
@@ -90,7 +90,7 @@ public abstract class BlockEntity<E extends BlockEntity<E>> implements BlockHand
             return;
         }
         @SuppressWarnings("unchecked") final E entity = (E) this;
-        this.handler.onRandomTick(instance, randomTick.getBlock(), randomTick.getBlockPosition(), entity);
+        this.handler.onRandomTick(instance.currentTick(), instance, randomTick.getBlock(), randomTick.getBlockPosition(), entity);
     }
 
     public boolean isCategory(Category category) {
