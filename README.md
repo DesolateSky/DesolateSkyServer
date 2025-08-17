@@ -1,7 +1,7 @@
 # Desolate Sky Minecraft Server
 
 This is a project I work on for fun in my free time, and is a work in progress.
-If you would like to give suggestions or feedback, feel free to create an issue or join the [discord server]([https://discord.gg/p8RWreq8Dz](https://discord.gg/qPg2GT2gMA)).
+If you would like to give suggestions or feedback, feel free to create an issue or join the [discord server](https://discord.gg/qPg2GT2gMA).
 I am also open to PR's or people joining me in working on the project if interested. 
 I make no guarantees about whether or not this project will ever be completed and/or if I will release it as a server that will make a profit.
 
