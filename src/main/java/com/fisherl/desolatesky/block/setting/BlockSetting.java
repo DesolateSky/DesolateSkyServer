@@ -21,7 +21,7 @@ public interface BlockSetting {
 
     record Type<T extends BlockSetting>(Class<T> settingClass) {
 
-        public static final Type<SupportedBlockSetting> SUPPORTED_BLOCK_SETTING_TYPE = new Type<>(SupportedBlockSetting.class);
+        public static final Type<SupportedBlockSetting> SUPPORTED_BLOCK = new Type<>(SupportedBlockSetting.class);
 
         public Optional<T> tryCast(BlockSetting o) {
             try {

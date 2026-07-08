@@ -19,6 +19,10 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.18")
     implementation("dev.lu15:luckperms-minestom:5.5-SNAPSHOT+26.1.1-everbuild")
     implementation("com.h2database:h2:2.3.232")
+    implementation("org.spongepowered:configurate-hocon:4.1.2")
+    implementation("org.joml:joml:1.10.8")
+    implementation("de.bsommerfeld.pathetic:engine:5.5.2")
+    implementation("de.bsommerfeld.pathetic:api:5.5.2")
 }
 
 java {

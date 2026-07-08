@@ -15,7 +15,6 @@ public class DirectionalSpreadBehavior extends SpreadBehavior {
     private final Direction direction;
     private final int maxLength;
 
-
     public DirectionalSpreadBehavior(double spreadChance, Direction direction, int maxLength) {
         super(spreadChance);
         this.direction = direction;

@@ -1,6 +1,6 @@
 package com.fisherl.desolatesky.util;
 
-import com.fisherl.desolatesky.block.tag.BlockTags;
+import com.fisherl.desolatesky.block.BlockTags;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.instance.block.Block;
 

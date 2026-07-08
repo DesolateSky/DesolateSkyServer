@@ -2,13 +2,12 @@ package com.fisherl.desolatesky.block.definition;
 
 import com.fisherl.desolatesky.block.behavior.BlockBehavior;
 import com.fisherl.desolatesky.block.setting.BlockSettings;
-import com.fisherl.desolatesky.block.tag.BlockTags;
+import com.fisherl.desolatesky.block.BlockTags;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.instance.block.Block;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public final class BlockDefinitionBuilder {
@@ -65,13 +64,19 @@ public final class BlockDefinitionBuilder {
             this.blockBehaviors = new HashMap<>();
         }
 
-        public <T extends BlockBehavior> BlockBehaviorsStep defineBehavior(BlockBehavior.Type<T> type, T blockBehavior) {
+        public <T extends BlockBehavior> BlockBehaviorsStep defineBehavior(BlockBehavior.Type<? extends T> type, T blockBehavior) {
             if (this.blockBehaviors.containsKey(type)) {
                 throw new IllegalArgumentException("Block behavior of type " + type.blockBehaviorClass().getName() + " is already defined.");
             }
             this.blockBehaviors.put(type, blockBehavior);
             return this;
         }
+
+        public <T extends BlockBehavior> BlockBehaviorsStep defineBehaviors(Collection<BlockBehavior.Type<? extends T>> types, T blockBehavior) {
+            types.forEach(type -> this.defineBehavior(type, blockBehavior));
+            return this;
+        }
+
 
         public BlockDefinition build() {
             return new BlockDefinition(this.key, this.defaultBlock, this.settings, this.blockBehaviors);

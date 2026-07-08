@@ -1,7 +1,5 @@
 package com.fisherl.desolatesky.world.biome;
 
-import com.fisherl.desolatesky.util.KeyUtil;
-import net.kyori.adventure.key.Key;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.world.biome.Biome;

@@ -2,6 +2,7 @@ package com.fisherl.desolatesky.breaking.listener;
 
 import com.fisherl.desolatesky.Listener;
 import com.fisherl.desolatesky.breaking.BreakingManager;
+import com.fisherl.desolatesky.breaking.ConfiguredBreakingManager;
 import com.fisherl.desolatesky.player.DSPlayer;
 import com.fisherl.desolatesky.world.DSWorld;
 import net.minestom.server.coordinate.Point;

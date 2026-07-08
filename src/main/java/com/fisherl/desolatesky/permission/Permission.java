@@ -2,7 +2,10 @@ package com.fisherl.desolatesky.permission;
 
 public enum Permission {
 
-    CMD_STOP("desolatesky.command.stop");
+    CMD_STOP("desolatesky.command.stop"),
+    CMD_SPARK("desolatesky.command.spark"),
+    CMD_GIVE("desolatesky.command.give")
+    ;
 
     private final String path;
 

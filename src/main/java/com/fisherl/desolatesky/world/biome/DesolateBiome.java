@@ -1,6 +1,6 @@
 package com.fisherl.desolatesky.world.biome;
 
-import com.fisherl.desolatesky.util.KeyUtil;
+import com.fisherl.desolatesky.util.Namespace;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.color.Color;
 import net.minestom.server.world.attribute.EnvironmentAttribute;
@@ -19,7 +19,7 @@ public final class DesolateBiome {
             .foliageColor(new Color(0x6A6F4E))
             .build();
 
-    public static final Key KEY = KeyUtil.desolateSky("desolate");
+    public static final Key KEY = Namespace.key("desolate");
     public static final Biome INSTANCE = Biome.builder()
             .effects(BIOME_EFFECTS)
             .setAttribute(EnvironmentAttribute.FOG_COLOR, new Color(0x4C4C4C))
