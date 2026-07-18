@@ -1,0 +1,44 @@
+package net.desolatesky.island;
+
+import net.desolatesky.island.permission.IslandPermission;
+import net.desolatesky.island.role.IslandRole;
+import net.desolatesky.world.WorldType;
+import net.desolatesky.world.region.SquareRegion;
+import net.kyori.adventure.text.Component;
+import net.minestom.server.coordinate.Point;
+import org.jetbrains.annotations.NotNullByDefault;
+
+import java.util.UUID;
+
+@NotNullByDefault
+public interface Island {
+
+    UUID islandId();
+
+    UUID getWorldId(WorldType type);
+
+    Component displayName();
+
+    boolean isMember(UUID playerId);
+
+    IslandRole getIslandRole(UUID playerId);
+
+    void setIslandRole(UUID playerId, IslandRole role);
+
+    void invite(UUID islandMember, UUID invitedPlayer);
+
+    boolean isInvited(UUID playerId);
+
+    void acceptInvite(UUID playerId);
+
+    void setName(UUID player, Component newName);
+
+    boolean hasPermission(UUID player, IslandPermission permission);
+
+    Point getSpawnPosition();
+
+    SquareRegion worldSize();
+
+    IslandSnapshot createSnapshot();
+
+}

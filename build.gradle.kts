@@ -1,8 +1,9 @@
 plugins {
     id("java")
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
-group = "com.fisherl"
+group = "net.desolatesky"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -31,8 +32,26 @@ java {
     }
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
+    withSourcesJar()
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks {
+    test {
+        useJUnitPlatform()
+    }
+
+    jar {
+        manifest {
+            attributes["Main-Class"] = "net.desolatesky.Main"
+        }
+    }
+
+    build {
+        dependsOn(shadowJar)
+    }
+
+    shadowJar {
+        mergeServiceFiles()
+        archiveClassifier.set("")
+    }
 }
