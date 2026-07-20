@@ -33,11 +33,15 @@ public abstract class GrowthBehavior implements RandomTickBehavior {
         if (!world.rollChance(pos, this.growthChance)) {
             return;
         }
-        final Block newBlock = this.ageProperty.write(block, nextAge);
+        final Block newBlock = this.getNewBlockOnGrow(world, pos, this.ageProperty.write(block, nextAge), blockId);
         world.setBlock(pos, newBlock);
         if (nextAge == this.ageProperty.max()) {
-            this.onMaxGrow(world, pos, newBlock, blockId);
+            this.onMaxGrow(world, pos, newBlock, BlockUtil.getBlockId(newBlock));
         }
+    }
+
+    protected Block getNewBlockOnGrow(DSWorld world, Point pos, Block current, Key blockId) {
+        return current;
     }
 
     protected abstract boolean canGrow(DSWorld world, Point pos, Block block, Key blockId);

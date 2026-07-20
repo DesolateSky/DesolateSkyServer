@@ -4,12 +4,10 @@ import net.desolatesky.data.definition.DataTranslator;
 import net.desolatesky.player.data.PlayerDataDefinitionV1;
 import net.desolatesky.player.data.PlayerDataDefinitionV2;
 import net.desolatesky.world.pos.WorldPosition;
-import net.minestom.server.coordinate.Point;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +47,6 @@ public final class DSPlayerData {
     public @Unmodifiable List<ItemStack> inventory() {
         return this.inventory;
     }
-
 
     public @Nullable WorldPosition logoutPos() {
         return this.logoutPos;

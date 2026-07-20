@@ -4,7 +4,6 @@ import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.GrowthBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
 import net.desolatesky.block.property.BlockProperties;
-import net.desolatesky.block.property.BlockProperty;
 import net.desolatesky.block.property.IntBlockProperty;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.player.DSPlayer;
@@ -16,6 +15,7 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -23,23 +23,29 @@ import java.util.List;
 public final class CropBehavior extends GrowthBehavior implements BlockDropBehavior, MiningSpeedBehavior {
 
     private final Key droppedItem;
+    private final Key voidCrop;
     private final int ticksToMine;
     private final int minDrops;
     private final int maxDrops;
+    private final double voidCropChance;
 
     public CropBehavior(
             IntBlockProperty ageProperty,
             double growthChance,
             Key droppedItem,
+            Key voidCrop,
             int ticksToMine,
             int minDrops,
-            int maxDrops
+            int maxDrops,
+            double voidCropChance
     ) {
         super(ageProperty, growthChance);
         this.droppedItem = droppedItem;
+        this.voidCrop = voidCrop;
         this.ticksToMine = ticksToMine;
         this.minDrops = minDrops;
         this.maxDrops = maxDrops;
+        this.voidCropChance = voidCropChance;
     }
 
     @Override
@@ -53,14 +59,22 @@ public final class CropBehavior extends GrowthBehavior implements BlockDropBehav
             return Collections.emptyList();
         }
         final int amount;
-        if (age < this.ageProperty.max()) {
+        if (!this.ageProperty.isMax(block)) {
             amount = 1;
         } else if (this.minDrops == this.maxDrops) {
             amount = this.minDrops;
         } else {
             amount = world.getRandomGenerator(pos).nextInt(this.minDrops, this.maxDrops + 1);
         }
-        return List.of(itemStack.withAmount(amount));
+        final List<ItemStack> results = new ArrayList<>();
+        if (this.ageProperty.isMax(block) && world.rollChance(pos, this.voidCropChance)) {
+            final ItemStack voidCropItem = itemFactory.getDefaultItem(this.voidCrop);
+            if (voidCropItem != null) {
+                results.add(voidCropItem);
+            }
+        }
+        results.add(itemStack.withAmount(amount));
+        return results;
     }
 
     @Override

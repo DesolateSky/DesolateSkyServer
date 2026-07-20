@@ -5,6 +5,7 @@ public enum Permission {
     CMD_STOP("desolatesky.command.stop"),
     CMD_SPARK("desolatesky.command.spark"),
     CMD_GIVE("desolatesky.command.give"),
+    CMD_WHITELIST("desolatesky.command.whitelist"),
     ADMIN("desolatesky.admin"),
     ;
 

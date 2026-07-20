@@ -1,5 +1,7 @@
 package net.desolatesky.island;
 
+import com.google.common.collect.Multimaps;
+import net.desolatesky.advancement.AdvancementsProgress;
 import net.desolatesky.data.FileDatabase;
 import net.desolatesky.island.role.IslandRole;
 import net.desolatesky.lock.Lockable;
@@ -7,6 +9,7 @@ import net.desolatesky.logging.LoggerUtil;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.server.DSServer;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.IslandWorld;
 import net.desolatesky.world.PlayerWorld;
@@ -14,6 +17,8 @@ import net.desolatesky.world.WorldType;
 import net.kyori.adventure.text.Component;
 import org.jspecify.annotations.Nullable;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +61,7 @@ public final class IslandManager implements Lockable {
                                 LoggerUtil.error(this.getClass(), "Island already exists (" + islandId + ") when loading island.");
                                 return null;
                             }
+                            this.islands.put(island.islandId(), island);
                             return island;
                         });
                     });
@@ -85,10 +91,12 @@ public final class IslandManager implements Lockable {
                         }
                         worldTypes.put(worldType, UUID.randomUUID());
                     }
-                    final DSIsland island = new DSIsland(islandId,
+                    final DSIsland island = new DSIsland(
+                            islandId,
                             worldTypes,
                             islandRoles,
                             new HashMap<>(),
+                            new AdvancementsProgress(Multimaps.newListMultimap(new HashMap<>(), ArrayList::new)),
                             player.getName().append(Component.text("'s Island")), PlayerWorld.STARTING_REGION);
                     this.islands.put(islandId, island);
                     player.setIslandId(islandId);

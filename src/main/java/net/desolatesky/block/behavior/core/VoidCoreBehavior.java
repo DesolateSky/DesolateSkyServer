@@ -1,15 +1,22 @@
 package net.desolatesky.block.behavior.core;
 
-import net.desolatesky.block.behavior.TickBehavior;
+import net.desolatesky.block.BlockIds;
 import net.desolatesky.block.BlockTags;
+import net.desolatesky.block.behavior.ClickBehavior;
+import net.desolatesky.block.behavior.TickBehavior;
+import net.desolatesky.block.behavior.listener.LoadBehavior;
+import net.desolatesky.block.definition.BlockDefinition;
 import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityIds;
 import net.desolatesky.entity.EntityTags;
+import net.desolatesky.entity.IslandEntity;
+import net.desolatesky.island.permission.IslandPermission;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.item.definition.ItemDefinition;
 import net.desolatesky.loot.LootFactory;
 import net.desolatesky.loot.LootTable;
-import net.desolatesky.util.Pair;
+import net.desolatesky.player.DSPlayer;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.VoidWorld;
 import net.desolatesky.world.region.Region;
@@ -20,6 +27,7 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.ItemEntity;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.Weather;
@@ -33,14 +41,72 @@ import java.util.List;
 import java.util.UUID;
 import java.util.random.RandomGenerator;
 
-public final class VoidCoreTickBehavior implements TickBehavior {
+public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, LoadBehavior {
 
     private static final Region BLOCK_REGION = Region.square(new Vec(0.5, 0, 0.5), 0.5, 0, 1);
 
     private final double generateItemChance;
 
-    public VoidCoreTickBehavior(double generateItemChance) {
+    public VoidCoreBehavior(double generateItemChance) {
         this.generateItemChance = generateItemChance;
+    }
+
+    @Override
+    public ClickBehavior.Result onRightClick(DSWorld world, DSPlayer player, PlayerHand hand, Point clickedPos, Block clickedBlock, ItemStack clickedWith) {
+        if (!(world instanceof final VoidWorld voidWorld)) {
+            return Result.ALLOW;
+        }
+        final Key islandCoreSpawnerKey = clickedWith.getTag(ItemTags.ISLAND_CORE_SPAWNER_KEY);
+        if (islandCoreSpawnerKey == null) {
+            return Result.ALLOW;
+        }
+        final IslandCoreMobSpawner spawner = IslandCoreMobSpawner.SPAWNERS.get(islandCoreSpawnerKey);
+        if (spawner == null) {
+            return Result.ALLOW;
+        }
+        if (!voidWorld.island().hasPermission(player.getUuid(), IslandPermission.INTERACT_VOID_CORE)) {
+            return Result.BLOCK_INTERACTION;
+        }
+        final EntityFactory entityFactory = world.entityFactory();
+        entityFactory.createEntity(EntityIds.ISLAND_CORE_SPAWNER_DISPLAY, voidWorld.island(), e -> {
+            e.setTag(EntityTags.ITEM_DISPLAY_KEY, spawner.itemDisplayKey());
+            e.setInstance(world.asInstance(), clickedPos.asBlockVec().add(0.5, 1.5, 0.5));
+            world.setBlock(clickedPos, clickedBlock.withTag(BlockTags.ISLAND_CORE_SPAWNER_KEY, islandCoreSpawnerKey)
+                    .withTag(BlockTags.ISLAND_CORE_DISPLAY_ENTITY_ID, e.getUuid()));
+            player.setItemInHand(hand, clickedWith.withAmount(clickedWith.amount() - 1));
+        });
+        return Result.BLOCK_INTERACTION;
+    }
+
+    @Override
+    public Result onLeftClick(DSWorld world, DSPlayer player, Point clickedPos, Block clickedBlock, ItemStack clickedWith) {
+        if (!(world instanceof final VoidWorld voidWorld)) {
+            return Result.ALLOW;
+        }
+        final Key islandCoreSpawnerKey = clickedBlock.getTag(BlockTags.ISLAND_CORE_SPAWNER_KEY);
+        if (islandCoreSpawnerKey == null) {
+            return Result.ALLOW;
+        }
+        final IslandCoreMobSpawner spawner = IslandCoreMobSpawner.SPAWNERS.get(islandCoreSpawnerKey);
+        if (spawner == null) {
+            return Result.ALLOW;
+        }
+        if (!voidWorld.island().hasPermission(player.getUuid(), IslandPermission.INTERACT_VOID_CORE)) {
+            return Result.BLOCK_INTERACTION;
+        }
+        final ItemDefinition itemDefinition = world.itemFactory().getItemDefinition(spawner.itemDisplayKey());
+        if (itemDefinition == null) {
+            return Result.BLOCK_INTERACTION;
+        }
+        final BlockDefinition blockDefinition = world.blockFactory().getBlockDefinition(BlockIds.VOID_CORE);
+        if (blockDefinition == null) {
+            return Result.BLOCK_INTERACTION;
+        }
+        final ItemStack itemStack = itemDefinition.defaultItemStack();
+        this.removeSpawner(world, clickedPos, clickedBlock);
+        player.getInventory().addItemStack(itemStack);
+        world.setBlock(clickedPos, clickedBlock.withTag(BlockTags.ISLAND_CORE_SPAWNER_KEY, null));
+        return Result.ALLOW;
     }
 
     public void removeSpawner(DSWorld world, Point pos, Block block) {
@@ -114,14 +180,15 @@ public final class VoidCoreTickBehavior implements TickBehavior {
         final RandomGenerator randomGenerator = world.getRandomGenerator(pos);
         final Key entityType = spawner.rollEntity(randomGenerator);
         final EntityFactory entityFactory = world.entityFactory();
-        entityFactory.createEntity(entityType, voidWorld.island(), e -> {
+        final IslandEntity islandEntity = entityFactory.createEntity(entityType, voidWorld.island(), e -> {
 
-        }).ifPresent(islandEntity -> {
+        });
+        if (islandEntity != null) {
             final Point randPos = getRandomEntitySpawnPoint(world, pos, world.getRandomGenerator(pos));
             final Entity entity = islandEntity.asEntity();
             entity.setTag(EntityTags.ISLAND_CORE_MOB, true);
             entity.setInstance(instance, randPos);
-        });
+        }
     }
 
     private static Point getRandomSpawnPoint(DSWorld world, Point pos, RandomGenerator randomGenerator) {
@@ -204,7 +271,35 @@ public final class VoidCoreTickBehavior implements TickBehavior {
     }
 
     @Override
+    public void save(DSWorld world, Point blockPos, Block block) {
+
+    }
+
+    @Override
+    public void onLoad(DSWorld world, Point blockPos, Block block) {
+        if (!(world instanceof final VoidWorld voidWorld)) {
+            return;
+        }
+        final EntityFactory entityFactory = world.entityFactory();
+        final Key islandCoreSpawnerKey = block.getTag(BlockTags.ISLAND_CORE_SPAWNER_KEY);
+        if (islandCoreSpawnerKey == null) {
+            return;
+        }
+        final IslandCoreMobSpawner spawner = IslandCoreMobSpawner.SPAWNERS.get(islandCoreSpawnerKey);
+        if (spawner == null) {
+            return;
+        }
+
+        entityFactory.createEntity(EntityIds.ISLAND_CORE_SPAWNER_DISPLAY, voidWorld.island(), e -> {
+            e.setTag(EntityTags.ITEM_DISPLAY_KEY, spawner.itemDisplayKey());
+            e.setInstance(world.asInstance(), blockPos.asBlockVec().add(0.5, 1.5, 0.5));
+            world.setBlock(blockPos, block.withTag(BlockTags.ISLAND_CORE_SPAWNER_KEY, islandCoreSpawnerKey)
+                    .withTag(BlockTags.ISLAND_CORE_DISPLAY_ENTITY_ID, e.getUuid()));
+        });
+    }
+
+    @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.TICK, Type.VOID_CORE_BEHAVIOR);
+        return List.of(Type.CLICK, Type.TICK, Type.LOAD);
     }
 }

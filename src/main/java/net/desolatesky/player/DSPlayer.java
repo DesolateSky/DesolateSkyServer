@@ -5,6 +5,7 @@ import net.desolatesky.data.DataHolder;
 import net.desolatesky.lock.Lockable;
 import net.desolatesky.permission.Permission;
 import net.desolatesky.recipe.type.ShapedRecipe;
+import net.desolatesky.server.DSServer;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.pos.WorldPosition;
 import net.kyori.adventure.key.Key;
@@ -26,6 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public final class DSPlayer extends net.minestom.server.entity.Player implements Lockable, DataHolder<DSPlayer>, CraftingMenuHolder {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final DSServer server;
     private final boolean newPlayer;
     private @Nullable UUID islandId;
     private @UnknownNullability User user;
@@ -40,9 +42,11 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
     public DSPlayer(
             PlayerConnection playerConnection,
             GameProfile gameProfile,
+            DSServer server,
             @Nullable DSPlayerData playerData
     ) {
         super(playerConnection, gameProfile);
+        this.server = server;
         this.getAttribute(Attribute.BLOCK_BREAK_SPEED).setBaseValue(0);
         if (playerData != null) {
             this.newPlayer = false;
@@ -156,6 +160,10 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
 
     public void setTeleporting(boolean teleporting) {
         this.lockWrite(() -> this.teleporting = teleporting);
+    }
+
+    public DSServer server() {
+        return this.server;
     }
 
     @Override

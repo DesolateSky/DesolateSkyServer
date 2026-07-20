@@ -2,6 +2,7 @@ package net.desolatesky.data.type;
 
 import net.desolatesky.data.reader.DataReader;
 import net.desolatesky.data.writer.DataWriter;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Point;
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public interface Data<T> {
 
@@ -26,6 +30,7 @@ public interface Data<T> {
     Data<Short> SHORT = new ShortData();
     Data<UUID> UUID = new UUIDData();
     Data<String> STRING = new StringData();
+    Data<Key> KEY = STRING.map(Key::key, Key::asString);
     Data<Instant> INSTANT = new InstantData();
     Data<Duration> DURATION = new DurationData();
 
@@ -101,5 +106,19 @@ public interface Data<T> {
             result.put(this.read(reader), valueData.read(reader));
         }
         return result;
+    }
+
+    default <R> Data<R> map(Function<T, R> to, Function<R, T> from) {
+        return new Data<>() {
+            @Override
+            public void write(DataWriter writer, R value) throws IOException {
+                Data.this.write(writer, from.apply(value));
+            }
+
+            @Override
+            public R read(DataReader reader) throws IOException {
+                return to.apply(Data.this.read(reader));
+            }
+        };
     }
 }

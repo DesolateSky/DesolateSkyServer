@@ -24,4 +24,18 @@ public interface MiningSpeedBehavior extends BlockBehavior {
         }
     };
 
+    static MiningSpeedBehavior ticks(int ticks)  {
+        return new MiningSpeedBehavior() {
+            @Override
+            public int getTicksToMine(DSWorld world, Point blockPos, Block block, DSPlayer player) {
+                return ticks;
+            }
+
+            @Override
+            public Collection<Type<?>> types() {
+                return List.of(Type.MINING_SPEED);
+            }
+        };
+    }
+
 }

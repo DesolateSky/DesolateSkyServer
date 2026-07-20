@@ -43,8 +43,7 @@ public final class ItemThrowListener implements Listener<Event> {
             ItemEntity entity = null;
             if (droppedItemEntityId != null) {
                 final IslandEntity islandEntity = world.entityFactory().createEntity(droppedItemEntityId, islandWorld.island(), _ -> {
-                        })
-                        .orElse(null);
+                });
                 if (islandEntity instanceof final ItemEntity e) {
                     entity = e;
                     entity.setItemStack(itemStack);

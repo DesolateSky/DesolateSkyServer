@@ -20,6 +20,24 @@ public record IntBlockProperty(String name, int min, int max) implements BlockPr
         }
     }
 
+    public boolean isMax(Block block) {
+        final Integer value = this.read(block);
+        return value != null && value == this.max;
+    }
+
+    public boolean isMin(Block block) {
+        final Integer value = this.read(block);
+        return value != null && value == this.min;
+    }
+
+    public Block writeMin(Block block) {
+        return this.write(block, this.min);
+    }
+
+    public Block writeMax(Block block) {
+        return this.write(block, this.max);
+    }
+
     @Override
     public Block write(Block block, Integer value) {
         return block.withProperty(this.name, String.valueOf(value));

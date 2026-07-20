@@ -24,6 +24,8 @@ public final class ItemTags {
     public static final Tag<Double> HOE_MINING_SPEED = Tags.Double("hoe_mining_speed");
     public static final Tag<Double> SWORD_MINING_SPEED = Tags.Double("sword_mining_speed");
 
+    public static final Tag<Double> COMPOSTER_VALUE = Tags.Double("composter_value");
+
     private ItemTags() {
         throw new UnsupportedOperationException();
     }

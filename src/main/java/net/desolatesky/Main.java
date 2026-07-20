@@ -1,5 +1,6 @@
 package net.desolatesky;
 
+import net.desolatesky.advancement.IslandAdvancementManager;
 import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.ConfiguredBlockFactory;
 import net.desolatesky.data.FileDatabase;
@@ -22,7 +23,7 @@ import java.nio.file.Path;
 
 public final class Main {
 
-    public static void main(String[] ignoredArgs) {
+    static void main(String[] ignoredArgs) {
         // Initialize the server
         final MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Online());
         final FileDatabase<DSPlayerData> playerDatabase = new FileDatabase<>(Path.of("players"), DSPlayerData.DATA_TRANSLATOR);
@@ -50,7 +51,8 @@ public final class Main {
                 lootFactory,
                 recipeFactory,
                 islandManager,
-                worldManager
+                worldManager,
+                new IslandAdvancementManager()
         );
         server.init();
         server.start();

@@ -3,6 +3,7 @@ package net.desolatesky.block.behavior.impl;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
+import net.desolatesky.block.property.IntBlockProperty;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.BlockUtil;
@@ -20,22 +21,44 @@ import java.util.List;
 
 public final class CactusBehavior implements RandomTickBehavior, MiningSpeedBehavior, BlockDropBehavior {
 
+    private static final IntBlockProperty AGE_PROPERTY = new IntBlockProperty("age", 0, 9);
     private final double growthChance;
+    private final double flowerChance;
 
-    public CactusBehavior(double growthChance) {
+    public CactusBehavior(double growthChance, double flowerChance) {
         this.growthChance = growthChance;
+        this.flowerChance = flowerChance;
     }
 
     @Override
     public void onRandomTick(DSWorld world, Point pos, Block block, Key blockId) {
-        if (!world.rollChance(pos, this.growthChance)) {
+        if (AGE_PROPERTY.isMax(block)) {
+            this.tryGrow(world, pos, Block.CACTUS_FLOWER, this.flowerChance);
             return;
         }
-        final Point flowerPos = pos.add(0, 1, 0);
-        if (!BlockUtil.isReplaceable(world.getBlock(flowerPos))) {
+        final Integer age = AGE_PROPERTY.read(block);
+        if (age == null) {
             return;
         }
-        world.setBlock(flowerPos, Block.CACTUS_FLOWER);
+        final int nextAge = age + 1;
+        final Block next = AGE_PROPERTY.write(Block.CACTUS, nextAge);
+        final boolean result = this.tryGrow(world, pos, next, this.growthChance);
+        if (!result) {
+            this.tryGrow(world, pos, Block.CACTUS_FLOWER, this.flowerChance);
+        }
+    }
+
+    private boolean tryGrow(DSWorld world, Point pos, Block growBlock, double chance) {
+        if (!world.rollChance(pos, chance)) {
+            return false;
+        }
+
+        final Point growPos = pos.add(0, 1, 0);
+        if (!BlockUtil.isReplaceable(world.getBlock(growPos))) {
+            return false;
+        }
+        world.setBlock(growPos, growBlock);
+        return true;
     }
 
     @Override

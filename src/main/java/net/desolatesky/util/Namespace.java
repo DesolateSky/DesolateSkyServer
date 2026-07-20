@@ -7,6 +7,9 @@ public final class Namespace {
     private Namespace() {}
 
     public static Key key(String key) {
+        if (key.contains(":")) {
+            return Key.key(key);
+        }
         return Key.key(Namespaces.DESOLATE_SKY, key);
     }
 

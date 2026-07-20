@@ -36,6 +36,8 @@ import java.util.random.RandomGenerator;
 @NotNullByDefault
 public final class LobbyWorld extends DSWorld {
 
+    public static final Pos SPAWN = new Pos(0, 64, 0);
+
     private static final double DIAMETER = 100;
     private static final RandomGenerator RANDOM_GENERATOR = new SplittableRandom(0);
     public static final UUID ID = new UUID(0, 0);
@@ -63,7 +65,7 @@ public final class LobbyWorld extends DSWorld {
                 dimensionType,
                 worldFolder.resolve("lobby"),
                 0);
-        this.spawn = new Pos(0, 64, 0);
+        this.spawn = SPAWN;
         this.region = Region.square(this.spawn, DIAMETER, Constants.WORLD_MIN_Y, Constants.WORLD_MAX_Y);
         this.setWorldBorder(new WorldBorder(DIAMETER, this.spawn.x(), this.spawn.z(), 0, 0, (int) DIAMETER));
     }
@@ -84,6 +86,11 @@ public final class LobbyWorld extends DSWorld {
 
     @Override
     public boolean canBreakBlock(DSPlayer player, Point blockPosition, Block block) {
+        return false;
+    }
+
+    @Override
+    public boolean canPlaceBlock(DSPlayer player, Point blockPosition, Block block) {
         return false;
     }
 

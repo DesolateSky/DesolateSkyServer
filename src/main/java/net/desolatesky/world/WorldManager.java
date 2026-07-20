@@ -55,6 +55,9 @@ public final class WorldManager implements Lockable {
     }
 
     public CompletableFuture<@Nullable DSWorld> loadWorld(@UnknownNullability UUID islandId, UUID worldId, WorldType worldType) {
+        if (worldId.equals(LobbyWorld.ID)) {
+            return this.getLobbyWorld();
+        }
         final InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         if (instanceManager.getInstance(worldId) instanceof final DSWorld current) {
             return CompletableFuture.completedFuture(current);

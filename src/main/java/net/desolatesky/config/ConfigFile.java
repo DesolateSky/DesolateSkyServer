@@ -42,6 +42,17 @@ public class ConfigFile {
         ResourceLoader.load(this.filePath, this.resourcePath, this.getClass());
     }
 
+    public void save() {
+        final HoconConfigurationLoader loader = HoconConfigurationLoader.builder()
+                .path(this.filePath)
+                .build();
+        try {
+            loader.save(this.rootNode);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save configuration from " + this.filePath, e);
+        }
+    }
+
     public File getFile() {
         return this.filePath.toFile();
     }

@@ -189,7 +189,32 @@ public class ShapedRecipe implements Recipe<ShapedRecipe.Input, ShapedRecipe.Res
                 shifted[i][j] = ItemStack.AIR;
             }
         }
-        ShiftedArray.shiftToTopLeftCorner(input, shifted, ItemStack.AIR::equals, ItemStack.AIR);
+        final ShiftedArray<ItemStack> shiftedArray = ShiftedArray.shiftToTopLeftCorner(input, shifted, ItemStack.AIR::equals, ItemStack.AIR);
+        // if there are items outside the area of this recipe shape,
+        // the recipe is invalid
+        for (int i = shiftedArray.rowShift(); i < input.length; i++) {
+            final int row = i + this.recipe.length;
+            if (row >= input.length) {
+                continue;
+            }
+            for (int j = 0; j < input[0].length; j++) {
+                if (!input[row][j].isAir()) {
+                    return null;
+                }
+            }
+        }
+        for (int j = shiftedArray.colShift(); j < input[0].length; j++) {
+            final int col = j + this.recipe[0].length;
+            if (col >= input[0].length) {
+                continue;
+            }
+            for (final ItemStack[] itemStacks : input) {
+                if (!itemStacks[col].isAir()) {
+                    return null;
+                }
+            }
+        }
+
         int minMatches = 0;
 
         for (int i = 0; i < this.recipe.length; i++) {

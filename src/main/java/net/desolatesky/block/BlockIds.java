@@ -9,5 +9,6 @@ public final class BlockIds {
     public static final Key DRY_GRASS_SEEDS = Namespace.key("dry_grass_seeds");
     public static final Key VOID_INFUSED_BUSH = Namespace.key("void_infused_bush");
     public static final Key THATCH_PLANKS = Namespace.key("thatch_planks");
+    public static final Key THATCH_SLAB = Namespace.key("thatch_slab");
 
 }

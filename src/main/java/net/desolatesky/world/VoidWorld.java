@@ -90,6 +90,11 @@ public final class VoidWorld extends DSWorld implements IslandWorld {
     }
 
     @Override
+    public boolean canPlaceBlock(DSPlayer player, Point blockPosition, Block block) {
+        return false;
+    }
+
+    @Override
     public @UnknownNullability Block getBlock(int x, int y, int z, Condition condition) {
         return super.getBlock(x, y, z, condition);
     }

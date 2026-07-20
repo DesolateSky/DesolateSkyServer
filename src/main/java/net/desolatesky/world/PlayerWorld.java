@@ -27,7 +27,7 @@ import java.util.random.RandomGenerator;
 public final class PlayerWorld extends DSWorld implements IslandWorld {
 
     public static final Point DEFAULT_SPAWN_POINT = new Pos(0.5, Constants.WORLD_MIN_Y + 8, 0.5);
-    public static final SquareRegion STARTING_REGION = Region.square(DEFAULT_SPAWN_POINT.asBlockVec(), 7, Constants.WORLD_MIN_Y, Constants.WORLD_MAX_Y);
+    public static final SquareRegion STARTING_REGION = Region.square(DEFAULT_SPAWN_POINT.asBlockVec(), 50, Constants.WORLD_MIN_Y, Constants.WORLD_MAX_Y);
     public static final SquareRegion MAX_REGION_SIZE = Region.square(DEFAULT_SPAWN_POINT.asBlockVec(), Constants.MAX_WORLD_RADIUS, Constants.WORLD_MIN_Y, Constants.WORLD_MAX_Y);
     public static final SquareRegion SPAWN_PLATFORM_SIZE = Region.square(DEFAULT_SPAWN_POINT.asBlockVec(), 3, Constants.WORLD_MIN_Y, Constants.WORLD_MAX_Y);
 
@@ -70,6 +70,11 @@ public final class PlayerWorld extends DSWorld implements IslandWorld {
     @Override
     public boolean canBreakBlock(DSPlayer player, Point blockPosition, Block block) {
         return this.island.hasPermission(player.getUuid(), IslandPermission.BREAK_BLOCK);
+    }
+
+    @Override
+    public boolean canPlaceBlock(DSPlayer player, Point blockPosition, Block block) {
+        return this.island.hasPermission(player.getUuid(), IslandPermission.PLACE_BLOCK);
     }
 
     @Override

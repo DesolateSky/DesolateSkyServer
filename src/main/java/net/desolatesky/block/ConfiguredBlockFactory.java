@@ -2,10 +2,10 @@ package net.desolatesky.block;
 
 import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
-import net.desolatesky.block.behavior.core.VoidCoreClickBehavior;
-import net.desolatesky.block.behavior.core.VoidCoreTickBehavior;
+import net.desolatesky.block.behavior.core.VoidCoreBehavior;
 import net.desolatesky.block.behavior.impl.CactusBehavior;
 import net.desolatesky.block.behavior.impl.CactusFlowerBehavior;
+import net.desolatesky.block.behavior.impl.ComposterBehavior;
 import net.desolatesky.block.behavior.impl.CraftingTableBehavior;
 import net.desolatesky.block.behavior.impl.CropBehavior;
 import net.desolatesky.block.behavior.impl.DryGrassBehavior;
@@ -53,9 +53,7 @@ public final class ConfiguredBlockFactory implements BlockFactory {
                 .defaultBlock(Block.SCULK_SHRIEKER.withHandler(DSBlockHandler.newTickingBlockHandler(BlockIds.VOID_CORE, this)))
                 .settings(BlockSettings.NONE)
                 .skipAttributes()
-                .defineBehavior(BlockBehavior.Type.MINING_SPEED, MiningSpeedBehavior.UNBREAKABLE)
-                .defineBehaviors(new VoidCoreTickBehavior(5))
-                .defineBehavior(BlockBehavior.Type.CLICK, new VoidCoreClickBehavior())
+                .defineBehaviors(new VoidCoreBehavior(5))
                 .build());
         this.register(BlockDefinition.builder().key(Block.SCULK.key())
                 .defaultBlock(Block.SCULK)
@@ -128,9 +126,11 @@ public final class ConfiguredBlockFactory implements BlockFactory {
                         new IntBlockProperty("age", 0, 7),
                         100,
                         Material.CARROT.key(),
+                        ItemIds.VOID_INFUSED_CARROT,
                         60,
                         1,
-                        4
+                        4,
+                        3
                 ))
                 .build());
         this.register(BlockDefinition.builder().key(Block.CACTUS.key())
@@ -139,7 +139,7 @@ public final class ConfiguredBlockFactory implements BlockFactory {
                                 SupportedBlockSetting.blocks(Direction.DOWN, false, Set.of(Block.GRASS_BLOCK.key())))
                         .build())
                 .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
-                .defineBehaviors(new CactusBehavior(50))
+                .defineBehaviors(new CactusBehavior(30, 100))
                 .build());
         this.register(BlockDefinition.builder().key(Block.CACTUS_FLOWER.key())
                 .defaultBlock(Block.CACTUS_FLOWER)
@@ -155,7 +155,8 @@ public final class ConfiguredBlockFactory implements BlockFactory {
         this.register(BlockDefinition.builder().key(Block.DIRT.key())
                 .defaultBlock(Block.DIRT)
                 .settings(BlockSettings.NONE)
-                .skipAttributes()
+                .attributes(Set.of(BlockAttributes.SHOVEL_MINEABLE))
+                .defineBehaviors(MiningSpeedBehavior.ticks(20))
                 .build());
         this.register(BlockDefinition.builder().key(Block.GRASS_BLOCK.key())
                 .defaultBlock(Block.GRASS_BLOCK)
@@ -176,6 +177,12 @@ public final class ConfiguredBlockFactory implements BlockFactory {
                 .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
                 .defineBehaviors(new WoodPlanksBehavior(ItemIds.THATCH_PLANKS))
                 .build());
+        this.register(BlockDefinition.builder().key(BlockIds.THATCH_SLAB)
+                .defaultBlock(Block.BAMBOO_SLAB)
+                .settings(BlockSettings.NONE)
+                .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
+                .defineBehaviors(new WoodPlanksBehavior(ItemIds.THATCH_SLAB))
+                .build());
     }
 
     private void registerInventoryBlocks() {
@@ -185,6 +192,13 @@ public final class ConfiguredBlockFactory implements BlockFactory {
                 .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
                 .defineBehaviors(new CraftingTableBehavior())
                 .build());
+        this.register(BlockDefinition.builder().key(Block.COMPOSTER.key())
+                .defaultBlock(Block.COMPOSTER)
+                .settings(BlockSettings.NONE)
+                .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
+                .defineBehaviors(new ComposterBehavior())
+                .build()
+        );
     }
 
     private void register(BlockDefinition definition) {

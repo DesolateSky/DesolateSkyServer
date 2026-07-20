@@ -50,6 +50,10 @@ public final class BlockPlaceListener implements Listener<Event> {
                 event.setCancelled(true);
                 return;
             }
+            if (!world.canPlaceBlock(player, event.getBlockPosition(), event.getBlock())) {
+                event.setCancelled(true);
+                return;
+            }
             final ItemStack itemStack = player.getItemInHand(event.getHand());
             final ItemDefinition itemDefinition = this.itemFactory.getItemDefinition(itemStack);
             if (itemDefinition == null) {
@@ -66,7 +70,12 @@ public final class BlockPlaceListener implements Listener<Event> {
                 event.setCancelled(true);
                 return;
             }
-            final Block block = blockPlaceBehavior.getBlockToPlace(this.blockFactory, player, blockPos, itemStack);
+            final Block block = blockPlaceBehavior.getBlockToPlace(this.blockFactory,
+                    player,
+                    blockPos,
+                    event.getBlockFace(),
+                    event.getCursorPosition(),
+                    itemStack);
             if (block == null) {
                 event.setCancelled(true);
                 return;
@@ -113,6 +122,9 @@ public final class BlockPlaceListener implements Listener<Event> {
             if (blockDefinition == null) {
                 return;
             }
+            if (!world.canPlaceBlock(player, blockPos, block)) {
+                return;
+            }
             for (final BlockSetting setting : blockDefinition.settings().getAllSettings()) {
                 if (setting.checkState(world, blockPos, block) != BlockSetting.Result.GOOD) {
                     return;
@@ -121,7 +133,12 @@ public final class BlockPlaceListener implements Listener<Event> {
             if (!blockPlaceBehavior.canPlace(world, player, itemStack, blockPos)) {
                 return;
             }
-            final Block blockToPlace = blockPlaceBehavior.getBlockToPlace(this.blockFactory, player, blockPos, itemStack);
+            final Block blockToPlace = blockPlaceBehavior.getBlockToPlace(this.blockFactory,
+                    player,
+                    blockPos,
+                    event.getBlockFace(),
+                    event.getCursorPosition(),
+                    itemStack);
             if (blockToPlace == null) {
                 return;
             }

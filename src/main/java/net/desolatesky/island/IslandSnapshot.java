@@ -1,12 +1,16 @@
 package net.desolatesky.island;
 
+import com.google.common.collect.Multimap;
+import net.desolatesky.advancement.AdvancementsProgress;
 import net.desolatesky.data.definition.DataTranslator;
 import net.desolatesky.island.data.IslandDataDefinitionV1;
+import net.desolatesky.island.data.IslandDataDefinitionV2;
 import net.desolatesky.island.invite.IslandInvite;
 import net.desolatesky.island.permission.IslandPermissions;
 import net.desolatesky.island.role.IslandRole;
 import net.desolatesky.world.WorldType;
 import net.desolatesky.world.region.SquareRegion;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -17,7 +21,8 @@ import java.util.UUID;
 public interface IslandSnapshot {
 
     DataTranslator<IslandSnapshot> DATA_TRANSLATOR = new DataTranslator<>(List.of(
-            new IslandDataDefinitionV1()
+            new IslandDataDefinitionV1(),
+            new IslandDataDefinitionV2()
     ));
 
     UUID islandId();
@@ -33,6 +38,8 @@ public interface IslandSnapshot {
     @Unmodifiable
     Map<IslandRole, IslandPermissions> permissions();
 
+    @Unmodifiable Multimap<Key, Key> advancementsProgress();
+
     SquareRegion islandRegion();
 
     Component displayName();
@@ -43,10 +50,11 @@ public interface IslandSnapshot {
             @Unmodifiable List<IslandInvite> islandInvites,
             @Unmodifiable Map<UUID, IslandRole> members,
             @Unmodifiable Map<IslandRole, IslandPermissions> permissions,
+            @Unmodifiable Multimap<Key, Key> advancementsProgress,
             SquareRegion islandRegion,
             Component displayName
     ) {
-        return new Impl(islandId, worldIds, islandInvites, members, permissions, islandRegion, displayName);
+        return new Impl(islandId, worldIds, islandInvites, members, permissions, advancementsProgress, islandRegion, displayName);
     }
 
     record Impl(
@@ -55,6 +63,7 @@ public interface IslandSnapshot {
             @Unmodifiable List<IslandInvite> islandInvites,
             @Unmodifiable Map<UUID, IslandRole> members,
             @Unmodifiable Map<IslandRole, IslandPermissions> permissions,
+            @Unmodifiable Multimap<Key, Key> advancementsProgress,
             SquareRegion islandRegion,
             Component displayName
     ) implements IslandSnapshot {

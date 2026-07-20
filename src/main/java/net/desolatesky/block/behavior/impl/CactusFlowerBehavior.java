@@ -68,11 +68,11 @@ public final class CactusFlowerBehavior implements RandomTickBehavior, MiningSpe
 
     @Override
     public Collection<ItemStack> getDrops(DSWorld world, Point pos, Block block, Key blockId, ItemFactory itemFactory, @Nullable ItemStack toolUsed) {
-        final ItemStack itemStack = itemFactory.getDefaultItem(Material.CACTUS_FLOWER.key());
-        if (itemStack == null) {
-            return Collections.emptyList();
-        }
-        return List.of(itemStack);
+//        final ItemStack itemStack = itemFactory.getDefaultItem(Material.CACTUS_FLOWER.key());
+//        if (itemStack == null) {
+        return Collections.emptyList();
+//        }
+//        return List.of(itemStack);
     }
 
     @Override

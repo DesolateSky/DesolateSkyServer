@@ -1,10 +1,14 @@
 package net.desolatesky.island;
 
+import net.desolatesky.advancement.AdvancementsProgress;
 import net.desolatesky.island.invite.IslandInvite;
 import net.desolatesky.island.permission.IslandPermission;
 import net.desolatesky.island.permission.IslandPermissions;
 import net.desolatesky.island.role.IslandRole;
 import net.desolatesky.lock.Lockable;
+import net.desolatesky.player.DSPlayer;
+import net.desolatesky.server.DSServer;
+import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.PlayerWorld;
 import net.desolatesky.world.WorldType;
 import net.desolatesky.world.region.SquareRegion;
@@ -37,6 +41,7 @@ public final class DSIsland implements Island, Lockable {
     private final Collection<IslandInvite> islandInvites = new ArrayList<>();
     private final Map<UUID, IslandRole> members;
     private final Map<IslandRole, IslandPermissions> permissions;
+    private final AdvancementsProgress advancementsProgress;
     private SquareRegion islandRegion;
     private Component displayName;
 
@@ -45,6 +50,7 @@ public final class DSIsland implements Island, Lockable {
             Map<WorldType, UUID> worldIds,
             Map<UUID, IslandRole> members,
             Map<IslandRole, IslandPermissions> permissions,
+            AdvancementsProgress advancementsProgress,
             Component displayName,
             SquareRegion islandRegion
     ) {
@@ -57,6 +63,7 @@ public final class DSIsland implements Island, Lockable {
         }
         this.members = members;
         this.permissions = permissions;
+        this.advancementsProgress = advancementsProgress;
         this.displayName = displayName;
         this.islandRegion = islandRegion;
     }
@@ -67,8 +74,11 @@ public final class DSIsland implements Island, Lockable {
         this.members = snapshot.members();
         this.islandInvites.addAll(snapshot.islandInvites());
         this.permissions = snapshot.permissions();
+        this.advancementsProgress = new AdvancementsProgress(snapshot.advancementsProgress());
         this.displayName = snapshot.displayName();
         this.islandRegion = snapshot.islandRegion();
+
+        this.advancementsProgress.initialize(DSServer.getInstance().islandAdvancementManager(), this);
     }
 
     @Override
@@ -160,11 +170,6 @@ public final class DSIsland implements Island, Lockable {
     }
 
     @Override
-    public ReadWriteLock lock() {
-        return this.lock;
-    }
-
-    @Override
     public Point getSpawnPosition() {
         return PlayerWorld.DEFAULT_SPAWN_POINT;
     }
@@ -182,9 +187,25 @@ public final class DSIsland implements Island, Lockable {
                     List.copyOf(this.islandInvites),
                     Map.copyOf(this.members),
                     permissionsCopy,
+                    this.advancementsProgress.currentAdvancements(),
                     this.islandRegion,
                     this.displayName
             );
         });
+    }
+
+    @Override
+    public void onMemberJoin(DSPlayer player, DSWorld world) {
+        this.advancementsProgress.addViewer(player);
+    }
+
+    @Override
+    public void onMemberLeave(DSPlayer player, DSWorld world) {
+        this.advancementsProgress.removeViewer(player);
+    }
+
+    @Override
+    public ReadWriteLock lock() {
+        return this.lock;
     }
 }

@@ -1,6 +1,8 @@
 package net.desolatesky.util;
 
+import net.desolatesky.item.ItemFactory;
 import net.desolatesky.player.DSPlayer;
+import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.ItemEntity;
 import net.minestom.server.entity.Player;
@@ -39,6 +41,14 @@ public final class InventoryUtil {
 
     public static void addItemToInventory(DSPlayer player, ItemStack item) {
         addItemToInventory(player, item, player.getInstance(), player.getPosition());
+    }
+
+    public static void addItemToInventory(DSPlayer player, Key itemKey, ItemFactory itemFactory) {
+        final ItemStack itemStack = itemFactory.getDefaultItem(itemKey);
+        if (itemStack == null) {
+            return;
+        }
+        addItemToInventory(player, itemStack, player.getInstance(), player.getPosition());
     }
 
     public static void addItemsToInventory(AbstractInventory inventory, Collection<ItemStack> items, Instance instance, Point point) {

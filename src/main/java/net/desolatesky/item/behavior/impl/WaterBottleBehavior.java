@@ -1,7 +1,6 @@
 package net.desolatesky.item.behavior.impl;
 
 import net.desolatesky.block.property.BlockProperties;
-import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.behavior.ClickBehavior;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.BlockUtil;
@@ -17,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 public final class WaterBottleBehavior implements ClickBehavior {
 
     @Override
-    public void onClick(ItemFactory itemFactory, DSWorld world, DSPlayer player, PlayerHand hand, ItemStack clickedWith, @Nullable Point clickedPos, @Nullable Block clickedBlock) {
+    public void onRightClick(DSWorld world, DSPlayer player, PlayerHand hand, ItemStack clickedWith, @Nullable Point clickedPos, @Nullable Block clickedBlock) {
         if (clickedBlock == null || clickedPos == null) {
             return;
         }
@@ -36,5 +35,10 @@ public final class WaterBottleBehavior implements ClickBehavior {
             return;
         }
         InventoryUtil.addItemToInventory(player, glassBottle, world, player.getPosition());
+    }
+
+    @Override
+    public void onLeftClick(DSWorld world, DSPlayer player, PlayerHand hand, ItemStack clickedWith, @Nullable Point clickedPos, @Nullable Block clickedBlock) {
+
     }
 }

@@ -25,4 +25,7 @@ public final class BlockTags {
 
     public static final Tag<Double> CACTUS_FLOWER_WATER = Tags.Double("cactus_flower_water_buckets");
 
+    public static final Tag<Boolean> IS_VOID_CROP = Tags.Boolean("is_void_crop");
+    public static final Tag<UUID> VOID_CROP_ENTITY = Tags.UUID("void_crop_entity");
+
 }

@@ -21,15 +21,7 @@ import java.util.Objects;
 public final class CacheItemBehavior implements ClickBehavior {
 
     @Override
-    public void onClick(
-            ItemFactory itemFactory,
-            DSWorld world,
-            DSPlayer player,
-            PlayerHand hand,
-            ItemStack clickedWith,
-            @Nullable Point clickedPos,
-            @Nullable Block clickedBlock
-    ) {
+    public void onRightClick(DSWorld world, DSPlayer player, PlayerHand hand, ItemStack clickedWith, @Nullable Point clickedPos, @Nullable Block clickedBlock) {
         final List<Pair<Key, Integer>> itemIds = clickedWith.getTag(ItemTags.CACHE_ITEMS_KEY);
         if (itemIds == null) {
             return;
@@ -37,11 +29,17 @@ public final class CacheItemBehavior implements ClickBehavior {
         if (!InventoryUtil.subtractFromHeldItem(player, hand, 1)) {
             return;
         }
+        final ItemFactory itemFactory = world.itemFactory();
         final List<ItemStack> itemStacks = itemIds.stream()
                 .map(p -> new Pair<>(itemFactory.getItemDefinition(p.first()), p.second()))
                 .filter(p -> Objects.nonNull(p.first()))
                 .map(p -> p.first().defaultItemStack().withAmount(p.second()))
                 .toList();
         InventoryUtil.addItemsToInventory(player, itemStacks, player.getInstance(), player.getPosition());
+    }
+
+    @Override
+    public void onLeftClick(DSWorld world, DSPlayer player, PlayerHand hand, ItemStack clickedWith, @Nullable Point clickedPos, @Nullable Block clickedBlock) {
+
     }
 }

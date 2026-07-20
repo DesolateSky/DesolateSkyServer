@@ -19,6 +19,7 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerDisconnectEvent;
+import net.minestom.server.event.player.PlayerLoadedEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
@@ -53,6 +54,7 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
     public void register(EventNode<PlayerEvent> eventHandler) {
         this.registerJoinServer(eventHandler);
         this.registerJoinInstance(eventHandler);
+        this.registerPlayerLoad(eventHandler);
         this.registerDisconnect(eventHandler);
     }
 
@@ -61,7 +63,6 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
             if (!(event.getPlayer() instanceof final DSPlayer player)) {
                 return;
             }
-//            final DSWorld world = this.worldManager.getLobbyWorld().join();
             final WorldPosition logoutPos = player.getLogoutPos();
             DSWorld world = null;
             if (logoutPos != null) {
@@ -76,10 +77,9 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
             event.setSpawningInstance(world);
             if (player.newPlayer()) {
                 final ItemDefinition itemDefinition = this.itemFactory.getItemDefinition(ItemIds.STARTING_CACHE);
-                if (itemDefinition == null) {
-                    return;
+                if (itemDefinition != null) {
+                    InventoryUtil.addItemToInventory(player, itemDefinition.defaultItemStack(), player.getInstance(), player.getPosition());
                 }
-                InventoryUtil.addItemToInventory(player, itemDefinition.defaultItemStack(), player.getInstance(), player.getPosition());
             }
         });
     }
@@ -99,6 +99,23 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
         });
     }
 
+    private void registerPlayerLoad(EventNode<PlayerEvent> node) {
+        node.addListener(PlayerLoadedEvent.class, event -> {
+            final DSPlayer player = (DSPlayer) event.getPlayer();
+            final UUID islandId = player.getIslandId();
+            if (!(event.getInstance() instanceof final DSWorld world)) {
+                return;
+            }
+            if (islandId != null) {
+                this.islandManager.loadOrGet(islandId).thenAccept(island -> {
+                    if (island != null) {
+                        island.onMemberJoin(player, world);
+                    }
+                });
+            }
+        });
+    }
+
     private void registerDisconnect(EventNode<PlayerEvent> eventHandler) {
         eventHandler.addListener(PlayerDisconnectEvent.class, event -> {
             final DSPlayer player = (DSPlayer) event.getPlayer();
@@ -111,6 +128,9 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
             final Island island = this.islandManager.getLoaded(islandID);
             if (island == null) {
                 return;
+            }
+            if (event.getInstance() instanceof final DSWorld world) {
+                island.onMemberLeave(player, world);
             }
             this.islandDatabase.saveData(islandID, island.createSnapshot());
         });

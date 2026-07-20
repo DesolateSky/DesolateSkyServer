@@ -5,6 +5,7 @@ import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.BlockUpdateBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
+import net.desolatesky.block.behavior.listener.LoadBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
 import net.desolatesky.block.setting.BlockSetting;
 import net.desolatesky.breaking.BreakingManager;
@@ -43,6 +44,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.SequencedSet;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
@@ -228,6 +230,8 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
 
     public abstract boolean canBreakBlock(DSPlayer player, Point blockPosition, Block block);
 
+    public abstract boolean canPlaceBlock(DSPlayer player, Point blockPosition, Block block);
+
     public void breakBlock(DSPlayer player, Point blockPosition) {
         final Block blockType = this.getBlock(blockPosition, Condition.TYPE);
         if (blockType == null || blockType.isAir()) {
@@ -345,4 +349,24 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
     }
 
     public abstract WorldType worldType();
+
+    public CompletableFuture<Void> save() {
+        for (final Chunk chunk : this.getChunks()) {
+            if (!chunk.isLoaded()) {
+                continue;
+            }
+            chunk.getBlockEntities().forEach((pos, block) -> {
+                final BlockDefinition blockDefinition = this.blockFactory.getBlockDefinition(block);
+                if (blockDefinition == null) {
+                    return;
+                }
+                final LoadBehavior loadBehavior = blockDefinition.getBehavior(BlockBehavior.Type.LOAD);
+                if (loadBehavior == null) {
+                    return;
+                }
+                loadBehavior.save(this, pos, block);
+            });
+        }
+        return this.saveInstance().thenCompose(_ -> this.saveChunksToStorage());
+    }
 }

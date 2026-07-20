@@ -7,6 +7,7 @@ import net.desolatesky.entity.type.VoidRabbit;
 import net.desolatesky.island.Island;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,9 +20,12 @@ public final class TypedEntityFactory implements EntityFactory {
     private final Map<Key, BiFunction<Island, Consumer<Entity>, IslandEntity>> entityCreators = new HashMap<>();
 
     @Override
-    public Optional<IslandEntity> createEntity(Key entityType, Island island, Consumer<Entity> tagApplier) {
-        return Optional.ofNullable(this.entityCreators.get(entityType))
-                .map(func -> func.apply(island, tagApplier));
+    public @Nullable IslandEntity createEntity(Key entityType, Island island, Consumer<Entity> tagApplier) {
+        final BiFunction<Island, Consumer<Entity>, IslandEntity> creator = this.entityCreators.get(entityType);
+        if (creator == null) {
+            return null;
+        }
+        return creator.apply(island, tagApplier);
     }
 
     @Override

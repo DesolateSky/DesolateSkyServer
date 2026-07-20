@@ -2,6 +2,8 @@ package net.desolatesky.island;
 
 import net.desolatesky.island.permission.IslandPermission;
 import net.desolatesky.island.role.IslandRole;
+import net.desolatesky.player.DSPlayer;
+import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.WorldType;
 import net.desolatesky.world.region.SquareRegion;
 import net.kyori.adventure.text.Component;
@@ -41,4 +43,7 @@ public interface Island {
 
     IslandSnapshot createSnapshot();
 
+    void onMemberJoin(DSPlayer player, DSWorld world);
+
+    void onMemberLeave(DSPlayer player, DSWorld world);
 }

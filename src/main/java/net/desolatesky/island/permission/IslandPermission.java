@@ -9,7 +9,8 @@ public enum IslandPermission {
     INTERACT_VOID_CORE,
     SET_NAME,
     DROP_ITEMS,
-    BREAK_BLOCK;
+    BREAK_BLOCK,
+    PLACE_BLOCK;
 
     public static final Data<IslandPermission> DATA = EnumData.createEnumData(IslandPermission.class);
 }

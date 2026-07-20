@@ -2,7 +2,9 @@ package net.desolatesky.entity.type;
 
 import net.desolatesky.entity.DSItemEntity;
 import net.desolatesky.entity.EntityIds;
+import net.desolatesky.entity.IslandEntity;
 import net.desolatesky.island.Island;
+import net.desolatesky.item.ItemIds;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.recipe.RecipeFactory;
 import net.desolatesky.recipe.RecipeType;
@@ -77,13 +79,13 @@ public final class CraftingCatalystEntity extends DSItemEntity<CraftingCatalystE
         if (result == null) {
             return;
         }
-        this.world().entityFactory().createEntity(EntityIds.ITEM, this.island, _ -> {
-                })
-                .map(ItemEntity.class::cast)
-                .ifPresent(e -> {
-                    e.setItemStack(result.create(this.world().itemFactory()));
-                    e.setInstance(this.getInstance(), this.getPosition());
-                    this.remove();
-                });
+        final IslandEntity islandEntity = this.world().entityFactory().createEntity(EntityIds.ITEM, this.island, _ -> {
+        });
+        if (!(islandEntity instanceof final ItemEntity itemEntity)) {
+            return;
+        }
+        itemEntity.setItemStack(result.create(this.world().itemFactory()));
+        itemEntity.setInstance(this.getInstance(), this.getPosition());
+        this.remove();
     }
 }

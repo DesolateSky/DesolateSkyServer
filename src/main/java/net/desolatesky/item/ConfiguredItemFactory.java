@@ -10,6 +10,7 @@ import net.desolatesky.item.behavior.ItemBehavior;
 import net.desolatesky.item.behavior.impl.AttributeMiningSpeedBehavior;
 import net.desolatesky.item.behavior.impl.CacheItemBehavior;
 import net.desolatesky.item.behavior.impl.HoeBehavior;
+import net.desolatesky.item.behavior.impl.StoneChunkBehavior;
 import net.desolatesky.item.behavior.impl.WaterBottleBehavior;
 import net.desolatesky.item.definition.ItemDefinition;
 import net.desolatesky.recipe.RecipeIds;
@@ -20,10 +21,13 @@ import net.desolatesky.util.Pair;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.minestom.server.component.DataComponentMap;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.instance.block.BlockKeys;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.MaterialKeys;
 import net.minestom.server.item.component.ItemRarity;
 import net.minestom.server.item.component.PotionContents;
 import net.minestom.server.potion.Potion;
@@ -56,6 +60,8 @@ public final class ConfiguredItemFactory implements ItemFactory {
         this.registerInventoryBlocks();
         this.registerContainers();
         this.registerTools();
+        this.registerArmor();
+        this.registerBlocks();
 
         this.register(ItemDefinition.builder().key(ItemIds.ITEM_CORE_STORM_CATALYST)
                 .defaultItem(ItemStack.builder(Material.NETHERITE_SCRAP)
@@ -83,12 +89,6 @@ public final class ConfiguredItemFactory implements ItemFactory {
                         .customName(ComponentUtil.noItalics("Silverfish Eye"))
                         .build())
                 .build());
-        this.register(ItemDefinition.builder().key(ItemIds.PEBBLE)
-                .defaultItem(ItemStack.builder(Material.STONE_BUTTON)
-                        .customName(ComponentUtil.noItalics("Pebble"))
-                        .build())
-                .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.BLOCKED)
-                .build());
         this.register(ItemDefinition.builder().key(ItemIds.ENTITY_ATTRACTOR_SILVERFISH)
                 .defaultItem(ItemStack.builder(Material.CRACKED_STONE_BRICKS)
                         .customName(ComponentUtil.noItalics("Entity Attractor (Silverfish)").color(NamedTextColor.GRAY))
@@ -106,8 +106,10 @@ public final class ConfiguredItemFactory implements ItemFactory {
 
     private void registerCrops() {
         this.register(ItemDefinition.builder().key(ItemIds.DRY_GRASS_SEED)
-                .defaultItem(ItemStack.of(Material.BEETROOT_SEEDS)
-                        .withCustomName(ComponentUtil.noItalics("Dry Grass Seeds")))
+                .defaultItem(ItemStack.builder(Material.BEETROOT_SEEDS)
+                        .customName(ComponentUtil.noItalics("Dry Grass Seeds"))
+                        .set(ItemTags.COMPOSTER_VALUE, 0.5)
+                        .build())
                 .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(BlockIds.DRY_GRASS_SEEDS))
                 .build());
         this.register(ItemDefinition.builder().key(Material.CACTUS.key())
@@ -115,8 +117,36 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(Block.CACTUS.key()))
                 .build());
         this.register(ItemDefinition.builder().key(Material.CARROT.key())
-                .defaultItem(ItemStack.of(Material.CARROT))
+                .defaultItem(ItemStack.builder(Material.CARROT)
+                        .set(ItemTags.COMPOSTER_VALUE, 1.0)
+                        .build())
                 .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(Block.CARROTS.key()))
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.VOID_INFUSED_CARROT.key())
+                .defaultItem(ItemStack.builder(Material.CARROT)
+                        .customName(ComponentUtil.noItalics("Void Infused Carrot"))
+                        .lore(
+                                ComponentUtil.noItalics(""),
+                                ComponentUtil.noItalics("Entity Attractor (Pig)")
+                        )
+                        .set(DataComponents.RARITY, ItemRarity.UNCOMMON)
+                        .build())
+                .build());
+        this.register(ItemDefinition.builder().key(Material.POTATO.key())
+                .defaultItem(ItemStack.builder(Material.POTATO)
+                        .set(ItemTags.COMPOSTER_VALUE, 1.2)
+                        .build())
+                .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(Block.POTATOES.key()))
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.VOID_INFUSED_POTATO.key())
+                .defaultItem(ItemStack.builder(Material.POTATO)
+                        .customName(ComponentUtil.noItalics("Void Infused Potato"))
+                        .lore(
+                                ComponentUtil.noItalics(""),
+                                ComponentUtil.noItalics("Entity Attractor (Silverfish)")
+                        )
+                        .set(DataComponents.RARITY, ItemRarity.UNCOMMON)
+                        .build())
                 .build());
         this.register(ItemDefinition.builder().key(ItemIds.VOID_INFUSED_BUSH)
                 .defaultItem(ItemStack.builder(Material.CLOSED_EYEBLOSSOM)
@@ -125,7 +155,7 @@ public final class ConfiguredItemFactory implements ItemFactory {
                                 ComponentUtil.noItalics(""),
                                 ComponentUtil.noItalics("Entity Attractor (Rabbit)")
                         )
-                        .set(DataComponents.RARITY, ItemRarity.EPIC)
+                        .set(DataComponents.RARITY, ItemRarity.UNCOMMON)
                         .set(ItemTags.ISLAND_CORE_SPAWNER_KEY, IslandCoreMobSpawnerIds.RABBIT)
                         .build())
                 .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.BLOCKED)
@@ -139,6 +169,23 @@ public final class ConfiguredItemFactory implements ItemFactory {
         this.register(ItemDefinition.builder().key(Material.RABBIT_HIDE.key())
                 .defaultItem(ItemStack.of(Material.RABBIT_HIDE))
                 .build());
+        this.register(ItemDefinition.builder().key(Material.RABBIT_FOOT.key())
+                .defaultItem(ItemStack.of(Material.RABBIT_FOOT))
+                .build());
+        this.register(ItemDefinition.builder().key(Material.PORKCHOP.key())
+                .defaultItem(ItemStack.of(Material.PORKCHOP))
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.SILVERFISH_SCALE.key())
+                .defaultItem(ItemStack.builder(Material.GRAY_CANDLE)
+                        .customName(ComponentUtil.noItalics("Silverfish Scale"))
+                        .build())
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.STONE_CHUNK.key())
+                .defaultItem(ItemStack.builder(Material.STONE_BUTTON)
+                        .customName(ComponentUtil.noItalics("Stone Chunk"))
+                        .build())
+                .defineBehavior(ItemBehavior.Type.CLICK, new StoneChunkBehavior(10))
+                .build());
     }
 
     private void registerWood() {
@@ -150,6 +197,11 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defaultItem(ItemStack.of(Material.BAMBOO_PLANKS)
                         .withCustomName(ComponentUtil.noItalics("Thatch Planks")))
                 .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(BlockIds.THATCH_PLANKS))
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.THATCH_SLAB)
+                .defaultItem(ItemStack.of(Material.BAMBOO_SLAB)
+                        .withCustomName(ComponentUtil.noItalics("Thatch Planks")))
+                .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.slab(BlockIds.THATCH_SLAB))
                 .build());
     }
 
@@ -169,6 +221,10 @@ public final class ConfiguredItemFactory implements ItemFactory {
                         .set(DataComponents.POTION_CONTENTS, new PotionContents(PotionType.WATER))
                         .build())
                 .defineBehavior(ItemBehavior.Type.CLICK, new WaterBottleBehavior())
+                .build());
+        this.register(ItemDefinition.builder().key(MaterialKeys.COMPOSTER.key())
+                .defaultItem(ItemStack.of(Material.COMPOSTER))
+                .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(BlockKeys.COMPOSTER.key()))
                 .build());
     }
 
@@ -241,6 +297,40 @@ public final class ConfiguredItemFactory implements ItemFactory {
                         ItemBehavior.Type.MINING_SPEED,
                         new AttributeMiningSpeedBehavior(Set.of(BlockAttributes.SWORD_MINEABLE), ItemTags.SWORD_MINING_SPEED)
                 )
+                .build());
+        this.register(ItemDefinition.builder().key(MaterialKeys.FLINT.key())
+                .defaultItem(ItemStack.of(Material.FLINT))
+                .build());
+    }
+
+    private void registerArmor() {
+        this.register(ItemDefinition.builder().key(ItemIds.SILVERFISH_SCALE_BOOTS)
+                .defaultItem(ItemStack.builder(Material.CHAINMAIL_BOOTS)
+                        .customName(ComponentUtil.noItalics("Silverfish Scale Boots"))
+                        .build())
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.SILVERFISH_SCALE_LEGGINGS)
+                .defaultItem(ItemStack.builder(Material.CHAINMAIL_LEGGINGS)
+                        .customName(ComponentUtil.noItalics("Silverfish Scale Leggings"))
+                        .build())
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.SILVERFISH_SCALE_CHESTPLATE)
+                .defaultItem(ItemStack.builder(Material.CHAINMAIL_CHESTPLATE)
+                        .customName(ComponentUtil.noItalics("Silverfish Scale Chestplate"))
+                        .build())
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.SILVERFISH_SCALE_HELMET)
+                .defaultItem(ItemStack.builder(Material.CHAINMAIL_HELMET)
+                        .customName(ComponentUtil.noItalics("Silverfish Scale Helmet"))
+                        .build())
+                .build());
+
+    }
+
+    private void registerBlocks() {
+        this.register(ItemDefinition.builder().key(MaterialKeys.DIRT.key())
+                .defaultItem(ItemStack.of(Material.DIRT))
+                .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(BlockKeys.DIRT.key()))
                 .build());
     }
 

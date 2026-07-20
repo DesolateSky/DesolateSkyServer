@@ -1,6 +1,6 @@
 package net.desolatesky.block.behavior;
 
-import net.desolatesky.block.behavior.core.VoidCoreTickBehavior;
+import net.desolatesky.block.behavior.listener.LoadBehavior;
 
 import java.util.Collection;
 
@@ -15,6 +15,6 @@ public interface BlockBehavior {
         public static final Type<BlockUpdateBehavior> UPDATE = new Type<>(BlockUpdateBehavior.class);
         public static final Type<ClickBehavior> CLICK = new Type<>(ClickBehavior.class);
         public static final Type<BlockDropBehavior> BLOCK_DROP = new Type<>(BlockDropBehavior.class);
-        public static final Type<VoidCoreTickBehavior> VOID_CORE_BEHAVIOR = new Type<>(VoidCoreTickBehavior.class);
+        public static final Type<LoadBehavior> LOAD = new Type<>(LoadBehavior.class);
     }
 }
