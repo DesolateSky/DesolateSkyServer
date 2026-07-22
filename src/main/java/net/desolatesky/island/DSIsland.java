@@ -7,7 +7,6 @@ import net.desolatesky.island.permission.IslandPermissions;
 import net.desolatesky.island.role.IslandRole;
 import net.desolatesky.lock.Lockable;
 import net.desolatesky.player.DSPlayer;
-import net.desolatesky.server.DSServer;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.PlayerWorld;
 import net.desolatesky.world.WorldType;
@@ -15,6 +14,7 @@ import net.desolatesky.world.region.SquareRegion;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Point;
 import org.jetbrains.annotations.NotNullByDefault;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -74,16 +75,19 @@ public final class DSIsland implements Island, Lockable {
         this.members = snapshot.members();
         this.islandInvites.addAll(snapshot.islandInvites());
         this.permissions = snapshot.permissions();
-        this.advancementsProgress = new AdvancementsProgress(snapshot.advancementsProgress());
+        this.advancementsProgress = new AdvancementsProgress(snapshot.advancementsProgress(), snapshot.completedAdvancements());
         this.displayName = snapshot.displayName();
         this.islandRegion = snapshot.islandRegion();
-
-        this.advancementsProgress.initialize(DSServer.getInstance().islandAdvancementManager(), this);
     }
 
     @Override
     public boolean isMember(UUID playerId) {
         return this.lockRead(() -> this.getIslandRole(playerId) != IslandRole.GUEST);
+    }
+
+    @Override
+    public @Unmodifiable Collection<UUID> getMembers() {
+        return this.lockRead(() -> Set.copyOf(this.members.keySet()));
     }
 
     @Override
@@ -187,7 +191,8 @@ public final class DSIsland implements Island, Lockable {
                     List.copyOf(this.islandInvites),
                     Map.copyOf(this.members),
                     permissionsCopy,
-                    this.advancementsProgress.currentAdvancements(),
+                    this.advancementsProgress.getCurrentAdvancements(),
+                    this.advancementsProgress.getCompletedAdvancements(),
                     this.islandRegion,
                     this.displayName
             );
@@ -202,6 +207,11 @@ public final class DSIsland implements Island, Lockable {
     @Override
     public void onMemberLeave(DSPlayer player, DSWorld world) {
         this.advancementsProgress.removeViewer(player);
+    }
+
+    @Override
+    public AdvancementsProgress getAdvancementsProgress() {
+        return this.advancementsProgress;
     }
 
     @Override

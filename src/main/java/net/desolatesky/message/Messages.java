@@ -52,5 +52,7 @@ public final class Messages {
 
     // MISC
     public static final MessageKey PLAYER_NOT_FOUND = new MessageKey("player-not-found");
+    public static final MessageKey PLAYER_JOIN = new MessageKey("player-join");
+    public static final MessageKey NEW_PLAYER_JOIN = new MessageKey("new-player-join");
 
 }

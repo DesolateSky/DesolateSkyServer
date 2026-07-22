@@ -1,6 +1,7 @@
 package net.desolatesky.island;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 import net.desolatesky.advancement.AdvancementsProgress;
 import net.desolatesky.data.definition.DataTranslator;
 import net.desolatesky.island.data.IslandDataDefinitionV1;
@@ -38,7 +39,10 @@ public interface IslandSnapshot {
     @Unmodifiable
     Map<IslandRole, IslandPermissions> permissions();
 
-    @Unmodifiable Multimap<Key, Key> advancementsProgress();
+    @Unmodifiable SetMultimap<Key, Key> advancementsProgress();
+
+    @Unmodifiable
+    SetMultimap<Key, Key> completedAdvancements();
 
     SquareRegion islandRegion();
 
@@ -50,11 +54,12 @@ public interface IslandSnapshot {
             @Unmodifiable List<IslandInvite> islandInvites,
             @Unmodifiable Map<UUID, IslandRole> members,
             @Unmodifiable Map<IslandRole, IslandPermissions> permissions,
-            @Unmodifiable Multimap<Key, Key> advancementsProgress,
+            @Unmodifiable SetMultimap<Key, Key> advancementsProgress,
+            @Unmodifiable SetMultimap<Key, Key> completedAdvancements,
             SquareRegion islandRegion,
             Component displayName
     ) {
-        return new Impl(islandId, worldIds, islandInvites, members, permissions, advancementsProgress, islandRegion, displayName);
+        return new Impl(islandId, worldIds, islandInvites, members, permissions, advancementsProgress, completedAdvancements, islandRegion, displayName);
     }
 
     record Impl(
@@ -63,7 +68,8 @@ public interface IslandSnapshot {
             @Unmodifiable List<IslandInvite> islandInvites,
             @Unmodifiable Map<UUID, IslandRole> members,
             @Unmodifiable Map<IslandRole, IslandPermissions> permissions,
-            @Unmodifiable Multimap<Key, Key> advancementsProgress,
+            @Unmodifiable SetMultimap<Key, Key> advancementsProgress,
+            @Unmodifiable SetMultimap<Key, Key> completedAdvancements,
             SquareRegion islandRegion,
             Component displayName
     ) implements IslandSnapshot {

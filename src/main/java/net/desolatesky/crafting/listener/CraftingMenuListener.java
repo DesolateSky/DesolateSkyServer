@@ -7,9 +7,11 @@ import net.desolatesky.crafting.CraftingMenuHolder;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.recipe.RecipeFactory;
+import net.desolatesky.recipe.event.RecipeCraftEvent;
 import net.desolatesky.util.InventoryUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.inventory.InventoryClickEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
@@ -127,6 +129,7 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
             if (shiftClick) {
                 final ItemStack leftOver = playerInventory.addItemStack(result, TEST_TRANSACTION);
                 if (leftOver.isAir() || leftOver.amount() == 0) {
+                    EventDispatcher.call(new RecipeCraftEvent(player, input.recipeId(), amount));
                     playerInventory.addItemStack(result);
                     return matches;
                 } else {
@@ -137,6 +140,7 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
                         return 0;
                     }
                     playerInventory.addItemStack(result.withAmount(giveAmount));
+                    EventDispatcher.call(new RecipeCraftEvent(player, input.recipeId(), giveAmount));
                     return matchesToGive;
                 }
             }
@@ -150,6 +154,7 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
             }
             final int toGive = InventoryUtil.isRightClick(click) ? amountPerCraft : Math.min(canGive, amount * amountPerCraft);
             MinecraftServer.getSchedulerManager().scheduleNextTick(() -> playerInventory.setCursorItem(result.withAmount(cursorItem.amount() + toGive)));
+            EventDispatcher.call(new RecipeCraftEvent(player, input.recipeId(), toGive));
             return toGive;
         });
         return true;

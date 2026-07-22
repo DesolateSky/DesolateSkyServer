@@ -1,13 +1,17 @@
 package net.desolatesky.server;
 
 import net.desolatesky.advancement.IslandAdvancementManager;
+import net.desolatesky.advancement.listener.IslandAdvancementListener;
 import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.MaterialTags;
 import net.desolatesky.block.behavior.listener.BlockClickListener;
 import net.desolatesky.command.DiscordCommand;
 import net.desolatesky.command.SpawnCommand;
+import net.desolatesky.command.admin.FlyCommand;
+import net.desolatesky.command.admin.GameModeCommand;
 import net.desolatesky.command.admin.GiveCommand;
 import net.desolatesky.command.admin.StopCommand;
+import net.desolatesky.command.admin.TpCommand;
 import net.desolatesky.command.admin.WhitelistCommand;
 import net.desolatesky.command.console.ConsoleCommandHandler;
 import net.desolatesky.command.island.IslandCommand;
@@ -30,6 +34,7 @@ import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.DSPlayerData;
 import net.desolatesky.player.listener.PlayerChatListener;
 import net.desolatesky.player.listener.PlayerJoinListener;
+import net.desolatesky.player.listener.PlayerListPingListener;
 import net.desolatesky.player.listener.PlayerTickListener;
 import net.desolatesky.player.whitelist.PlayerWhitelist;
 import net.desolatesky.recipe.RecipeFactory;
@@ -52,6 +57,7 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.GlobalEventHandler;
+import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.event.server.ServerTickMonitorEvent;
 import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.event.trait.InventoryEvent;
@@ -70,14 +76,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @NotNullByDefault
 public final class DSServer {
-
-    // replace this with event-based system,
-    // such as Island.initialize() on IslandLoadEvent
-    private static DSServer instance;
-
-    public static DSServer getInstance() {
-        return instance;
-    }
 
     private final AtomicReference<@Nullable TickMonitor> lastTick = new AtomicReference<>();
 
@@ -111,7 +109,6 @@ public final class DSServer {
             WorldManager worldManager,
             IslandAdvancementManager islandAdvancementManager
     ) {
-        instance = this;
         this.server = server;
         this.playerDatabase = playerDatabase;
         this.islandDatabase = islandDatabase;
@@ -146,7 +143,7 @@ public final class DSServer {
         this.entityFactory.initialize();
         this.lootFactory.initialize();
         this.recipeFactory.initialize();
-        this.islandAdvancementManager.initialize();
+        this.islandAdvancementManager.initialize(this);
         this.registerListeners();
         this.setupPermissions();
         this.registerCommands();
@@ -222,6 +219,10 @@ public final class DSServer {
         return this.whitelist;
     }
 
+    public ConfigFile serverConfig() {
+        return this.serverConfig;
+    }
+
     public void stop() {
         for (final Player player : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
             player.kick(Component.text("Server is restarting").color(NamedTextColor.RED));
@@ -250,19 +251,22 @@ public final class DSServer {
         globalEventHandler.addChild(inventoryEventNode);
         globalEventHandler.addChild(instanceEventNode);
 
-        new PlayerJoinListener(this.playerDatabase, this.islandDatabase, this.worldManager, this.islandManager, this.itemFactory).register(playerEventNode);
+        new PlayerListPingListener(this.serverConfig).register(globalEventHandler);
+        new PlayerJoinListener(this.playerDatabase, this.islandDatabase, this.worldManager, this.islandManager, this.itemFactory, this.messageHandler).register(playerEventNode);
         new PlayerTickListener(this.islandManager, this.worldManager).register(playerEventNode);
         new PlayerChatListener().register(playerEventNode);
+
+        new CraftingMenuListener(this.recipeFactory, this.itemFactory).register(inventoryEventNode);
+
+        new ChunkLoadListener().register(instanceEventNode);
 
         new ItemPickupListener().register(globalEventHandler);
         new ItemThrowListener().register(globalEventHandler);
         new EntityDamageListener().register(globalEventHandler);
         new BlockClickListener(this.blockFactory).register(globalEventHandler);
         new BlockPlaceListener(this.itemFactory, this.blockFactory).register(globalEventHandler);
-        new CraftingMenuListener(this.recipeFactory, this.itemFactory).register(inventoryEventNode);
         new ItemClickListener(this.itemFactory).register(globalEventHandler);
-
-        new ChunkLoadListener().register(instanceEventNode);
+        new IslandAdvancementListener(this.islandAdvancementManager).register(globalEventHandler);
 
         globalEventHandler.addListener(ServerTickMonitorEvent.class, event -> this.lastTick.set(event.getTickMonitor()));
     }
@@ -275,6 +279,9 @@ public final class DSServer {
         commandManager.register(new WhitelistCommand(this.whitelist));
         commandManager.register(new SpawnCommand(this.teleportManager));
         commandManager.register(new DiscordCommand(this.serverConfig));
+        commandManager.register(new GameModeCommand());
+        commandManager.register(new FlyCommand());
+        commandManager.register(new TpCommand());
     }
 
     private void setupPermissions() {

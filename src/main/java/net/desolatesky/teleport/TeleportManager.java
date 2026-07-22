@@ -45,7 +45,7 @@ public final class TeleportManager implements Lockable {
             return;
         }
         worldManager.loadWorld(islandId, worldId, worldType).
-                whenComplete((world, error) -> {
+                whenComplete((world, _) -> {
                     if (world == null) {
                         LoggerUtil.error(TeleportManager.class, "Could not teleport %s to world %s".formatted(player.getUuid().toString(), worldId.toString()));
                         player.setTeleporting(false);
@@ -89,7 +89,7 @@ public final class TeleportManager implements Lockable {
                                 this.messageHandler.sendMessage(player, Messages.TELEPORT_CANCELLED);
                                 return;
                             }
-                            TeleportUtil.teleportEntity(request.teleporter(), (Instance) world, location.position().asPos());
+                            TeleportUtil.teleportEntity(request.teleporter(), world, location.position().asPos());
                             request.notifyTeleportComplete();
                         });
                 return true;
@@ -151,20 +151,30 @@ public final class TeleportManager implements Lockable {
         boolean isComplete();
     }
 
-    private record LocationRequest(
-            MessageHandler messageHandler,
-            DSPlayer teleporter,
-            TeleportLocation location,
-            Instant start,
-            Duration duration
-    ) implements Request {
+    private static class LocationRequest implements Request {
+
+        private final MessageHandler messageHandler;
+        private final DSPlayer teleporter;
+        private final TeleportLocation location;
+        private final Instant start;
+        private final Duration duration;
+        private int secondsPassed = 0;
+
+        public LocationRequest(MessageHandler messageHandler, DSPlayer teleporter, TeleportLocation location, Instant start, Duration duration) {
+            this.messageHandler = messageHandler;
+            this.teleporter = teleporter;
+            this.location = location;
+            this.start = start;
+            this.duration = duration;
+        }
 
         @Override
         public void updateCountdown() {
-            final long secondsLeft = this.getTimeLeft().toSeconds();
+            final long secondsLeft = this.duration.toSeconds() - this.secondsPassed;
             if (secondsLeft <= 0) {
                 return;
             }
+            this.secondsPassed++;
             this.messageHandler.sendMessage(this.teleporter, Messages.TELEPORT_INTERVAL, Map.of("seconds-left", secondsLeft));
         }
 
@@ -195,6 +205,26 @@ public final class TeleportManager implements Lockable {
         @Override
         public boolean isComplete() {
             return this.getTimeLeft().isNegative();
+        }
+
+        @Override
+        public DSPlayer teleporter() {
+            return this.teleporter;
+        }
+
+        @Override
+        public TeleportLocation location() {
+            return this.location;
+        }
+
+        @Override
+        public Instant start() {
+            return this.start;
+        }
+
+        @Override
+        public Duration duration() {
+            return this.duration;
         }
     }
 

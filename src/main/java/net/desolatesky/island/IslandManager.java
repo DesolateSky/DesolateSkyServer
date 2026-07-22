@@ -2,6 +2,7 @@ package net.desolatesky.island;
 
 import com.google.common.collect.Multimaps;
 import net.desolatesky.advancement.AdvancementsProgress;
+import net.desolatesky.advancement.IslandAdvancementManager;
 import net.desolatesky.data.FileDatabase;
 import net.desolatesky.island.role.IslandRole;
 import net.desolatesky.lock.Lockable;
@@ -15,12 +16,14 @@ import net.desolatesky.world.IslandWorld;
 import net.desolatesky.world.PlayerWorld;
 import net.desolatesky.world.WorldType;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.MinecraftServer;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -32,11 +35,13 @@ public final class IslandManager implements Lockable {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private final FileDatabase<IslandSnapshot> islandDatabase;
+    private final IslandAdvancementManager advancementManager;
     private final MessageHandler messageHandler;
     private final Map<UUID, Island> islands = new HashMap<>();
 
-    public IslandManager(FileDatabase<IslandSnapshot> islandDatabase, MessageHandler messageHandler) {
+    public IslandManager(FileDatabase<IslandSnapshot> islandDatabase, IslandAdvancementManager advancementManager, MessageHandler messageHandler) {
         this.islandDatabase = islandDatabase;
+        this.advancementManager = advancementManager;
         this.messageHandler = messageHandler;
     }
 
@@ -56,12 +61,14 @@ public final class IslandManager implements Lockable {
                             return null;
                         }
                         final Island island = new DSIsland(islandSnapshot);
+                        island.getAdvancementsProgress().checkProgress(this.advancementManager, island, null);
                         return this.lockWrite(() -> {
                             if (this.islands.containsKey(islandId)) {
                                 LoggerUtil.error(this.getClass(), "Island already exists (" + islandId + ") when loading island.");
                                 return null;
                             }
                             this.islands.put(island.islandId(), island);
+                            this.initializeIsland(island);
                             return island;
                         });
                     });
@@ -96,9 +103,11 @@ public final class IslandManager implements Lockable {
                             worldTypes,
                             islandRoles,
                             new HashMap<>(),
-                            new AdvancementsProgress(Multimaps.newListMultimap(new HashMap<>(), ArrayList::new)),
+                            new AdvancementsProgress(Multimaps.newSetMultimap(new HashMap<>(), HashSet::new), Multimaps.newSetMultimap(new HashMap<>(), HashSet::new)),
                             player.getName().append(Component.text("'s Island")), PlayerWorld.STARTING_REGION);
-                    this.islands.put(islandId, island);
+                    this.lockWrite(() -> {
+                        this.islands.put(islandId, island);
+                    });
                     player.setIslandId(islandId);
                     player.setCreatingIsland(false);
                     return island;
@@ -109,8 +118,21 @@ public final class IslandManager implements Lockable {
                         return null;
                     }
                     this.messageHandler.sendMessage(player, Messages.CREATED_ISLAND);
+                    this.initializeIsland(island);
                     return island;
                 });
+    }
+
+    private void initializeIsland(Island island) {
+        island.getAdvancementsProgress().initialize(this.advancementManager, island);
+        for (final UUID memberId : island.getMembers()) {
+            final DSPlayer player = (DSPlayer) MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(memberId);
+            if (player == null) {
+                continue;
+            }
+            island.getAdvancementsProgress().addViewer(player);
+        }
+        island.getAdvancementsProgress().checkProgress(this.advancementManager, island, null);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package net.desolatesky.island.data;
 
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import net.desolatesky.data.definition.DataDefinition;
 import net.desolatesky.data.reader.DataReader;
 import net.desolatesky.data.type.Data;
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -51,7 +52,8 @@ public final class IslandDataDefinitionV1 extends DataDefinition<IslandSnapshot>
         final Map<IslandRole, IslandPermissions> permissions = IslandRole.DATA.readKeyMap(reader, IslandPermissions.DATA_TRANSLATOR);
         final SquareRegion region = (SquareRegion) Region.DATA_TRANSLATOR.read(reader);
         final Component displayName = Data.COMPONENT.read(reader);
-        final ListMultimap<Key, Key> advancements = Multimaps.newListMultimap(new HashMap<>(), ArrayList::new);
-        return IslandSnapshot.create(islandId, worldIds, islandInvites, members, permissions, advancements, region, displayName);
+        final SetMultimap<Key, Key> advancements = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+        final SetMultimap<Key, Key> completedAdvancements = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+        return IslandSnapshot.create(islandId, worldIds, islandInvites, members, permissions, advancements, completedAdvancements, region, displayName);
     }
 }

@@ -1,7 +1,11 @@
 package net.desolatesky.advancement;
 
 import net.desolatesky.config.ConfigFile;
+import net.desolatesky.server.DSServer;
 import net.kyori.adventure.key.Key;
+import net.minestom.server.MinecraftServer;
+import net.minestom.server.event.Event;
+import net.minestom.server.event.EventNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -20,7 +24,7 @@ public final class IslandAdvancementManager {
 
     private final List<IslandAdvancements> advancements;
 
-    public void initialize() {
+    public void initialize(DSServer server) {
         final Path advancementsFolder = Path.of("advancements");
         final List<IslandAdvancements> islandAdvancements = new ArrayList<>();
         try {
@@ -52,6 +56,12 @@ public final class IslandAdvancementManager {
         }
         this.advancements.addAll(islandAdvancements);
         this.advancements.sort(Comparator.comparingInt(IslandAdvancements::index));
+        final EventNode<Event> node = EventNode.all("advancements-listener");
+        node.setPriority(Integer.MAX_VALUE);
+        MinecraftServer.getGlobalEventHandler().addChild(node);
+        this.advancements.forEach(advancements -> {
+            advancements.getAllAdvancements().forEach(a -> a.registerListener(server, node));
+        });
     }
 
     public IslandAdvancementManager() {

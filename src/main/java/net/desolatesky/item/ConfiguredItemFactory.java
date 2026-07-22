@@ -184,7 +184,7 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defaultItem(ItemStack.builder(Material.STONE_BUTTON)
                         .customName(ComponentUtil.noItalics("Stone Chunk"))
                         .build())
-                .defineBehavior(ItemBehavior.Type.CLICK, new StoneChunkBehavior(10))
+                .defineBehavior(ItemBehavior.Type.CLICK, new StoneChunkBehavior(10, 4))
                 .build());
     }
 

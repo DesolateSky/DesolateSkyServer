@@ -89,7 +89,9 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
         this.worldFolder = worldFolder;
         this.setGenerator(generator);
         this.setChunkSupplier(LightingChunk::new);
+//        this.setChunkLoader(new AnvilLoader(worldFolder, this.getDimensionType().key()));
         this.setChunkLoader(new AnvilLoader(worldFolder));
+        this.enableAutoChunkLoad(true);
         this.initialize();
     }
 

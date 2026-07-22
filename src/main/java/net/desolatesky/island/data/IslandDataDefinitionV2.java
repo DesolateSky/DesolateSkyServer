@@ -3,6 +3,7 @@ package net.desolatesky.island.data;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import net.desolatesky.data.definition.DataDefinition;
 import net.desolatesky.data.reader.DataReader;
 import net.desolatesky.data.type.Data;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,10 +43,16 @@ public final class IslandDataDefinitionV2 extends DataDefinition<IslandSnapshot>
         Region.DATA_TRANSLATOR.write(writer, island.islandRegion());
         Data.COMPONENT.write(writer, island.displayName());
         final Multimap<Key, Key> advancements = island.advancementsProgress();
-        Data.INTEGER.write(writer, advancements.size());
-        for (final Key key : advancements.keys()) {
+        Data.INTEGER.write(writer, advancements.keySet().size());
+        for (final Key key : advancements.keySet()) {
             Data.KEY.write(writer, key);
             Data.KEY.writeList(writer, advancements.get(key).stream().toList());
+        }
+        final Multimap<Key, Key> completedAdvancements = island.completedAdvancements();
+        Data.INTEGER.write(writer, completedAdvancements.keySet().size());
+        for (final Key key : completedAdvancements.keySet()) {
+            Data.KEY.write(writer, key);
+            Data.KEY.writeList(writer, completedAdvancements.get(key).stream().toList());
         }
     }
 
@@ -58,13 +66,19 @@ public final class IslandDataDefinitionV2 extends DataDefinition<IslandSnapshot>
         final SquareRegion region = (SquareRegion) Region.DATA_TRANSLATOR.read(reader);
         final Component displayName = Data.COMPONENT.read(reader);
         final int advancementsSize = Data.INTEGER.read(reader);
-        final ListMultimap<Key, Key> advancements = Multimaps.newListMultimap(new HashMap<>(), ArrayList::new);
+        final SetMultimap<Key, Key> advancements = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
         for (int i = 0; i < advancementsSize; i++) {
             final Key key = Data.KEY.read(reader);
             final List<Key> list = Data.KEY.readList(reader);
             advancements.putAll(key, list);
         }
-
-        return IslandSnapshot.create(islandId, worldIds, islandInvites, members, permissions, advancements, region, displayName);
+        final int completedAdvancementsSize = Data.INTEGER.read(reader);
+        final SetMultimap<Key, Key> completedAdvancements = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+        for (int i = 0; i < completedAdvancementsSize; i++) {
+            final Key key = Data.KEY.read(reader);
+            final List<Key> list = Data.KEY.readList(reader);
+            completedAdvancements.putAll(key, list);
+        }
+        return IslandSnapshot.create(islandId, worldIds, islandInvites, members, permissions, advancements, completedAdvancements, region, displayName);
     }
 }

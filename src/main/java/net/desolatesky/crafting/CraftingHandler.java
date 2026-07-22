@@ -5,6 +5,7 @@ import net.desolatesky.recipe.RecipeFactory;
 import net.desolatesky.recipe.type.ShapedRecipe;
 import net.desolatesky.util.InventoryUtil;
 import net.desolatesky.util.array.ShiftedArray;
+import net.kyori.adventure.key.Key;
 import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 
@@ -109,11 +110,11 @@ public final class CraftingHandler {
         if (outputAmount <= 0) {
             return;
         }
-        final int collectedAmount = collectFunction.apply(new CollectionInput(outputItem, this.holder.currentOutputResult().amount(), currentRecipe.resultAmount()));
+        final int collectedAmount = collectFunction.apply(new CollectionInput(this.holder.currentRecipeId(), outputItem, this.holder.currentOutputResult().amount(), currentRecipe.resultAmount()));
         this.collectRecipe(recipeFactory, itemFactory, click, collectedAmount);
     }
 
-    public record CollectionInput(ItemStack resultItem, int totalMatches, int amountPerCraft) {
+    public record CollectionInput(Key recipeId, ItemStack resultItem, int totalMatches, int amountPerCraft) {
 
     }
 

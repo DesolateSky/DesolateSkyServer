@@ -1,31 +1,37 @@
 package net.desolatesky.advancement;
 
+import com.google.common.collect.Collections2;
+import net.desolatesky.advancement.impl.CollectItemAdvancement;
+import net.desolatesky.advancement.impl.CraftRecipeAdvancement;
 import net.desolatesky.advancement.impl.CreateIslandAdvancement;
+import net.desolatesky.advancement.impl.PlaceBlockAdvancement;
 import net.desolatesky.advancement.impl.RootAdvancement;
 import net.desolatesky.config.ConfigFile;
 import net.desolatesky.config.ConfigNode;
 import net.desolatesky.util.ComponentUtil;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.advancements.Advancement;
 import net.minestom.server.advancements.FrameType;
-import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public final class IslandAdvancements {
 
     public static IslandAdvancements load(ConfigFile file) {
         try {
             final ConfigNode root = file.rootNode();
-            final String name = Objects.requireNonNull(root.node("name").getString());
+            final String name = Objects.requireNonNull(root.node("group").getString());
             if (!root.hasChild("index")) {
                 throw new IllegalStateException();
             }
@@ -43,10 +49,10 @@ public final class IslandAdvancements {
                     throw new IllegalStateException("Mo advancement type found for " + name);
                 }
                 final AdvancementType type = AdvancementType.valueOf(Objects.requireNonNull(node.node("type").getString()).toUpperCase());
-                final IslandAdvancement islandAdvancement = loadAdvancement(type, Key.key(advancementString), node);
-                advancementsMap.put(islandAdvancement.key(), islandAdvancement);
+                final IslandAdvancement islandAdvancement = loadAdvancement(type, Key.key(name), Key.key(advancementString), node);
+                advancementsMap.put(islandAdvancement.id(), islandAdvancement);
                 if (type == AdvancementType.ROOT) {
-                    rootAdvancement = islandAdvancement.key();
+                    rootAdvancement = islandAdvancement.id();
                 }
             }
             if (rootAdvancement == null) {
@@ -58,7 +64,7 @@ public final class IslandAdvancements {
         }
     }
 
-    private static IslandAdvancement loadAdvancement(AdvancementType type, Key advancementId, ConfigNode node) throws SerializationException {
+    private static IslandAdvancement loadAdvancement(AdvancementType type, Key group, Key advancementId, ConfigNode node) throws SerializationException {
         final List<Key> children = new ArrayList<>();
         final List<String> childrenStrings = node.node("children").getList(String.class);
         if (childrenStrings == null) {
@@ -76,10 +82,22 @@ public final class IslandAdvancements {
         return switch (type) {
             case ROOT -> {
                 final String background = node.node("background").getString();
-                yield new RootAdvancement(title, description, icon, frameType, x, y, background, advancementId, children);
+                yield new RootAdvancement(group, advancementId, title, description, icon, frameType, x, y, background, children);
             }
             case CREATE_ISLAND ->
-                    new CreateIslandAdvancement(title, description, icon, frameType, x, y, advancementId, children);
+                    new CreateIslandAdvancement(group, advancementId, title, description, icon, frameType, x, y, children);
+            case COLLECT_ITEM -> {
+                final Key item = Key.key(Objects.requireNonNull(node.node("item").getString()));
+                yield new CollectItemAdvancement(group, advancementId, title, description, icon, frameType, x, y, children, item);
+            }
+            case PLACE_BLOCK -> {
+                final Key block = Key.key(Objects.requireNonNull(node.node("block").getString()));
+                yield new PlaceBlockAdvancement(group, advancementId, title, description, icon, frameType, x, y, children, block);
+            }
+            case CRAFT -> {
+                final Key recipe = Key.key(Objects.requireNonNull(node.node("recipe").getString()));
+                yield new CraftRecipeAdvancement(group, advancementId, title, description, icon, frameType, x, y, children, recipe);
+            }
         };
     }
 
@@ -88,7 +106,12 @@ public final class IslandAdvancements {
     private final Key rootAdvancement;
     private final @Unmodifiable Map<Key, IslandAdvancement> islandAdvancements;
 
-    public IslandAdvancements(Key key, int index, Key rootAdvancement, Map<Key, IslandAdvancement> islandAdvancements) {
+    public IslandAdvancements(
+            Key key,
+            int index,
+            Key rootAdvancement,
+            Map<Key, IslandAdvancement> islandAdvancements
+    ) {
         this.key = key;
         this.index = index;
         this.rootAdvancement = rootAdvancement;
@@ -109,5 +132,9 @@ public final class IslandAdvancements {
 
     public @Nullable IslandAdvancement getAdvancement(Key key) {
         return this.islandAdvancements.get(key);
+    }
+
+    public @Unmodifiable Collection<IslandAdvancement> getAllAdvancements() {
+        return this.islandAdvancements.values();
     }
 }

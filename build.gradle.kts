@@ -7,13 +7,14 @@ group = "net.desolatesky"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://repo.hypera.dev/snapshots/")
     maven("https://mvn.everbuild.org/public")
 }
 
 dependencies {
-    implementation("net.minestom:minestom:2026.05.17-1.21.11")
+    implementation("net.minestom:minestom:dev")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("org.slf4j:slf4j-api:2.0.17")

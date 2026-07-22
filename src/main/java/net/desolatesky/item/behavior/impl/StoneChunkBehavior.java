@@ -1,6 +1,5 @@
 package net.desolatesky.item.behavior.impl;
 
-import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.behavior.ClickBehavior;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
@@ -15,9 +14,11 @@ import org.jetbrains.annotations.Nullable;
 public final class StoneChunkBehavior implements ClickBehavior {
 
     private final double flintChance;
+    private final int itemCost;
 
-    public StoneChunkBehavior(double flintChance) {
+    public StoneChunkBehavior(double flintChance, int itemCost) {
         this.flintChance = flintChance;
+        this.itemCost = itemCost;
     }
 
     @Override
@@ -44,10 +45,12 @@ public final class StoneChunkBehavior implements ClickBehavior {
         if (clickedPos == null || clickedBlock == null || clickedBlock.isAir()) {
             return;
         }
+        if (!InventoryUtil.subtractFromHeldItem(player, hand, this.itemCost)) {
+            return;
+        };
         if (!world.rollChance(clickedPos, this.flintChance)) {
             return;
         }
-        InventoryUtil.subtractFromHeldItem(player, hand, 1);
         InventoryUtil.addItemToInventory(player, MaterialKeys.FLINT.key(), world.itemFactory());
     }
 }

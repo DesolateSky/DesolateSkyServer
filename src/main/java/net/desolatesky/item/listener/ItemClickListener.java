@@ -83,7 +83,7 @@ public final class ItemClickListener implements Listener<Event> {
             if (itemClickBehavior == null) {
                 return;
             }
-            itemClickBehavior.onRightClick(world, player, event.getHand(), heldItem, null, null);
+            itemClickBehavior.onLeftClick(world, player, event.getHand(), heldItem, null, null);
         });
         node.addListener(PlayerStartDiggingEvent.class, event -> {
             final DSPlayer player = (DSPlayer) event.getPlayer();
@@ -99,7 +99,7 @@ public final class ItemClickListener implements Listener<Event> {
             if (itemClickBehavior == null) {
                 return;
             }
-            itemClickBehavior.onRightClick(world, player, PlayerHand.MAIN, heldItem, event.getBlockPosition(), event.getBlock());
+            itemClickBehavior.onLeftClick(world, player, PlayerHand.MAIN, heldItem, event.getBlockPosition(), event.getBlock());
         });
     }
 }

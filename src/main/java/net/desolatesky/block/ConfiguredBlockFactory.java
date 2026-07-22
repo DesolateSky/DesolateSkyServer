@@ -136,7 +136,7 @@ public final class ConfiguredBlockFactory implements BlockFactory {
         this.register(BlockDefinition.builder().key(Block.CACTUS.key())
                 .defaultBlock(Block.CACTUS)
                 .settings(BlockSettings.builder().setting(BlockSetting.Type.SUPPORTED_BLOCK,
-                                SupportedBlockSetting.blocks(Direction.DOWN, false, Set.of(Block.GRASS_BLOCK.key())))
+                                SupportedBlockSetting.blocks(Direction.DOWN, true, Set.of(Block.GRASS_BLOCK.key())))
                         .build())
                 .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
                 .defineBehaviors(new CactusBehavior(30, 100))

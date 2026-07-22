@@ -45,7 +45,6 @@ public final class PlayerWorldGenerator implements Generator {
         final Point floorPoint = PlayerWorld.DEFAULT_SPAWN_POINT.sub(0, 1, 0);
         final Block grass = Objects.requireNonNull(this.blockFactory.getBlockDefinition(Block.GRASS_BLOCK)).defaultBlock();
         final Block dryGrass = Objects.requireNonNull(this.blockFactory.getBlockDefinition(BlockIds.DRY_GRASS_SEEDS)).defaultBlock();
-        unitModifier.fillHeight(Constants.WORLD_MIN_Y, Constants.WORLD_MIN_Y + 1, Block.END_PORTAL);
         for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++) {
             for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z++) {
                 final Point point = new Vec(start.x() + x, floorPoint.y(), start.z() + z);

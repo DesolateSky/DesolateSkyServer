@@ -33,8 +33,9 @@ public final class Main {
         final EntityFactory entityFactory = new TypedEntityFactory();
         final LootFactory lootFactory = new LootFactory();
         final RecipeFactory recipeFactory = new RecipeFactory(itemFactory);
+        final IslandAdvancementManager islandAdvancementManager = new IslandAdvancementManager();
         final MessageHandler messageHandler = MessageHandler.create(Path.of("messages.conf"), "/messages.conf");
-        final IslandManager islandManager = new IslandManager(islandDatabase, messageHandler);
+        final IslandManager islandManager = new IslandManager(islandDatabase, islandAdvancementManager, messageHandler);
         final WorldManager worldManager = new WorldManager(islandManager,
                 blockFactory,
                 itemFactory,
@@ -52,8 +53,7 @@ public final class Main {
                 recipeFactory,
                 islandManager,
                 worldManager,
-                new IslandAdvancementManager()
-        );
+                islandAdvancementManager);
         server.init();
         server.start();
     }

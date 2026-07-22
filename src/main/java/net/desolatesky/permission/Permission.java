@@ -6,6 +6,9 @@ public enum Permission {
     CMD_SPARK("desolatesky.command.spark"),
     CMD_GIVE("desolatesky.command.give"),
     CMD_WHITELIST("desolatesky.command.whitelist"),
+    CMD_GAMEMODE("desolatesky.command.gamemode"),
+    CMD_FLY("desolatesky.command.fly"),
+    CMD_TELEPORT("desolatesky.command.teleport"),
     ADMIN("desolatesky.admin"),
     ;
 
