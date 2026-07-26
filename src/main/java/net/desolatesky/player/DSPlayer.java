@@ -3,9 +3,11 @@ package net.desolatesky.player;
 import net.desolatesky.crafting.CraftingMenuHolder;
 import net.desolatesky.data.DataHolder;
 import net.desolatesky.lock.Lockable;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.permission.Permission;
 import net.desolatesky.recipe.type.ShapedRecipe;
 import net.desolatesky.server.DSServer;
+import net.desolatesky.util.ComponentUtil;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.pos.WorldPosition;
 import net.kyori.adventure.key.Key;
@@ -16,6 +18,7 @@ import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.player.GameProfile;
 import net.minestom.server.network.player.PlayerConnection;
+import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -25,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+@NotNullByDefault
 public final class DSPlayer extends net.minestom.server.entity.Player implements Lockable, DataHolder<DSPlayer>, CraftingMenuHolder {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -174,6 +178,18 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
 
     public DSServer server() {
         return this.server;
+    }
+
+    @Override
+    public void kick(Component message) {
+        super.kick(message);
+        DSLogger.getLogger().info(this.getUsername() + " was kicked with reason: " + ComponentUtil.serialize(message));
+    }
+
+    @Override
+    public void kick(String message) {
+        super.kick(message);
+        DSLogger.getLogger().info(this.getUsername() + " was kicked with reason: " + message);
     }
 
     @Override

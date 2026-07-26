@@ -164,7 +164,7 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
 
         final Point randPos = getRandomSpawnPoint(world, pos, randomGenerator);
         final Block randBlock = world.getBlock(randPos, Block.Getter.Condition.TYPE);
-        if (randBlock == null || !randBlock.isAir()) {
+        if (randBlock == null || !randBlock.air()) {
             return;
         }
 

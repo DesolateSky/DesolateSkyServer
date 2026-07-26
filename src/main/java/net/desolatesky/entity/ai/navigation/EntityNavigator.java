@@ -36,6 +36,9 @@ public final class EntityNavigator<T extends DSLivingEntity<T>> {
     }
 
     public void setNewTarget(@Nullable NavigationTarget<T> target) {
+        if (target != null && !target.equals(this.navigationTarget)) {
+            this.path.clear();
+        }
         this.navigationTarget = target;
         if (this.navigationTarget == null) {
             this.path.clear();
@@ -53,6 +56,7 @@ public final class EntityNavigator<T extends DSLivingEntity<T>> {
         final Point newTarget = this.navigationTarget.getTargetPosition();
         if (!newTarget.equals(this.positionTarget)) {
             this.positionTarget = newTarget;
+            this.updatePath(newTarget);
         }
         if (!this.path.isEmpty()) {
             final Point next = Pathfinding.pointFromPathPosition(this.path.peek());

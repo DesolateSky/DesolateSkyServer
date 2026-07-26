@@ -39,19 +39,17 @@ public final class PlayerChatListener implements Listener<PlayerEvent> {
             }
             final Component message = player.getDisplayName().append(Component.text(": "))
                     .append(ComponentUtil.safeParse(filteredMessage));
-            event.setFormattedMessage(message.replaceText(c -> {
-                c.matchLiteral("[item]").replacement(
-                        Component.text("[").append(
-                                        ItemUtil.getItemName(inHand)
-                                                .hoverEvent(event.getPlayer().getItemInMainHand().asHoverEvent()))
-                                .append(Component.text("]"))
-                );
-            }));
+            event.setFormattedMessage(message.replaceText(c -> c.matchLiteral("[item]").replacement(
+                    Component.text("[").append(
+                                    ItemUtil.getItemName(inHand)
+                                            .hoverEvent(event.getPlayer().getItemInMainHand().asHoverEvent()))
+                            .append(Component.text("]"))
+            )));
             DSLogger.getLogger().info(event.getPlayer().getUsername() + ": " +
                     ComponentUtil.serialize(event.getFormattedMessage()));
         });
         node.addListener(PlayerCommandEvent.class, event -> {
-            DSLogger.getLogger().info("/" + event.getPlayer().getUsername() + ": " + event.getCommand());
+            DSLogger.getLogger().info(event.getPlayer().getUsername() + ": /" + event.getCommand());
         });
     }
 

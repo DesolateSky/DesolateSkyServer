@@ -50,9 +50,9 @@ public final class Pathfinding {
     public static boolean isTraversable(Instance world, Point point) {
         final Point under = point.sub(0, 1, 0);
         final Block at = world.getBlock(point);
-        return world.getBlock(under).isSolid() &&
-                (!at.registry().blocksMotion() ||
-                !at.registry().collisionShape()
+        return world.getBlock(under).solid() &&
+                (!at.blocksMotion() ||
+                !at.collisionShape()
                         .intersectBox(point, BoundingBox.fromPoints(point, point)));
     }
 //

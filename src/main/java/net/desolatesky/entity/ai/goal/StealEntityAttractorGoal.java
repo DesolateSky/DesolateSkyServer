@@ -5,15 +5,19 @@ import net.desolatesky.block.behavior.core.VoidCoreBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
 import net.desolatesky.entity.ai.navigation.NavigationTarget;
 import net.desolatesky.entity.type.VoidEntity;
+import net.desolatesky.util.RegionUtil;
 import net.desolatesky.world.VoidWorld;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.ai.GoalSelector;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public final class StealEntityAttractorGoal<T extends VoidEntity<T>> extends GoalSelector {
 
     private boolean reachedCore = false;
+    // point for if this entity has a stolen entity attractor
+    private @Nullable Point escapePoint;
 
     private final T entity;
 
@@ -24,7 +28,7 @@ public final class StealEntityAttractorGoal<T extends VoidEntity<T>> extends Goa
 
     @Override
     public boolean shouldStart() {
-        return this.coreHasAttractor();
+        return this.coreHasAttractor() || this.entity.hasStolenAttractor();
     }
 
     @Override
@@ -39,10 +43,22 @@ public final class StealEntityAttractorGoal<T extends VoidEntity<T>> extends Goa
 
     @Override
     public void tick(long time) {
+        if (this.entity.hasStolenAttractor()) {
+            if (!(this.entity.getInstance() instanceof final VoidWorld world)) {
+                return;
+            }
+            if (this.escapePoint == null) {
+                this.escapePoint = RegionUtil.getClosestBorderPointTo(world.getRegion(), this.entity.getPosition());
+                this.escapePoint = this.escapePoint.withY(this.escapePoint.blockY());
+            }
+            this.entity.navigator().setNewTarget(NavigationTarget.createTarget(this.escapePoint, 1.5));
+            if (this.entity.navigator().reachedTarget()) {
+                this.entity.remove();
+            }
+        }
         if (this.entity.navigator().reachedTarget()) {
             this.reachedCore = true;
             this.entity.navigator().setNewTarget(null);
-            this.entity.remove();
         } else {
             if (!(this.entity.getInstance() instanceof final VoidWorld world)) {
                 return;
@@ -73,7 +89,7 @@ public final class StealEntityAttractorGoal<T extends VoidEntity<T>> extends Goa
 
     @Override
     public boolean shouldEnd() {
-        return this.reachedCore || !this.coreHasAttractor();
+        return !this.entity.hasStolenAttractor() && (this.reachedCore || !this.coreHasAttractor());
     }
 
     private boolean coreHasAttractor() {
@@ -92,5 +108,6 @@ public final class StealEntityAttractorGoal<T extends VoidEntity<T>> extends Goa
 
     @Override
     public void end() {
+        this.entity.navigator().setNewTarget(null);
     }
 }

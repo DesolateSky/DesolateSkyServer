@@ -42,7 +42,7 @@ public final class StoneChunkBehavior implements ClickBehavior {
             @Nullable Point clickedPos,
             @Nullable Block clickedBlock
     ) {
-        if (clickedPos == null || clickedBlock == null || clickedBlock.isAir()) {
+        if (clickedPos == null || clickedBlock == null || clickedBlock.air()) {
             return;
         }
         if (!InventoryUtil.subtractFromHeldItem(player, hand, this.itemCost)) {

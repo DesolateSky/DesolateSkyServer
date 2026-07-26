@@ -18,9 +18,6 @@ public final class WalkingStrategy<T extends DSLivingEntity<T>> implements Movem
     @Override
     public void moveTo(DSLivingEntity<T> entity, Point to) {
         final double speed = entity.getAttributeValue(Attribute.MOVEMENT_SPEED);
-//        final Vec vec = to.sub(entity.getPosition()).asVec().normalize()
-//                .mul(speed);
-//        entity.refreshPosition(entity.getPosition().add(vec));
          moveTowards(entity, to, speed, to);
     }
 

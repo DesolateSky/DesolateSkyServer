@@ -68,6 +68,13 @@ public abstract class VoidEntity<T extends VoidEntity<T>> extends DSLivingEntity
         this.setTeam(team);
     }
 
+    @Override
+    public void remove() {
+        super.remove();
+        if (this.stolenAttractor != null) {
+            this.stolenAttractor.remove();
+        }
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -96,5 +103,9 @@ public abstract class VoidEntity<T extends VoidEntity<T>> extends DSLivingEntity
         this.stolenAttractor.setPickable(false);
         this.stolenAttractor.setInstance(this.instance, this.position);
         this.addPassenger(this.stolenAttractor);
+    }
+
+    public boolean hasStolenAttractor() {
+        return this.stolenAttractor != null;
     }
 }

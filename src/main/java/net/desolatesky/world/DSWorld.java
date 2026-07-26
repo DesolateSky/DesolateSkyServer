@@ -267,7 +267,7 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
 
     public void breakBlock(DSPlayer player, Point blockPosition) {
         final Block blockType = this.getBlock(blockPosition, Condition.TYPE);
-        if (blockType == null || blockType.isAir()) {
+        if (blockType == null || blockType.air()) {
             return;
         }
         final Block block = this.getBlock(blockPosition);
@@ -315,7 +315,7 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
                         sectionIndex * Chunk.CHUNK_SECTION_SIZE + randY,
                         chunk.getChunkZ() * Chunk.CHUNK_SIZE_Z + randZ);
                 final Block blockType = chunk.getBlock(pos, Condition.TYPE);
-                if (blockType == null || blockType.isAir()) {
+                if (blockType == null || blockType.air()) {
                     continue;
                 }
                 final Block block = chunk.getBlock(pos);

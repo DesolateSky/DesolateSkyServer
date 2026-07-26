@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
+import net.minestom.server.entity.Player;
 import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
@@ -21,6 +22,9 @@ public final class EntityDamageListener implements Listener<Event> {
     @Override
     public void register(EventNode<Event> node) {
         node.addListener(EntityAttackEvent.class, event -> {
+            if (event.getEntity() instanceof Player && event.getTarget() instanceof Player) {
+                return;
+            }
             if (!(event.getTarget() instanceof final LivingEntity livingEntity)) {
                 return;
             }

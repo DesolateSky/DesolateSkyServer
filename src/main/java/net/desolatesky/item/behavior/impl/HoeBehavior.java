@@ -24,7 +24,7 @@ public final class HoeBehavior implements ClickBehavior {
         if (clickedBlock == null || clickedPos == null) {
             return;
         }
-        final Material material = clickedBlock.registry().material();
+        final Material material = clickedBlock.material();
         if (material == null) {
             return;
         }

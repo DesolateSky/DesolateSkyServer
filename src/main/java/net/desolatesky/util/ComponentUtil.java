@@ -1,5 +1,6 @@
 package net.desolatesky.util;
 
+import ch.qos.logback.core.rolling.SizeAndTimeBasedFileNamingAndTriggeringPolicy;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -7,7 +8,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 
 import java.util.Map;
 
@@ -28,7 +29,19 @@ public final class ComponentUtil {
             .postProcessor(component -> component.decoration(TextDecoration.ITALIC, false))
             .build();
 
-    public static final MiniMessage SAFE_MINI_MESSAGE = MiniMessage.builder(MiniMessage.Preset.FORMATTED_TEXT).build();
+    public static final MiniMessage SAFE_MINI_MESSAGE = MiniMessage.builder()
+            .tags(TagResolver.resolver(
+                    StandardTags.hoverEvent(),
+                    StandardTags.color(),
+                    StandardTags.font(),
+                    StandardTags.decorations(),
+                    StandardTags.gradient(),
+                    StandardTags.rainbow(),
+                    StandardTags.reset(),
+                    StandardTags.pride(),
+                    StandardTags.shadowColor()
+            ))
+            .build();
 
     private static Tag createTag(TextColor color) {
         return Tag.styling(color);

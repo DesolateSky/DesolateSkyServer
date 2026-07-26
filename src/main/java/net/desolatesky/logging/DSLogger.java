@@ -3,11 +3,12 @@ package net.desolatesky.logging;
 import net.desolatesky.util.DateTimeUtil;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -30,7 +31,7 @@ public final class DSLogger {
     private Level logLevel = Level.ALL;
 
     private DSLogger() {
-        this.writeExecutor.schedule(this::writeAll, 1, TimeUnit.SECONDS);
+        this.writeExecutor.scheduleAtFixedRate(this::writeAll, 1, 1, TimeUnit.SECONDS);
     }
 
     public void writeAll() {
@@ -47,13 +48,16 @@ public final class DSLogger {
     }
 
     private void writeToFile(List<Message> messages) {
+        if (messages.isEmpty()) {
+            return;
+        }
         try {
             Files.write(this.getTodaysFilePath(),
                     messages.stream().map(Message::createFormatted)
-                            .map(s -> s + "\n")
                             .toList(),
-                    StandardOpenOption.APPEND);
-        } catch (IOException e) {
+                    StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -81,7 +85,7 @@ public final class DSLogger {
 
     private static String createExceptionMessage(Throwable throwable, int depth) {
         final StringBuilder builder = new StringBuilder();
-        builder.append(throwable.getClass().getName() + ": " + throwable.getMessage());
+        builder.append(throwable.getClass().getName()).append(": ").append(throwable.getMessage());
         for (final StackTraceElement element : throwable.getStackTrace()) {
             builder.repeat("    ", depth + 1).append(element).append("\n");
         }
@@ -120,12 +124,11 @@ public final class DSLogger {
     }
 
     private static String formatMessage(String message) {
-        return DateTimeUtil.DATE_TIME_FORMATTER.format(Instant.now()) + ": " + message;
+        return DateTimeUtil.formatInstantToDateTime(Instant.now()) + ": " + message;
     }
 
-
     private Path getTodaysFilePath() {
-        final Path path = Path.of("log").resolve(DateTimeUtil.DATE_TIME_FORMATTER.format(Instant.now()) + ".log");
+        final Path path = Path.of("logs").resolve(DateTimeUtil.formatInstantToDate(Instant.now()) + ".log");
         if (!Files.exists(path)) {
             try {
                 final Path parent = path.getParent();
@@ -144,14 +147,13 @@ public final class DSLogger {
 
         public String createFormatted() {
             if (this.logLevel == Level.ALL) {
-                return DateTimeUtil.DATE_TIME_FORMATTER.format(this.instant.atZone(ZoneId.systemDefault())) +
+                return DateTimeUtil.formatInstantToDateTime(this.instant) +
                         ": " + this.message;
             }
             return "(" + this.logLevel.getLocalizedName() + ") " +
-                    DateTimeUtil.DATE_TIME_FORMATTER.format(this.instant.atZone(ZoneId.systemDefault())) +
+                    DateTimeUtil.formatInstantToDateTime(this.instant) +
                     ": " + this.message;
         }
 
     }
-
 }

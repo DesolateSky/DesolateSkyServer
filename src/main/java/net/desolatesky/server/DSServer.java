@@ -185,7 +185,7 @@ public final class DSServer {
         MinecraftServer.getTeamManager().createBuilder(Constants.VOID_TEAM_ID)
                 .collisionRule(TeamsPacket.CollisionRule.PUSH_OTHER_TEAMS)
                 .prefix(Component.text("Void").color(NamedTextColor.DARK_PURPLE))
-                .teamColor(TeamColor.BLACK)
+                .teamColor(TeamColor.DARK_PURPLE)
                 .build();
 
         ConsoleCommandHandler.startConsoleCommandHandler();

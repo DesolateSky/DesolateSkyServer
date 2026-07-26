@@ -17,7 +17,7 @@ public final class BlockUtil {
     }
 
     public static boolean isReplaceable(Block block) {
-        return block.registry().isReplaceable();
+        return block.replaceable();
     }
 
 }

@@ -5,6 +5,8 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
 import org.jetbrains.annotations.NotNullByDefault;
 
+import java.util.Objects;
+
 @NotNullByDefault
 public sealed interface NavigationTarget<T extends DSLivingEntity<T>> {
 
@@ -46,6 +48,17 @@ public sealed interface NavigationTarget<T extends DSLivingEntity<T>> {
         public boolean reachedTarget(T entity, Point target) {
             return entity.getPosition().distanceSquared(target) < this.distanceFromTargetThreshold;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof FixedTarget<?> that)) return false;
+            return Double.compare(this.distanceFromTargetThreshold, that.distanceFromTargetThreshold) == 0 && Objects.equals(this.point, that.point);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.point, this.distanceFromTargetThreshold);
+        }
     }
 
     final class EntityTarget<T extends DSLivingEntity<T>> implements NavigationTarget<T> {
@@ -71,6 +84,17 @@ public sealed interface NavigationTarget<T extends DSLivingEntity<T>> {
         @Override
         public boolean reachedTarget(T entity, Point target) {
             return entity.getPosition().distanceSquared(target) < this.distanceFromTargetThreshold;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof EntityTarget<?> that)) return false;
+            return Double.compare(this.distanceFromTargetThreshold, that.distanceFromTargetThreshold) == 0 && Objects.equals(this.entity, that.entity);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.entity, this.distanceFromTargetThreshold);
         }
     }
 }
