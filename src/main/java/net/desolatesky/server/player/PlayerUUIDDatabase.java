@@ -34,12 +34,9 @@ public final class PlayerUUIDDatabase extends SQLDatabase {
             """;
 
     private static final String SET_PLAYER_UUID_STATEMENT = """
-            INSERT INTO player_uuids (player_name, player_uuid) VALUES (?, ?)
-            ON CONFLICT(player_name) DO UPDATE SET +
-            player_uuid = ?,
-            player_name = ?
+            DELETE FROM player_uuids WHERE player_uuid = ?;
+            INSERT OR IGNORE INTO player_uuids (player_name, player_uuid) VALUES (?, ?);
             """;
-
 
     private final AsyncLoadingCache<String, UUID> uuidCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(1))
@@ -58,14 +55,22 @@ public final class PlayerUUIDDatabase extends SQLDatabase {
         if (Constants.CONSOLE_NAME.equals(username)) {
             return CompletableFuture.completedFuture(Constants.CONSOLE_UUID);
         }
-        return this.uuidCache.getIfPresent(username);
+        try {
+            return this.uuidCache.get(username);
+        } catch (Exception ignored) {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     public CompletableFuture<@Nullable String> getPlayerName(UUID playerId) {
         if (Constants.CONSOLE_UUID.equals(playerId)) {
             return CompletableFuture.completedFuture(Constants.CONSOLE_NAME);
         }
-        return this.usernameCache.getIfPresent(playerId);
+        try {
+            return this.usernameCache.get(playerId);
+        } catch (Exception ignored) {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     private UUID getPlayerUUIDNow(String username) {
@@ -101,10 +106,9 @@ public final class PlayerUUIDDatabase extends SQLDatabase {
     public CompletableFuture<Void> savePlayerUUID(String username, UUID uuid) {
         this.uuidCache.put(username, CompletableFuture.completedFuture(uuid));
         return this.executeWrite(SET_PLAYER_UUID_STATEMENT, preparedStatement -> {
-            preparedStatement.setString(1, username);
-            preparedStatement.setString(2, uuid.toString());
+            preparedStatement.setString(1, uuid.toString());
+            preparedStatement.setString(2, username);
             preparedStatement.setString(3, uuid.toString());
-            preparedStatement.setString(4, username);
             preparedStatement.executeUpdate();
         });
     }

@@ -1,5 +1,6 @@
 package net.desolatesky.command.admin;
 
+import net.desolatesky.command.console.ConsoleCommandHandler;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.definition.ItemDefinition;
 import net.desolatesky.permission.Permission;
@@ -7,7 +8,6 @@ import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.ConsoleSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentString;
@@ -48,7 +48,7 @@ public final class GiveCommand extends Command {
     }
 
     private boolean hasPermission(@Nullable CommandSender sender, @Nullable String unused) {
-        return sender instanceof ConsoleSender || (sender instanceof final DSPlayer player && player.hasPermission(Permission.CMD_GIVE));
+        return sender instanceof ConsoleCommandHandler || (sender instanceof final DSPlayer player && player.hasPermission(Permission.CMD_GIVE));
     }
 
     private void onGive(CommandSender sender, CommandContext context) {

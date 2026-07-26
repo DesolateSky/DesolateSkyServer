@@ -14,12 +14,12 @@ public final class DateTimeUtil {
         long secondsLeft = duration.getSeconds();
         final StringBuilder builder = new StringBuilder();
         if (secondsLeft > Constants.SECONDS_PER_DAY) {
-            builder.append(secondsLeft / Constants.SECONDS_PER_HOUR).append(" days");
+            builder.append(secondsLeft / Constants.SECONDS_PER_DAY).append(" days");
             secondsLeft %= Constants.SECONDS_PER_DAY;
         }
         if (secondsLeft > Constants.SECONDS_PER_HOUR) {
             appendCommaIfNeeded(builder);
-            builder.append(secondsLeft / Constants.SECONDS_PER_DAY).append(" hours");
+            builder.append(secondsLeft / Constants.SECONDS_PER_HOUR).append(" hours");
             secondsLeft %= Constants.SECONDS_PER_HOUR;
         }
         if (secondsLeft > Constants.SECONDS_PER_MINUTE) {

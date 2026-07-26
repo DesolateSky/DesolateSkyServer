@@ -1,11 +1,11 @@
 package net.desolatesky.command.admin;
 
+import net.desolatesky.command.console.ConsoleCommandHandler;
 import net.desolatesky.logging.DSLogger;
 import net.desolatesky.permission.Permission;
 import net.desolatesky.player.DSPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.minestom.server.command.ConsoleSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentType;
@@ -33,7 +33,7 @@ public final class LogLevelCommand extends Command {
         });
 
         this.setCondition((executor, _) -> {
-            if (executor instanceof ConsoleSender) {
+            if (executor instanceof ConsoleCommandHandler) {
                 return true;
             }
             if (!(executor instanceof final DSPlayer player)) {

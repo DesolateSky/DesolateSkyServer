@@ -1,12 +1,12 @@
 package net.desolatesky.command.admin;
 
+import net.desolatesky.command.console.ConsoleCommandHandler;
 import net.desolatesky.permission.Permission;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.whitelist.PlayerWhitelist;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.ConsoleSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentString;
@@ -40,7 +40,7 @@ public final class WhitelistCommand extends Command {
     }
 
     private boolean hasPermission(@Nullable CommandSender sender, @Nullable String unused) {
-        return sender instanceof ConsoleSender || (sender instanceof final DSPlayer player && player.hasPermission(Permission.CMD_WHITELIST));
+        return sender instanceof ConsoleCommandHandler || (sender instanceof final DSPlayer player && player.hasPermission(Permission.CMD_WHITELIST));
     }
 
     private void onAdd(CommandSender sender, CommandContext context) {

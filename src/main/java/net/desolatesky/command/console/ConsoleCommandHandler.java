@@ -1,12 +1,20 @@
 package net.desolatesky.command.console;
 
 import net.desolatesky.logging.DSLogger;
+import net.desolatesky.util.ComponentUtil;
+import net.desolatesky.util.Constants;
+import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.command.CommandSender;
+import net.minestom.server.tag.TagHandler;
+import org.jetbrains.annotations.NotNullByDefault;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public final class ConsoleCommandHandler extends Thread {
+@NotNullByDefault
+public final class ConsoleCommandHandler extends Thread implements CommandSender {
 
     private static ConsoleCommandHandler instance;
 
@@ -43,10 +51,25 @@ public final class ConsoleCommandHandler extends Thread {
                     command = command.substring(1);
                 }
                 DSLogger.getLogger().info("Read command: %s".formatted(command));
-                MinecraftServer.getCommandManager().executeServerCommand(command);
+                MinecraftServer.getCommandManager().execute(this, command);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public Identity identity() {
+        return Identity.identity(Constants.CONSOLE_UUID);
+    }
+
+    @Override
+    public TagHandler tagHandler() {
+        return TagHandler.newHandler();
+    }
+
+    @Override
+    public void sendMessage(Component component) {
+        DSLogger.getLogger().info(ComponentUtil.serialize(component));
     }
 }

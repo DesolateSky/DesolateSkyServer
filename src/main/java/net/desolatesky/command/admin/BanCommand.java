@@ -1,5 +1,6 @@
 package net.desolatesky.command.admin;
 
+import net.desolatesky.command.console.ConsoleCommandHandler;
 import net.desolatesky.config.ConfigFile;
 import net.desolatesky.permission.Permission;
 import net.desolatesky.player.DSPlayer;
@@ -9,7 +10,6 @@ import net.desolatesky.util.DateTimeUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.command.ConsoleSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentLiteral;
@@ -51,7 +51,7 @@ public final class BanCommand extends Command {
         });
 
         this.setCondition((executor, _) -> {
-            if (executor instanceof ConsoleSender) {
+            if (executor instanceof ConsoleCommandHandler) {
                 return true;
             }
             if (!(executor instanceof final DSPlayer player)) {
@@ -73,10 +73,16 @@ public final class BanCommand extends Command {
             final long seconds = context.get(this.secondsArgument);
             final String[] reasonArray = context.get(this.reasonArgument);
             final String reason = String.join(" ", reasonArray);
-            final Duration duration = Duration.ofDays(days)
-                    .plusHours(hours)
-                    .plusMillis(minutes)
-                    .plusSeconds(seconds);
+
+            Duration duration;
+            try {
+                duration = Duration.ofDays(days)
+                        .plusHours(hours)
+                        .plusMinutes(minutes)
+                        .plusSeconds(seconds);
+            } catch (ArithmeticException e) {
+                duration = Duration.between(Instant.now(), Instant.MAX);
+            }
             final Instant expiration = Instant.now().plus(duration);
             final UUID bannerId;
             final String bannerName;
@@ -87,9 +93,10 @@ public final class BanCommand extends Command {
                 bannerId = Constants.UUID_ZERO;
                 bannerName = Constants.CONSOLE_NAME;
             }
+            final Duration finalDuration = duration;
             this.serverDatabases.banDatabase().saveBan(playerId, expiration, reason, bannerId)
                     .thenAccept(ban -> {
-                        executor.sendMessage("You banned " + name + " for " + DateTimeUtil.durationToString(duration) + ".");
+                        executor.sendMessage("You banned " + name + " for " + DateTimeUtil.durationToString(finalDuration) + ".");
                         final Player onlinePlayer = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(playerId);
                         if (onlinePlayer == null) {
                             return;

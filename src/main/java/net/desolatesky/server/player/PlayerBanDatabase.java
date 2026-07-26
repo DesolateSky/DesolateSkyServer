@@ -3,6 +3,7 @@ package net.desolatesky.server.player;
 import net.desolatesky.data.SQLDatabase;
 import net.desolatesky.util.DateTimeUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.minestom.server.entity.Player;
 import org.jspecify.annotations.Nullable;
 
@@ -33,7 +34,7 @@ public final class PlayerBanDatabase extends SQLDatabase {
             WHERE
             banned_uuid = ? AND
             active = 1 AND
-            CURRENT_DATE < expiration
+            ? < player_bans.expiration
             ORDER BY expiration DESC;
             """;
 
@@ -46,7 +47,7 @@ public final class PlayerBanDatabase extends SQLDatabase {
             UPDATE player_bans
             SET active = false,
             unbanner = ?
-            WHERE player_uuid = ?
+            WHERE banned_uuid = ?
             AND active = true
             """;
 
@@ -57,6 +58,7 @@ public final class PlayerBanDatabase extends SQLDatabase {
     public @Nullable Ban getPlayerBanNow(UUID id) {
         return this.executeReadNow(GET_PLAYER_BAN_STATEMENT, preparedStatement -> {
             preparedStatement.setString(1, id.toString());
+            preparedStatement.setLong(2, Instant.now().getEpochSecond());
             try (final ResultSet results = preparedStatement.executeQuery()) {
                 if (!results.next()) {
                     return null;
@@ -74,7 +76,7 @@ public final class PlayerBanDatabase extends SQLDatabase {
             preparedStatement.setString(1, banned.toString());
             preparedStatement.setLong(2, expiration.getEpochSecond());
             preparedStatement.setString(3, reason);
-            preparedStatement.setString(3, banner.toString());
+            preparedStatement.setString(4, banner.toString());
             preparedStatement.executeUpdate();
             return new Ban(banned, expiration, reason, banner);
         });
@@ -102,7 +104,9 @@ public final class PlayerBanDatabase extends SQLDatabase {
                     .append(net.kyori.adventure.text.Component.text("Ban duration: " + DateTimeUtil.durationToString(Duration.between(Instant.now(), this.expiration()))))
                     .appendNewline()
                     .appendNewline()
-                    .append(Component.text("To appeal this ban, create a ticket on the discord server: " + discord)));
+                    .append(Component.text("To appeal this ban, create a ticket on the discord server: ")
+                            .append(Component.text(discord).clickEvent(ClickEvent.openUrl(discord))))
+            );
         }
     }
 }

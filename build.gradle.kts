@@ -25,6 +25,8 @@ dependencies {
     implementation("org.joml:joml:1.10.8")
     implementation("de.bsommerfeld.pathetic:engine:5.5.2")
     implementation("de.bsommerfeld.pathetic:api:5.5.2")
+    implementation("org.xerial:sqlite-jdbc:3.53.2.0")
+    implementation("org.ahocorasick:ahocorasick:0.6.3") // https://github.com/robert-bor/aho-corasick
 }
 
 java {

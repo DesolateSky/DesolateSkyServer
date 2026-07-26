@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -47,7 +48,11 @@ public final class DSLogger {
 
     private void writeToFile(List<Message> messages) {
         try {
-            Files.write(this.getTodaysFilePath(), messages.stream().map(Message::createFormatted).toList(), StandardOpenOption.APPEND);
+            Files.write(this.getTodaysFilePath(),
+                    messages.stream().map(Message::createFormatted)
+                            .map(s -> s + "\n")
+                            .toList(),
+                    StandardOpenOption.APPEND);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +63,7 @@ public final class DSLogger {
     }
 
     public void log(String text, Level level) {
-        if (this.logLevel.intValue() < level.intValue()) {
+        if (this.logLevel.intValue() > level.intValue()) {
             return;
         }
         final Message message = new Message(Instant.now(), text, level);
@@ -76,8 +81,9 @@ public final class DSLogger {
 
     private static String createExceptionMessage(Throwable throwable, int depth) {
         final StringBuilder builder = new StringBuilder();
+        builder.append(throwable.getClass().getName() + ": " + throwable.getMessage());
         for (final StackTraceElement element : throwable.getStackTrace()) {
-            builder.repeat("    ", depth).append(element);
+            builder.repeat("    ", depth + 1).append(element).append("\n");
         }
         for (final Throwable suppressed : throwable.getSuppressed()) {
             createExceptionMessage(suppressed, depth + 1);
@@ -138,12 +144,12 @@ public final class DSLogger {
 
         public String createFormatted() {
             if (this.logLevel == Level.ALL) {
-                return DateTimeUtil.DATE_TIME_FORMATTER.format(this.instant) +
-                        ": " + this.message + "\n";
+                return DateTimeUtil.DATE_TIME_FORMATTER.format(this.instant.atZone(ZoneId.systemDefault())) +
+                        ": " + this.message;
             }
             return "(" + this.logLevel.getLocalizedName() + ") " +
-                    DateTimeUtil.DATE_TIME_FORMATTER.format(this.instant) +
-                    ": " + this.message + "\n";
+                    DateTimeUtil.DATE_TIME_FORMATTER.format(this.instant.atZone(ZoneId.systemDefault())) +
+                    ": " + this.message;
         }
 
     }
