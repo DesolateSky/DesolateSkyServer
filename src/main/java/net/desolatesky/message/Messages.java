@@ -63,5 +63,6 @@ public final class Messages {
     public static final MessageKey TUTORIAL = new MessageKey("tutorial");
     public static final MessageKey STORY = new MessageKey("story");
     public static final MessageKey RULES = new MessageKey("rules");
+    public static final MessageKey PLUGIN_INFO = new MessageKey("pl-message");
 
 }

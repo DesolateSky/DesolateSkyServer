@@ -25,6 +25,7 @@ import net.desolatesky.command.admin.StopCommand;
 import net.desolatesky.command.admin.TpCommand;
 import net.desolatesky.command.admin.WhitelistCommand;
 import net.desolatesky.command.console.ConsoleCommandHandler;
+import net.desolatesky.command.informational.PluginsCommand;
 import net.desolatesky.command.informational.RulesCommand;
 import net.desolatesky.command.informational.StoryCommand;
 import net.desolatesky.command.informational.TutorialCommand;
@@ -36,6 +37,7 @@ import net.desolatesky.entity.EntityManager;
 import net.desolatesky.entity.listener.EntityDamageListener;
 import net.desolatesky.entity.listener.ItemPickupListener;
 import net.desolatesky.entity.listener.ItemThrowListener;
+import net.desolatesky.island.Island;
 import net.desolatesky.island.IslandManager;
 import net.desolatesky.island.IslandSnapshot;
 import net.desolatesky.item.ItemFactory;
@@ -90,6 +92,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -191,7 +194,6 @@ public final class DSServer {
         this.setupPermissions();
         this.registerCommands();
 
-
         MinecraftServer.getTeamManager().createBuilder(Constants.VOID_TEAM_ID)
                 .collisionRule(TeamsPacket.CollisionRule.PUSH_OTHER_TEAMS)
                 .prefix(Component.text("Void").color(NamedTextColor.DARK_PURPLE))
@@ -223,6 +225,17 @@ public final class DSServer {
 
             Audiences.players().sendPlayerListHeaderAndFooter(header, Component.empty());
         }, TaskSchedule.tick(10), TaskSchedule.tick(10));
+
+        MinecraftServer.getSchedulerManager().scheduleTask(() -> {
+            DSLogger.getLogger().info("Beginning save of data");
+            for (final Player player : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
+                this.playerDatabase.saveData(player.getUuid(), ((DSPlayer) player).createSnapshot());
+            }
+            for (final Island island : this.islandManager.getAll()) {
+                this.islandDatabase.saveData(island.islandId(), island.createSnapshot());
+            }
+            DSLogger.getLogger().info("Ending save of data");
+        }, TaskSchedule.duration(Duration.ofMinutes(3)), TaskSchedule.duration(Duration.ofMinutes(3)));
     }
 
     public IslandManager islandManager() {
@@ -361,6 +374,7 @@ public final class DSServer {
         commandManager.register(new StoryCommand(this.messageHandler));
         commandManager.register(new RulesCommand(this.messageHandler));
         commandManager.register(new AfkCommand());
+        commandManager.register(new PluginsCommand(this.messageHandler));
     }
 
     private void setupPermissions() {

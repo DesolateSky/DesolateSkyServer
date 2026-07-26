@@ -14,6 +14,7 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.inventory.InventoryClickEvent;
+import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.trait.InventoryEvent;
 import net.minestom.server.inventory.AbstractInventory;
@@ -38,6 +39,16 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
     public void register(EventNode<InventoryEvent> node) {
         this.registerPreClickEventHandler(node);
         this.registerInventoryClickHandler(node);
+
+        node.addListener(InventoryCloseEvent.class, event -> {
+           if (!(event.getInventory() instanceof final CraftingInventory craftingInventory)) {
+               return;
+           }
+           final DSPlayer player = (DSPlayer) event.getPlayer();
+           for (final ItemStack itemStack : craftingInventory.getItemStacks()) {
+               InventoryUtil.addItemToInventory(player, itemStack);
+           }
+        });
     }
 
     private void registerPreClickEventHandler(EventNode<InventoryEvent> node) {
@@ -55,7 +66,7 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
             if (!(InventoryUtil.getClickedInventory(eventInventory, playerInventory, click) instanceof final CraftingInventory craftingInventory)) {
                 return;
             }
-            final boolean cancel = this.handlePreClick(player, craftingInventory.craftingHandler(), click);
+            final boolean cancel = this.handlePreClick(event, player, craftingInventory.craftingHandler(), click);
             if (cancel) {
                 event.setCancelled(true);
             }
@@ -79,11 +90,11 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
     }
 
     private void handlePlayerInventoryPreClick(InventoryPreClickEvent event, DSPlayer player) {
-        if (player.getOpenInventory() != null) {
+        if (!(player.getOpenInventory() instanceof CraftingInventory)) {
             return;
         }
         final CraftingHandler craftingHandler = createPlayerInventoryCraftingHandler(player);
-        final boolean cancel = this.handlePreClick(player, craftingHandler, event.getClick());
+        final boolean cancel = this.handlePreClick(event, player, craftingHandler, event.getClick());
         if (cancel) {
             event.setCancelled(true);
         }
@@ -104,7 +115,10 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
 
     private static final TransactionOption<ItemStack> TEST_TRANSACTION = (inventory, result, itemChangesMap) -> result;
 
-    private boolean handlePreClick(DSPlayer player, CraftingHandler craftingHandler, Click click) {
+    private boolean handlePreClick(InventoryPreClickEvent event, DSPlayer player, CraftingHandler craftingHandler, Click click) {
+        if (player.getOpenInventory() instanceof CraftingInventory && InventoryUtil.isShiftClick(event.getClick())) {
+            return true;
+        }
         final int slot = click.slot();
         if (!craftingHandler.isOutputSlot(slot)) {
             return false;
