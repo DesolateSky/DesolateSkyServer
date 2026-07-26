@@ -9,6 +9,7 @@ import net.desolatesky.server.DSServer;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.pos.WorldPosition;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.minestom.server.entity.attribute.Attribute;
@@ -71,6 +72,15 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
             return false;
         }
         return this.user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+    }
+
+    @Override
+    public Component getDisplayName() {
+        final Component display = super.getDisplayName();
+        if (display == null) {
+            return Component.text(this.getUsername());
+        }
+        return display;
     }
 
     public boolean hasPermission(Permission permission) {

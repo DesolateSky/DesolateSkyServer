@@ -2,15 +2,13 @@ package net.desolatesky.world;
 
 import net.desolatesky.block.BlockFactory;
 import net.desolatesky.breaking.AdminBreakingManager;
-import net.desolatesky.breaking.BreakingManager;
-import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.island.Island;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.loot.LootFactory;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.recipe.RecipeFactory;
 import net.desolatesky.util.Constants;
-import net.desolatesky.world.biome.Biomes;
 import net.desolatesky.world.region.Region;
 import net.desolatesky.world.region.SquareRegion;
 import net.kyori.adventure.key.Key;
@@ -18,21 +16,14 @@ import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
-import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.WorldBorder;
-import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.generator.Generator;
-import net.minestom.server.network.packet.server.play.WorldBorderSizePacket;
-import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.nio.file.Path;
 import java.util.SplittableRandom;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
@@ -40,6 +31,7 @@ import java.util.random.RandomGenerator;
 public final class VoidWorld extends DSWorld implements IslandWorld {
 
     public static final Point SPAWN_POINT = new BlockVec(0, 0, 0);
+    public static final Point VOID_CORE_POS = SPAWN_POINT.sub(0, 1, 0);
 
     private static final double RADIUS = 7;
     private static final RandomGenerator RANDOM_GENERATOR = new SplittableRandom(0);
@@ -51,7 +43,7 @@ public final class VoidWorld extends DSWorld implements IslandWorld {
             RandomGenerator randomGenerator,
             BlockFactory blockFactory,
             ItemFactory itemFactory,
-            EntityFactory entityFactory,
+            EntityManager entityFactory,
             LootFactory lootFactory,
             RecipeFactory recipeFactory,
             Path worldFolder,
@@ -131,5 +123,13 @@ public final class VoidWorld extends DSWorld implements IslandWorld {
     @Override
     public WorldType worldType() {
         return WorldType.VOID;
+    }
+
+    public Block getVoidCore() {
+        return this.getBlock(this.getVoidCorePosition());
+    }
+
+    public Point getVoidCorePosition() {
+        return VOID_CORE_POS;
     }
 }

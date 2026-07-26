@@ -3,7 +3,7 @@ package net.desolatesky.pathfinding;
 import net.desolatesky.world.DSWorld;
 import de.bsommerfeld.pathetic.api.pathing.context.EnvironmentContext;
 
-public class WorldPathfindingContext implements EnvironmentContext {
+public final class WorldPathfindingContext implements EnvironmentContext {
 
     private final DSWorld world;
 

@@ -4,7 +4,7 @@ import net.desolatesky.data.definition.DataDefinition;
 import net.desolatesky.data.reader.DataReader;
 import net.desolatesky.data.type.Data;
 import net.desolatesky.data.writer.DataWriter;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.player.DSPlayerData;
 import net.kyori.adventure.nbt.TagStringIO;
 import net.minestom.server.codec.Transcoder;
@@ -41,7 +41,7 @@ public final class PlayerDataDefinitionV1 extends DataDefinition<DSPlayerData> {
                     try {
                         return TagStringIO.tagStringIO().asString(tag);
                     } catch (IOException e) {
-                        LoggerUtil.logException(this.getClass(), e);
+                        DSLogger.getLogger().severe(e);
                         return null;
                     }
                 })

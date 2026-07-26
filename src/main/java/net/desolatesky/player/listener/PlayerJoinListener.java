@@ -1,6 +1,7 @@
 package net.desolatesky.player.listener;
 
 import net.desolatesky.Listener;
+import net.desolatesky.config.ConfigFile;
 import net.desolatesky.data.FileDatabase;
 import net.desolatesky.island.Island;
 import net.desolatesky.island.IslandManager;
@@ -8,11 +9,13 @@ import net.desolatesky.island.IslandSnapshot;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.ItemIds;
 import net.desolatesky.item.definition.ItemDefinition;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.DSPlayerData;
+import net.desolatesky.server.ServerDatabases;
+import net.desolatesky.server.player.PlayerBanDatabase;
 import net.desolatesky.util.InventoryUtil;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.IslandWorld;
@@ -26,32 +29,39 @@ import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import org.jetbrains.annotations.NotNullByDefault;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @NotNullByDefault
 public class PlayerJoinListener implements Listener<PlayerEvent> {
 
+    private final ServerDatabases serverDatabases;
     private final FileDatabase<DSPlayerData> playerDatabase;
     private final FileDatabase<IslandSnapshot> islandDatabase;
     private final WorldManager worldManager;
     private final IslandManager islandManager;
     private final ItemFactory itemFactory;
     private final MessageHandler messageHandler;
+    private final ConfigFile serverConfig;
 
     public PlayerJoinListener(
+            ServerDatabases serverDatabases,
             FileDatabase<DSPlayerData> playerDatabase,
             FileDatabase<IslandSnapshot> islandDatabase,
             WorldManager worldManager,
             IslandManager islandManager,
             ItemFactory itemFactory,
-            MessageHandler messageHandler
+            MessageHandler messageHandler,
+            ConfigFile serverConfig
     ) {
+        this.serverDatabases = serverDatabases;
         this.playerDatabase = playerDatabase;
         this.islandDatabase = islandDatabase;
         this.worldManager = worldManager;
         this.islandManager = islandManager;
         this.itemFactory = itemFactory;
         this.messageHandler = messageHandler;
+        this.serverConfig = serverConfig;
     }
 
     @Override
@@ -67,6 +77,14 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
             if (!(event.getPlayer() instanceof final DSPlayer player)) {
                 return;
             }
+            final PlayerBanDatabase.Ban ban = this.serverDatabases.banDatabase().getPlayerBanNow(player.getUuid());
+            if (ban != null) {
+                final String bannerName = this.serverDatabases.playerUUIDDatabase().getPlayerName(ban.bannerUuid()).join();
+                final String discord = Objects.requireNonNullElse(this.serverConfig.rootNode().node("discord").getString(), "https://discord.gg/uYqyQ6NWwJ");
+                ban.kick(player, bannerName, discord);
+                return;
+            }
+            this.serverDatabases.playerUUIDDatabase().savePlayerUUID(player.getUsername(), player.getUuid());
             final WorldPosition logoutPos = player.getLogoutPos();
             DSWorld world = null;
             if (logoutPos != null) {
@@ -134,7 +152,7 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
     private void registerDisconnect(EventNode<PlayerEvent> eventHandler) {
         eventHandler.addListener(PlayerDisconnectEvent.class, event -> {
             final DSPlayer player = (DSPlayer) event.getPlayer();
-            LoggerUtil.info(this.getClass(), "Player left: " + player.getUsername());
+            DSLogger.getLogger().info("Player left: " + player.getUsername());
             player.setLogoutPos(player.getWorldPosition());
             this.playerDatabase.saveData(player.getUuid(), player.createSnapshot());
             final UUID islandID = player.getIslandId();

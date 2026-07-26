@@ -17,4 +17,8 @@ public final class PathPoint implements NavigationPoint {
     public boolean isTraversable() {
         return this.traversable;
     }
+
+    public Instance instance() {
+        return this.instance;
+    }
 }

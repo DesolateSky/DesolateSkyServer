@@ -5,10 +5,9 @@ import net.kyori.adventure.key.Key;
 import net.minestom.server.entity.Entity;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
-public interface EntityFactory {
+public interface EntityManager {
 
     @Nullable IslandEntity createEntity(Key entityId, Island island, Consumer<Entity> tagApplier);
 

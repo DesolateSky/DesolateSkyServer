@@ -1,8 +1,7 @@
 package net.desolatesky.command.island;
 
-import net.desolatesky.island.Island;
 import net.desolatesky.island.IslandManager;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
@@ -18,8 +17,6 @@ import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.Chunk;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -111,9 +108,9 @@ public final class IslandCommand extends Command {
                     if (error != null) {
                         this.messageHandler.sendMessage(player, Messages.ISLAND_LOAD_FAILED, Map.of("error-code", "exception-thrown"));
                         if (error instanceof final CompletionException completionException) {
-                            LoggerUtil.logException(this.getClass(), completionException.getCause());
+                            DSLogger.getLogger().severe(completionException.getCause());
                         } else {
-                            LoggerUtil.logException(this.getClass(), error);
+                            DSLogger.getLogger().severe(error);
                         }
                     }
                 });

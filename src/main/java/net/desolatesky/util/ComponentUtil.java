@@ -7,6 +7,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.Map;
 
@@ -27,12 +28,22 @@ public final class ComponentUtil {
             .postProcessor(component -> component.decoration(TextDecoration.ITALIC, false))
             .build();
 
+    public static final MiniMessage SAFE_MINI_MESSAGE = MiniMessage.builder(MiniMessage.Preset.FORMATTED_TEXT).build();
+
     private static Tag createTag(TextColor color) {
         return Tag.styling(color);
     }
 
     public static Component parse(String text) {
         return MINI_MESSAGE.deserialize(text);
+    }
+
+    public static Component safeParse(String text) {
+        return SAFE_MINI_MESSAGE.deserialize(text);
+    }
+
+    public static String serialize(Component component) {
+        return MINI_MESSAGE.serialize(component);
     }
 
     public static Component replaceText(Component component, Map<String, String> replacements) {

@@ -1,6 +1,6 @@
 package net.desolatesky.command.console;
 
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.minestom.server.MinecraftServer;
 
 import java.io.BufferedReader;
@@ -42,7 +42,7 @@ public final class ConsoleCommandHandler extends Thread {
                 if (command.startsWith("/")) {
                     command = command.substring(1);
                 }
-                LoggerUtil.info(this.getClass(), "Read command: %s".formatted(command));
+                DSLogger.getLogger().info("Read command: %s".formatted(command));
                 MinecraftServer.getCommandManager().executeServerCommand(command);
             }
         } catch (Exception e) {

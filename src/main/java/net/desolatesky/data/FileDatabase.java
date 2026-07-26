@@ -4,7 +4,7 @@ import net.desolatesky.data.definition.DataTranslator;
 import net.desolatesky.data.reader.DataReader;
 import net.desolatesky.data.reader.InputStreamReader;
 import net.desolatesky.data.writer.DataWriter;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
@@ -54,10 +54,10 @@ public class FileDatabase<D> {
                 Files.copy(tempPath, filePath);
                 Files.delete(tempPath);
             } catch (IOException e) {
-                LoggerUtil.logException(this.getClass(), e);
+                DSLogger.getLogger().severe(e);
             }
         } catch (IOException e) {
-            LoggerUtil.logException(this.getClass(), e);
+            DSLogger.getLogger().severe(e);
         }
     }
 
@@ -78,7 +78,7 @@ public class FileDatabase<D> {
             final DataReader reader = new InputStreamReader(new ByteArrayInputStream(data));
             return this.dataTranslator.read(reader);
         } catch (IOException e) {
-            LoggerUtil.logException(this.getClass(), e);
+            DSLogger.getLogger().severe(e);
             return null;
         }
     }

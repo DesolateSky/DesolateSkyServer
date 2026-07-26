@@ -4,12 +4,11 @@ import net.desolatesky.data.definition.DataDefinition;
 import net.desolatesky.data.reader.DataReader;
 import net.desolatesky.data.type.Data;
 import net.desolatesky.data.writer.DataWriter;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.player.DSPlayerData;
 import net.desolatesky.world.pos.WorldPosition;
 import net.kyori.adventure.nbt.TagStringIO;
 import net.minestom.server.codec.Transcoder;
-import net.minestom.server.coordinate.Point;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +37,7 @@ public final class PlayerDataDefinitionV2 extends DataDefinition<DSPlayerData> {
                     try {
                         return TagStringIO.tagStringIO().asString(tag);
                     } catch (IOException e) {
-                        LoggerUtil.logException(this.getClass(), e);
+                        DSLogger.getLogger().severe(e);
                         return null;
                     }
                 })

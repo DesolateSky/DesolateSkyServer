@@ -2,8 +2,7 @@ package net.desolatesky.world;
 
 import net.desolatesky.block.BlockFactory;
 import net.desolatesky.breaking.AdminBreakingManager;
-import net.desolatesky.breaking.BreakingManager;
-import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.loot.LootFactory;
 import net.desolatesky.player.DSPlayer;
@@ -16,12 +15,8 @@ import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
-import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.WorldBorder;
-import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.generator.Generator;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNullByDefault;
@@ -48,7 +43,7 @@ public final class LobbyWorld extends DSWorld {
             RandomGenerator randomGenerator,
             BlockFactory blockFactory,
             ItemFactory itemFactory,
-            EntityFactory entityFactory,
+            EntityManager entityFactory,
             LootFactory lootFactory,
             RecipeFactory recipeFactory,
             RegistryKey<DimensionType> dimensionType,

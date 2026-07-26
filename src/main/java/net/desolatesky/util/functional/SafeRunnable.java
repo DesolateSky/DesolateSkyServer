@@ -1,4 +1,4 @@
-package net.desolatesky.util;
+package net.desolatesky.util.functional;
 
 public interface SafeRunnable<E extends Throwable> {
 

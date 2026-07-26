@@ -1,6 +1,6 @@
 package net.desolatesky.message;
 
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.entity.Player;
 
@@ -21,7 +21,7 @@ public final class EmptyMessage implements Message {
 
     @Override
     public void sendTo(Player player) {
-        LoggerUtil.info(this.getClass(), "No message (%s) found sending to player (%s)".formatted(this.id, player.getName()));
+        DSLogger.getLogger().config("No message (%s) found sending to player (%s)".formatted(this.id, player.getName()));
     }
 
     @Override

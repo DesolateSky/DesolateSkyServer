@@ -2,7 +2,7 @@ package net.desolatesky.world;
 
 import net.desolatesky.block.BlockFactory;
 import net.desolatesky.breaking.ConfiguredBreakingManager;
-import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.island.Island;
 import net.desolatesky.island.permission.IslandPermission;
 import net.desolatesky.item.ItemFactory;
@@ -37,7 +37,7 @@ public final class PlayerWorld extends DSWorld implements IslandWorld {
             RandomGenerator randomGenerator,
             BlockFactory blockFactory,
             ItemFactory itemFactory,
-            EntityFactory entityFactory,
+            EntityManager entityFactory,
             LootFactory lootFactory,
             RecipeFactory recipeFactory,
             RegistryKey<DimensionType> dimensionType,

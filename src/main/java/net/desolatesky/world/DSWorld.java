@@ -10,7 +10,7 @@ import net.desolatesky.block.definition.BlockDefinition;
 import net.desolatesky.block.setting.BlockSetting;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.breaking.listener.BreakingListener;
-import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.loot.LootFactory;
 import net.desolatesky.player.DSPlayer;
@@ -39,7 +39,10 @@ import net.minestom.server.utils.Direction;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.SequencedSet;
@@ -48,13 +51,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
+import java.util.stream.Stream;
 
 public abstract sealed class DSWorld extends InstanceContainer permits PlayerWorld, LobbyWorld, VoidWorld {
 
     protected final RandomGenerator randomGenerator;
     protected final BlockFactory blockFactory;
     protected final ItemFactory itemFactory;
-    protected final EntityFactory entityFactory;
+    protected final EntityManager entityFactory;
     protected final LootFactory lootFactory;
     protected final RecipeFactory recipeFactory;
     protected final Map<Long, SequencedSet<Point>> scheduledBlockUpdates = new ConcurrentHashMap<>();
@@ -68,7 +72,7 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
             RandomGenerator randomGenerator,
             BlockFactory blockFactory,
             ItemFactory itemFactory,
-            EntityFactory entityFactory,
+            EntityManager entityFactory,
             LootFactory lootFactory,
             RecipeFactory recipeFactory,
             BreakingManager breakingManager,
@@ -87,12 +91,39 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
         this.breakingManager = breakingManager;
         this.randomTickCount = randomTickCount;
         this.worldFolder = worldFolder;
+        this.migrateWorld(this.worldFolder);
         this.setGenerator(generator);
         this.setChunkSupplier(LightingChunk::new);
-//        this.setChunkLoader(new AnvilLoader(worldFolder, this.getDimensionType().key()));
-        this.setChunkLoader(new AnvilLoader(worldFolder));
+        this.setChunkLoader(new AnvilLoader(worldFolder, this.getDimensionType().key()));
+//        this.setChunkLoader(new AnvilLoader(worldFolder));
         this.enableAutoChunkLoad(true);
         this.initialize();
+    }
+
+    private void migrateWorld(Path worldFolder) {
+        if (!Files.exists(worldFolder)) {
+            return;
+        }
+        if (Files.exists(worldFolder.resolve("dimensions"))) {
+            return;
+        }
+        final Path newPath = worldFolder.resolve("dimensions")
+                .resolve(this.getDimensionType().key().namespace())
+                .resolve(this.getDimensionType().key().value())
+                .resolve("region");
+        try (final Stream<Path> stream = Files.walk(worldFolder)) {
+            Files.createDirectories(newPath);
+            stream.filter(Files::isRegularFile)
+                    .forEach(p -> {
+                        try {
+                            Files.move(p, newPath.resolve(p.getFileName()), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -338,7 +369,7 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
         return this.itemFactory;
     }
 
-    public EntityFactory entityFactory() {
+    public EntityManager entityFactory() {
         return this.entityFactory;
     }
 

@@ -1,7 +1,7 @@
 package net.desolatesky.world;
 
 import net.desolatesky.block.BlockFactory;
-import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.island.IslandManager;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.lock.Lockable;
@@ -10,7 +10,6 @@ import net.desolatesky.recipe.RecipeFactory;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.world.DimensionType;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
@@ -34,7 +33,7 @@ public final class WorldManager implements Lockable {
     private final IslandManager islandManager;
     private final BlockFactory blockFactory;
     private final ItemFactory itemFactory;
-    private final EntityFactory entityFactory;
+    private final EntityManager entityFactory;
     private final LootFactory lootFactory;
     private final RecipeFactory recipeFactory;
 
@@ -42,7 +41,7 @@ public final class WorldManager implements Lockable {
             IslandManager islandManager,
             BlockFactory blockFactory,
             ItemFactory itemFactory,
-            EntityFactory entityFactory,
+            EntityManager entityFactory,
             LootFactory lootFactory,
             RecipeFactory recipeFactory
     ) {

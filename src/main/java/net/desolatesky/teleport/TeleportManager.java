@@ -1,7 +1,7 @@
 package net.desolatesky.teleport;
 
 import net.desolatesky.lock.Lockable;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
@@ -9,7 +9,6 @@ import net.desolatesky.world.TeleportUtil;
 import net.desolatesky.world.WorldManager;
 import net.desolatesky.world.WorldType;
 import net.minestom.server.coordinate.Point;
-import net.minestom.server.instance.Instance;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.time.Duration;
@@ -47,7 +46,7 @@ public final class TeleportManager implements Lockable {
         worldManager.loadWorld(islandId, worldId, worldType).
                 whenComplete((world, _) -> {
                     if (world == null) {
-                        LoggerUtil.error(TeleportManager.class, "Could not teleport %s to world %s".formatted(player.getUuid().toString(), worldId.toString()));
+                        DSLogger.getLogger().severe("Could not teleport %s to world %s".formatted(player.getUuid().toString(), worldId.toString()));
                         player.setTeleporting(false);
                         return;
                     }

@@ -1,13 +1,12 @@
 
 package net.desolatesky.entity.type;
 
-import net.desolatesky.entity.DSLivingEntity;
-import net.desolatesky.entity.ai.EntityBrain;
-import net.desolatesky.entity.ai.goal.PathGoal;
+import net.desolatesky.entity.ai.navigation.movement.HoppingStrategy;
 import net.desolatesky.island.Island;
 import net.desolatesky.loot.ItemLoot;
 import net.desolatesky.loot.LootTable;
 import net.desolatesky.util.collection.WeightedCollection;
+import net.kyori.adventure.text.Component;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.attribute.Attribute;
@@ -19,7 +18,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 @NotNullByDefault
-public final class VoidRabbit extends DSLivingEntity<VoidRabbit> {
+public final class VoidRabbit extends VoidEntity<VoidRabbit> {
+
+    public static final Component ENTITY_TYPE_NAME = Component.text("Void Rabbit");
 
     private static final LootTable DROPS = new LootTable(
             List.of(
@@ -32,31 +33,25 @@ public final class VoidRabbit extends DSLivingEntity<VoidRabbit> {
             )
     );
 
-
     public VoidRabbit(UUID uuid, Island island, Consumer<Entity> tagApplier) {
-        super(EntityType.RABBIT, DROPS, uuid, island, tagApplier);
+        super(EntityType.RABBIT, DROPS, uuid, island, new HoppingStrategy<>(4), tagApplier, ENTITY_TYPE_NAME);
     }
 
     public VoidRabbit(Island island, Consumer<Entity> tagApplier) {
-        super(EntityType.RABBIT, DROPS, island, tagApplier);
+        super(EntityType.RABBIT, DROPS, island, new HoppingStrategy<>(4), tagApplier, ENTITY_TYPE_NAME);
     }
 
     @Override
     protected void initialize() {
-        this.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(5);
+        this.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1);
         this.getAttribute(Attribute.MAX_HEALTH).setBaseValue(20);
         this.setHealth(20);
+        this.setGlowing(true);
     }
 
     @Override
     protected void onTick(long time) {
         if (!this.isGlowing()) {
-            this.setGlowing(true);
         }
-    }
-
-    @Override
-    protected EntityBrain<VoidRabbit> createBrain() {
-        return new EntityBrain<>(List.of(new PathGoal<>(this)));
     }
 }

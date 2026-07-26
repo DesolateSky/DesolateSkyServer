@@ -3,13 +3,12 @@ package net.desolatesky.recipe.type;
 import net.desolatesky.config.ConfigNode;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.definition.ItemDefinition;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.recipe.Recipe;
 import net.desolatesky.recipe.RecipeType;
 import net.desolatesky.recipe.input.RecipeInput;
 import net.desolatesky.recipe.result.RecipeResult;
 import net.desolatesky.util.ItemUtil;
-import net.desolatesky.util.Pair;
 import net.desolatesky.util.array.ArrayUtil;
 import net.desolatesky.util.array.ShiftedArray;
 import net.kyori.adventure.key.Key;
@@ -22,11 +21,9 @@ import net.minestom.server.recipe.display.SlotDisplay;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class ShapedRecipe implements Recipe<ShapedRecipe.Input, ShapedRecipe.Result> {
 
@@ -63,19 +60,19 @@ public class ShapedRecipe implements Recipe<ShapedRecipe.Input, ShapedRecipe.Res
             for (final ConfigNode child : children) {
                 final String keyString = child.getString();
                 if (keyString == null) {
-                    LoggerUtil.warn(ShapedRecipe.class, "Error loading shaped recipe %s".formatted(recipeNode.path()));
+                    DSLogger.getLogger().info("Error loading shaped recipe %s".formatted(recipeNode.path()));
                     return;
                 }
                 shape.add(Key.key(keyString));
             }
             if (shape.size() > MAX_COLS) {
-                LoggerUtil.warn(ShapedRecipe.class, "Error loading shaped recipe %s (too many columns)".formatted(recipeNode.path()));
+                DSLogger.getLogger().warn("Error loading shaped recipe %s (too many columns)".formatted(recipeNode.path()));
                 return;
             }
             shapeList.add(shape);
         });
         if (shapeList.size() > MAX_ROWS) {
-            LoggerUtil.warn(ShapedRecipe.class, "Error loading shaped recipe %s (too many rows)".formatted(recipeNode.path()));
+            DSLogger.getLogger().warn("Error loading shaped recipe %s (too many rows)".formatted(recipeNode.path()));
             return null;
         }
         final List<List<Integer>> amountsList = new ArrayList<>();
@@ -89,13 +86,13 @@ public class ShapedRecipe implements Recipe<ShapedRecipe.Input, ShapedRecipe.Res
                 amounts.add(child.getInt());
             }
             if (amounts.size() > MAX_COLS) {
-                LoggerUtil.warn(ShapedRecipe.class, "Error loading shaped recipe %s (too many columns)".formatted(recipeNode.path()));
+                DSLogger.getLogger().warn("Error loading shaped recipe %s (too many columns)".formatted(recipeNode.path()));
                 return;
             }
             amountsList.add(amounts);
         });
         if (amountsList.size() > MAX_ROWS) {
-            LoggerUtil.warn(ShapedRecipe.class, "Error loading shaped recipe %s (too many rows)".formatted(recipeNode.path()));
+            DSLogger.getLogger().warn("Error loading shaped recipe %s (too many rows)".formatted(recipeNode.path()));
             return null;
         }
         final int rows = Math.max(shapeList.size(), amountsList.size());
@@ -127,13 +124,13 @@ public class ShapedRecipe implements Recipe<ShapedRecipe.Input, ShapedRecipe.Res
 
         final String resultIdString = recipeNode.node("result").getString();
         if (resultIdString == null) {
-            LoggerUtil.warn(ShapedRecipe.class, "No result id found for recipe %s".formatted(recipeNode.path()));
+            DSLogger.getLogger().warn("No result id found for recipe %s".formatted(recipeNode.path()));
             return null;
         }
         final Key resultId = Key.key(resultIdString);
         final int resultAmount = recipeNode.node("resultAmount").getInt();
         if (resultAmount <= 0) {
-            LoggerUtil.warn(ShapedRecipe.class, "Invalid result amount found for recipe %s (%d)".formatted(recipeNode.path(), resultAmount));
+            DSLogger.getLogger().warn("Invalid result amount found for recipe %s (%d)".formatted(recipeNode.path(), resultAmount));
             return null;
         }
 

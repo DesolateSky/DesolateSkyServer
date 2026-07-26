@@ -11,11 +11,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-public final class TypedEntityFactory implements EntityFactory {
+public final class TypedEntityFactory implements EntityManager {
 
     private final Map<Key, BiFunction<Island, Consumer<Entity>, IslandEntity>> entityCreators = new HashMap<>();
 

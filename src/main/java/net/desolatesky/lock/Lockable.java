@@ -1,6 +1,6 @@
 package net.desolatesky.lock;
 
-import net.desolatesky.util.SafeRunnable;
+import net.desolatesky.util.functional.SafeRunnable;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Supplier;

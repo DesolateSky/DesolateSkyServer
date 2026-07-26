@@ -6,7 +6,7 @@ import net.desolatesky.block.behavior.ClickBehavior;
 import net.desolatesky.block.behavior.TickBehavior;
 import net.desolatesky.block.behavior.listener.LoadBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
-import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.entity.EntityIds;
 import net.desolatesky.entity.EntityTags;
 import net.desolatesky.entity.IslandEntity;
@@ -33,6 +33,7 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.Weather;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -67,7 +68,7 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
         if (!voidWorld.island().hasPermission(player.getUuid(), IslandPermission.INTERACT_VOID_CORE)) {
             return Result.BLOCK_INTERACTION;
         }
-        final EntityFactory entityFactory = world.entityFactory();
+        final EntityManager entityFactory = world.entityFactory();
         entityFactory.createEntity(EntityIds.ISLAND_CORE_SPAWNER_DISPLAY, voidWorld.island(), e -> {
             e.setTag(EntityTags.ITEM_DISPLAY_KEY, spawner.itemDisplayKey());
             e.setInstance(world.asInstance(), clickedPos.asBlockVec().add(0.5, 1.5, 0.5));
@@ -109,7 +110,7 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
         return Result.ALLOW;
     }
 
-    public void removeSpawner(DSWorld world, Point pos, Block block) {
+    public @Nullable ItemStack removeSpawner(DSWorld world, Point pos, Block block) {
         final UUID entityId = block.getTag(BlockTags.ISLAND_CORE_DISPLAY_ENTITY_ID);
         final Entity entity = world.asInstance().getEntityByUuid(entityId);
         if (entity != null) {
@@ -117,6 +118,23 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
         }
         world.setBlock(pos, block.withTag(BlockTags.ISLAND_CORE_SPAWNER_KEY, null)
                 .withTag(BlockTags.ISLAND_CORE_DISPLAY_ENTITY_ID, null));
+        final Key islandCoreSpawnerKey = block.getTag(BlockTags.ISLAND_CORE_SPAWNER_KEY);
+        if (islandCoreSpawnerKey == null) {
+            return null;
+        }
+        final IslandCoreMobSpawner spawner = IslandCoreMobSpawner.SPAWNERS.get(islandCoreSpawnerKey);
+        if (spawner == null) {
+            return null;
+        }
+        final ItemDefinition itemDefinition = world.itemFactory().getItemDefinition(spawner.itemDisplayKey());
+        if (itemDefinition == null) {
+            return null;
+        }
+        return itemDefinition.defaultItemStack();
+    }
+
+    public boolean hasSpawner(DSWorld world, Point pos, Block block) {
+        return block.hasTag(BlockTags.ISLAND_CORE_SPAWNER_KEY);
     }
 
     @Override
@@ -179,7 +197,7 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
 
         final RandomGenerator randomGenerator = world.getRandomGenerator(pos);
         final Key entityType = spawner.rollEntity(randomGenerator);
-        final EntityFactory entityFactory = world.entityFactory();
+        final EntityManager entityFactory = world.entityFactory();
         final IslandEntity islandEntity = entityFactory.createEntity(entityType, voidWorld.island(), e -> {
 
         });
@@ -280,7 +298,7 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
         if (!(world instanceof final VoidWorld voidWorld)) {
             return;
         }
-        final EntityFactory entityFactory = world.entityFactory();
+        final EntityManager entityFactory = world.entityFactory();
         final Key islandCoreSpawnerKey = block.getTag(BlockTags.ISLAND_CORE_SPAWNER_KEY);
         if (islandCoreSpawnerKey == null) {
             return;
@@ -300,6 +318,6 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
 
     @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.CLICK, Type.TICK, Type.LOAD);
+        return List.of(Type.CLICK, Type.TICK, Type.LOAD, Type.VOID_CORE);
     }
 }

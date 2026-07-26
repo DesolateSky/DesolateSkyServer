@@ -4,7 +4,7 @@ import net.desolatesky.advancement.IslandAdvancementManager;
 import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.ConfiguredBlockFactory;
 import net.desolatesky.data.FileDatabase;
-import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.entity.TypedEntityFactory;
 import net.desolatesky.island.IslandManager;
 import net.desolatesky.island.IslandSnapshot;
@@ -30,7 +30,7 @@ public final class Main {
         final FileDatabase<IslandSnapshot> islandDatabase = new FileDatabase<>(Path.of("islands"), IslandSnapshot.DATA_TRANSLATOR);
         final BlockFactory blockFactory = new ConfiguredBlockFactory();
         final ItemFactory itemFactory = new ConfiguredItemFactory();
-        final EntityFactory entityFactory = new TypedEntityFactory();
+        final EntityManager entityFactory = new TypedEntityFactory();
         final LootFactory lootFactory = new LootFactory();
         final RecipeFactory recipeFactory = new RecipeFactory(itemFactory);
         final IslandAdvancementManager islandAdvancementManager = new IslandAdvancementManager();

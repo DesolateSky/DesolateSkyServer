@@ -1,5 +1,9 @@
 package net.desolatesky.server;
 
+import me.lucko.luckperms.common.config.generic.adapter.EnvironmentVariableConfigAdapter;
+import me.lucko.luckperms.common.config.generic.adapter.MultiConfigurationAdapter;
+import me.lucko.luckperms.minestom.CommandRegistry;
+import me.lucko.luckperms.minestom.LuckPermsMinestom;
 import net.desolatesky.advancement.IslandAdvancementManager;
 import net.desolatesky.advancement.listener.IslandAdvancementListener;
 import net.desolatesky.block.BlockFactory;
@@ -7,9 +11,11 @@ import net.desolatesky.block.MaterialTags;
 import net.desolatesky.block.behavior.listener.BlockClickListener;
 import net.desolatesky.command.DiscordCommand;
 import net.desolatesky.command.SpawnCommand;
+import net.desolatesky.command.admin.BanCommand;
 import net.desolatesky.command.admin.FlyCommand;
 import net.desolatesky.command.admin.GameModeCommand;
 import net.desolatesky.command.admin.GiveCommand;
+import net.desolatesky.command.admin.LogLevelCommand;
 import net.desolatesky.command.admin.StopCommand;
 import net.desolatesky.command.admin.TpCommand;
 import net.desolatesky.command.admin.WhitelistCommand;
@@ -18,7 +24,7 @@ import net.desolatesky.command.island.IslandCommand;
 import net.desolatesky.config.ConfigFile;
 import net.desolatesky.crafting.listener.CraftingMenuListener;
 import net.desolatesky.data.FileDatabase;
-import net.desolatesky.entity.EntityFactory;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.entity.listener.EntityDamageListener;
 import net.desolatesky.entity.listener.ItemPickupListener;
 import net.desolatesky.entity.listener.ItemThrowListener;
@@ -27,50 +33,56 @@ import net.desolatesky.island.IslandSnapshot;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.listener.BlockPlaceListener;
 import net.desolatesky.item.listener.ItemClickListener;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.loot.LootFactory;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.player.DSPlayerData;
 import net.desolatesky.player.listener.PlayerChatListener;
+import net.desolatesky.player.listener.PlayerEatListener;
 import net.desolatesky.player.listener.PlayerJoinListener;
 import net.desolatesky.player.listener.PlayerListPingListener;
 import net.desolatesky.player.listener.PlayerTickListener;
 import net.desolatesky.player.whitelist.PlayerWhitelist;
 import net.desolatesky.recipe.RecipeFactory;
+import net.desolatesky.server.player.PlayerBanDatabase;
+import net.desolatesky.server.player.PlayerUUIDDatabase;
 import net.desolatesky.teleport.TeleportManager;
+import net.desolatesky.util.Constants;
+import net.desolatesky.util.ResourceLoader;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.WorldManager;
 import net.desolatesky.world.biome.Biomes;
-import me.lucko.luckperms.common.config.generic.adapter.EnvironmentVariableConfigAdapter;
-import me.lucko.luckperms.common.config.generic.adapter.MultiConfigurationAdapter;
-import me.lucko.luckperms.minestom.CommandRegistry;
-import me.lucko.luckperms.minestom.LuckPermsMinestom;
 import net.desolatesky.world.listener.ChunkLoadListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.luckperms.api.LuckPerms;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.adventure.audience.Audiences;
+import net.minestom.server.color.TeamColor;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventFilter;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.GlobalEventHandler;
-import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.event.server.ServerTickMonitorEvent;
 import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.event.trait.InventoryEvent;
 import net.minestom.server.event.trait.PlayerEvent;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.monitoring.TickMonitor;
+import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.utils.MathUtils;
 import org.jetbrains.annotations.NotNullByDefault;
 import org.jspecify.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -86,7 +98,7 @@ public final class DSServer {
     private final WorldManager worldManager;
     private final BlockFactory blockFactory;
     private final ItemFactory itemFactory;
-    private final EntityFactory entityFactory;
+    private final EntityManager entityFactory;
     private final LootFactory lootFactory;
     private final RecipeFactory recipeFactory;
     private final MessageHandler messageHandler;
@@ -94,6 +106,7 @@ public final class DSServer {
     private final IslandAdvancementManager islandAdvancementManager;
     private final ConfigFile serverConfig;
     private final PlayerWhitelist whitelist;
+    private final ServerDatabases serverDatabases;
 
     public DSServer(
             MinecraftServer server,
@@ -102,7 +115,7 @@ public final class DSServer {
             MessageHandler messageHandler,
             BlockFactory blockFactory,
             ItemFactory itemFactory,
-            EntityFactory entityFactory,
+            EntityManager entityFactory,
             LootFactory lootFactory,
             RecipeFactory recipeFactory,
             IslandManager islandManager,
@@ -125,6 +138,12 @@ public final class DSServer {
         this.whitelist = new PlayerWhitelist(Path.of("whitelist"), "/whitelist");
 
         this.serverConfig = ConfigFile.get(Path.of("server.conf"), "/server.conf");
+
+        final Path databasesPath = Path.of("databases");
+        this.serverDatabases = new ServerDatabases(
+                new PlayerUUIDDatabase(databasesPath.resolve("player-uuids.db")),
+                new PlayerBanDatabase(databasesPath.resolve("player-bans.db"))
+        );
     }
 
     public void init() {
@@ -132,12 +151,26 @@ public final class DSServer {
         final String ignored = MaterialTags.class.getName();
 
         MinecraftServer.getConnectionManager().setPlayerProvider((conn, profile) -> {
-            LoggerUtil.info(this.getClass(), "Creating player: %s".formatted(profile.name()));
             final DSPlayerData data = this.playerDatabase.loadDataNow(profile.uuid());
             return new DSPlayer(conn, profile, this, data);
         });
         MinecraftServer.setBrandName("DesolateSky");
         Biomes.registerBiomes();
+
+        boolean initialized = true;
+
+        try {
+            this.serverDatabases.initializeAll();
+        } catch (IOException | SQLException e) {
+            DSLogger.getLogger().severe(e);
+            initialized = false;
+            throw new RuntimeException(e);
+        } finally {
+            if (!initialized) {
+                this.stop();
+            }
+        }
+
         this.blockFactory.initialize();
         this.itemFactory.initialize();
         this.entityFactory.initialize();
@@ -148,13 +181,20 @@ public final class DSServer {
         this.setupPermissions();
         this.registerCommands();
 
+
+        MinecraftServer.getTeamManager().createBuilder(Constants.VOID_TEAM_ID)
+                .collisionRule(TeamsPacket.CollisionRule.PUSH_OTHER_TEAMS)
+                .prefix(Component.text("Void").color(NamedTextColor.DARK_PURPLE))
+                .teamColor(TeamColor.BLACK)
+                .build();
+
         ConsoleCommandHandler.startConsoleCommandHandler();
     }
 
     public void start() {
         final String ip = this.serverConfig.rootNode().node("ip").getString("0.0.0.0");
         final int port = this.serverConfig.rootNode().node("port").getInt(25565);
-        LoggerUtil.info(this.getClass(), "Running on %s:%d".formatted(ip, port));
+        DSLogger.getLogger().info("Running on %s:%d".formatted(ip, port));
         this.server.start(ip, port);
 
         MinecraftServer.getSchedulerManager().scheduleTask(this.teleportManager::tick, TaskSchedule.tick(1), TaskSchedule.tick(1));
@@ -199,7 +239,7 @@ public final class DSServer {
         return this.itemFactory;
     }
 
-    public EntityFactory entityFactory() {
+    public EntityManager entityFactory() {
         return this.entityFactory;
     }
 
@@ -223,13 +263,17 @@ public final class DSServer {
         return this.serverConfig;
     }
 
+    public ServerDatabases serverDatabases() {
+        return this.serverDatabases;
+    }
+
     public void stop() {
         for (final Player player : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
             player.kick(Component.text("Server is restarting").color(NamedTextColor.RED));
         }
-        LoggerUtil.error(this.getClass(), "Disabling LuckPerms");
+        DSLogger.getLogger().info("Disabling LuckPerms");
         LuckPermsMinestom.disable();
-        LoggerUtil.error(this.getClass(), "Saving instances");
+        DSLogger.getLogger().info("Saving instances");
         CompletableFuture.allOf(
                 MinecraftServer.getInstanceManager().getInstances().stream()
                         .filter(DSWorld.class::isInstance)
@@ -237,7 +281,12 @@ public final class DSServer {
                         .map(DSWorld::save)
                         .toArray(CompletableFuture[]::new)
         ).join();
-        LoggerUtil.error(this.getClass(), "Stopping server");
+        try {
+            this.serverDatabases.shutdownAll();
+        } catch (SQLException e) {
+            DSLogger.getLogger().severe(e);
+        }
+        DSLogger.getLogger().info("Stopping server");
         MinecraftServer.getSchedulerManager().scheduleEndOfTick(MinecraftServer::stopCleanly);
     }
 
@@ -252,9 +301,10 @@ public final class DSServer {
         globalEventHandler.addChild(instanceEventNode);
 
         new PlayerListPingListener(this.serverConfig).register(globalEventHandler);
-        new PlayerJoinListener(this.playerDatabase, this.islandDatabase, this.worldManager, this.islandManager, this.itemFactory, this.messageHandler).register(playerEventNode);
+        new PlayerJoinListener(this.serverDatabases, this.playerDatabase, this.islandDatabase, this.worldManager, this.islandManager, this.itemFactory, this.messageHandler, this.serverConfig).register(playerEventNode);
         new PlayerTickListener(this.islandManager, this.worldManager).register(playerEventNode);
-        new PlayerChatListener().register(playerEventNode);
+        new PlayerChatListener(loadBadWords()).register(playerEventNode);
+        new PlayerEatListener().register(playerEventNode);
 
         new CraftingMenuListener(this.recipeFactory, this.itemFactory).register(inventoryEventNode);
 
@@ -271,11 +321,22 @@ public final class DSServer {
         globalEventHandler.addListener(ServerTickMonitorEvent.class, event -> this.lastTick.set(event.getTickMonitor()));
     }
 
+    private static List<String> loadBadWords() {
+        try {
+            final File file = ResourceLoader.load(Path.of("badwords.txt"), "/badwords.txt");
+            return Files.readAllLines(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void registerCommands() {
         final CommandManager commandManager = MinecraftServer.getCommandManager();
         commandManager.register(new StopCommand(this));
         commandManager.register(new IslandCommand(this.teleportManager, this.messageHandler, this.worldManager, this.islandManager));
         commandManager.register(new GiveCommand(this.itemFactory));
+        commandManager.register(new LogLevelCommand());
+        commandManager.register(new BanCommand(this.serverConfig, this.serverDatabases));
         commandManager.register(new WhitelistCommand(this.whitelist));
         commandManager.register(new SpawnCommand(this.teleportManager));
         commandManager.register(new DiscordCommand(this.serverConfig));

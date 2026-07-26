@@ -6,21 +6,16 @@ import net.desolatesky.advancement.IslandAdvancementManager;
 import net.desolatesky.data.FileDatabase;
 import net.desolatesky.island.role.IslandRole;
 import net.desolatesky.lock.Lockable;
-import net.desolatesky.logging.LoggerUtil;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
-import net.desolatesky.server.DSServer;
-import net.desolatesky.world.DSWorld;
-import net.desolatesky.world.IslandWorld;
 import net.desolatesky.world.PlayerWorld;
 import net.desolatesky.world.WorldType;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
 import org.jspecify.annotations.Nullable;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,7 +59,7 @@ public final class IslandManager implements Lockable {
                         island.getAdvancementsProgress().checkProgress(this.advancementManager, island, null);
                         return this.lockWrite(() -> {
                             if (this.islands.containsKey(islandId)) {
-                                LoggerUtil.error(this.getClass(), "Island already exists (" + islandId + ") when loading island.");
+                                DSLogger.getLogger().severe("Island already exists (" + islandId + ") when loading island.");
                                 return null;
                             }
                             this.islands.put(island.islandId(), island);
