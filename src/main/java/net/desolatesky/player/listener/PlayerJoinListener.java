@@ -22,6 +22,7 @@ import net.desolatesky.world.IslandWorld;
 import net.desolatesky.world.WorldManager;
 import net.desolatesky.world.pos.WorldPosition;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerDisconnectEvent;
@@ -30,6 +31,7 @@ import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import org.jetbrains.annotations.NotNullByDefault;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -109,8 +111,20 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
             }
             if (player.newPlayer()) {
                 this.messageHandler.sendMessage(player, Messages.NEW_PLAYER_JOIN);
+                for (final Player other : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
+                    if (other.equals(player)) {
+                        continue;
+                    }
+                    this.messageHandler.sendMessage(other, Messages.NEW_PLAYER_JOIN_WELCOME, Map.of("player", player.getDisplayName()));
+                }
             } else {
                 this.messageHandler.sendMessage(player, Messages.PLAYER_JOIN);
+                for (final Player other : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
+                    if (other.equals(player)) {
+                        continue;
+                    }
+                    this.messageHandler.sendMessage(other, Messages.PLAYER_JOIN_WELCOME_BACK, Map.of("player", player.getDisplayName()));
+                }
             }
         });
     }
@@ -151,6 +165,12 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
         eventHandler.addListener(PlayerDisconnectEvent.class, event -> {
             final DSPlayer player = (DSPlayer) event.getPlayer();
             DSLogger.getLogger().info("Player left: " + player.getUsername());
+            for (final Player other : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
+                if (other.equals(player)) {
+                    continue;
+                }
+                this.messageHandler.sendMessage(other, Messages.PLAYER_LEAVE, Map.of("player", player.getName()));
+            }
             player.setLogoutPos(player.getWorldPosition());
             this.playerDatabase.saveData(player.getUuid(), player.createSnapshot());
             final UUID islandID = player.getIslandId();

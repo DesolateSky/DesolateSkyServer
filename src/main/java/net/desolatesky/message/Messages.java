@@ -57,6 +57,9 @@ public final class Messages {
     public static final MessageKey PLAYER_NOT_FOUND = new MessageKey("player-not-found");
     public static final MessageKey PLAYER_JOIN = new MessageKey("player-join");
     public static final MessageKey NEW_PLAYER_JOIN = new MessageKey("new-player-join");
+    public static final MessageKey NEW_PLAYER_JOIN_WELCOME = new MessageKey("new-player-join-welcome");
+    public static final MessageKey PLAYER_JOIN_WELCOME_BACK = new MessageKey("player-join-welcome-back");
+    public static final MessageKey PLAYER_LEAVE = new MessageKey("player-leave");
     public static final MessageKey TUTORIAL = new MessageKey("tutorial");
     public static final MessageKey STORY = new MessageKey("story");
     public static final MessageKey RULES = new MessageKey("rules");
