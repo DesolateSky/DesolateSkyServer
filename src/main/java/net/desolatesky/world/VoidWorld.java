@@ -9,6 +9,7 @@ import net.desolatesky.loot.LootFactory;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.recipe.RecipeFactory;
 import net.desolatesky.util.Constants;
+import net.desolatesky.world.dimension.Dimensions;
 import net.desolatesky.world.region.Region;
 import net.desolatesky.world.region.SquareRegion;
 import net.kyori.adventure.key.Key;
@@ -58,7 +59,7 @@ public final class VoidWorld extends DSWorld implements IslandWorld {
                 recipeFactory,
                 new AdminBreakingManager(),
                 island.getWorldId(WorldType.VOID),
-                DimensionType.OVERWORLD,
+                Dimensions.voidDimension(),
                 worldFolder,
                 0);
         this.island = island;

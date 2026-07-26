@@ -402,4 +402,8 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
         }
         return this.saveInstance().thenCompose(_ -> this.saveChunksToStorage());
     }
+
+    public Path worldFolder() {
+        return this.worldFolder;
+    }
 }

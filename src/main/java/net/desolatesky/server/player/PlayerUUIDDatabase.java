@@ -4,6 +4,8 @@ import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import net.desolatesky.data.SQLDatabase;
 import net.desolatesky.util.Constants;
+import net.minestom.server.MinecraftServer;
+import net.minestom.server.entity.Player;
 import net.minestom.server.utils.mojang.MojangUtils;
 import org.jspecify.annotations.Nullable;
 
@@ -56,6 +58,11 @@ public final class PlayerUUIDDatabase extends SQLDatabase {
             return CompletableFuture.completedFuture(Constants.CONSOLE_UUID);
         }
         try {
+            final Player online = MinecraftServer.getConnectionManager().getOnlinePlayerByUsername(username);
+            if (online != null) {
+                this.uuidCache.put(username, CompletableFuture.completedFuture(online.getUuid()));
+                return CompletableFuture.completedFuture(online.getUuid());
+            }
             return this.uuidCache.get(username);
         } catch (Exception ignored) {
             return CompletableFuture.completedFuture(null);
@@ -67,6 +74,11 @@ public final class PlayerUUIDDatabase extends SQLDatabase {
             return CompletableFuture.completedFuture(Constants.CONSOLE_NAME);
         }
         try {
+            final Player online = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(playerId);
+            if (online != null) {
+                this.usernameCache.put(playerId, CompletableFuture.completedFuture(online.getUsername()));
+                return CompletableFuture.completedFuture(online.getUsername());
+            }
             return this.usernameCache.get(playerId);
         } catch (Exception ignored) {
             return CompletableFuture.completedFuture(null);

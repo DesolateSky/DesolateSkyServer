@@ -11,6 +11,8 @@ public final class Constants {
         throw new UnsupportedOperationException();
     }
 
+    public static final String SERVER_VERSION = "0.0.1";
+
     public static final UUID UUID_ZERO = new UUID(0, 0);
     public static final String CONSOLE_NAME = "Console";
     public static final UUID CONSOLE_UUID = UUID_ZERO;
@@ -27,6 +29,7 @@ public final class Constants {
     public static final TextColor SECONDARY_COLOR = TextColor.color(0x6A7158);
     public static final TextColor HIGHLIGHT_COLOR = TextColor.color(0xE3D9C6);
     public static final TextColor BACKGROUND_COLOR = TextColor.color(0x777066);
+    public static final TextColor TEXT_COLOR = TextColor.color(0xC8CDD3);
 
     public static final String VOID_TEAM_ID = "void";
 

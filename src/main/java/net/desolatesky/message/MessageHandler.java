@@ -59,7 +59,10 @@ public class MessageHandler implements Lockable {
     public void sendMessage(Player player, MessageKey messageKey, Map<String, Object> placeholders) {
         final Function<Component, Component> placeholderFunction = component -> {
             Component current = component;
-            for (Map.Entry<String, Object> entry : placeholders.entrySet()) {
+            for (final Map.Entry<String, Object> entry : placeholders.entrySet()) {
+                if (entry.getValue() instanceof final Component componentPlaceholder) {
+                    current = current.replaceText(builder -> builder.matchLiteral("<" + entry.getKey() + ">").replacement(componentPlaceholder));
+                }
                 current = current.replaceText(builder -> builder.matchLiteral("<" + entry.getKey() + ">").replacement(String.valueOf(entry.getValue())));
             }
             return current;
@@ -88,6 +91,7 @@ public class MessageHandler implements Lockable {
     public void reload() throws ConfigurateException {
         this.lockWriteSafely(() -> {
             this.messages.clear();
+            this.configFile.reload();
             this.load();
         });
     }
@@ -131,7 +135,7 @@ public class MessageHandler implements Lockable {
             }
             final List<? extends ConfigurationNode> children = node.childrenList();
             final List<String> contents = new ArrayList<>();
-            for (ConfigurationNode child : children) {
+            for (final ConfigurationNode child : children) {
                 contents.add(ConfigUtil.getNonNull(child, String.class));
             }
             return ChatMessage.parse(id, contents);

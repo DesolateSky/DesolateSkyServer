@@ -48,7 +48,6 @@ public final class DSIsland implements Island, Lockable {
 
     public DSIsland(
             UUID islandId,
-            Map<WorldType, UUID> worldIds,
             Map<UUID, IslandRole> members,
             Map<IslandRole, IslandPermissions> permissions,
             AdvancementsProgress advancementsProgress,
@@ -56,28 +55,48 @@ public final class DSIsland implements Island, Lockable {
             SquareRegion islandRegion
     ) {
         this.islandId = islandId;
-        this.worldIds = worldIds;
-        for (final WorldType type : WorldType.values()) {
-            if (!type.hubWorld() && !this.worldIds.containsKey(type)) {
-                this.worldIds.put(type, UUID.randomUUID());
-            }
-        }
+        this.worldIds = new HashMap<>();
+        this.populateWorldIds();
         this.members = members;
         this.permissions = permissions;
         this.advancementsProgress = advancementsProgress;
         this.displayName = displayName;
         this.islandRegion = islandRegion;
+
+        this.populatePermissions();
     }
 
     public DSIsland(IslandSnapshot snapshot) {
         this.islandId = snapshot.islandId();
-        this.worldIds = snapshot.worldIds();
+        this.worldIds = new HashMap<>();
+        this.populateWorldIds();
         this.members = snapshot.members();
         this.islandInvites.addAll(snapshot.islandInvites());
         this.permissions = snapshot.permissions();
         this.advancementsProgress = new AdvancementsProgress(snapshot.advancementsProgress(), snapshot.completedAdvancements());
         this.displayName = snapshot.displayName();
         this.islandRegion = snapshot.islandRegion();
+
+        this.populatePermissions();
+    }
+
+    private void populateWorldIds() {
+        for (final WorldType type : WorldType.values()) {
+            if (!type.hubWorld() && !this.worldIds.containsKey(type)) {
+                this.worldIds.put(type, UUID.randomUUID());
+            }
+        }
+    }
+
+    private void populatePermissions() {
+        if (this.permissions.isEmpty()) {
+            this.permissions.put(IslandRole.MEMBER, IslandPermissions.mutable(IslandRole.MEMBER, Set.of(
+                    IslandPermission.INTERACT_VOID_CORE,
+                    IslandPermission.DROP_ITEMS,
+                    IslandPermission.BREAK_BLOCK,
+                    IslandPermission.PLACE_BLOCK
+            )));
+        }
     }
 
     @Override
@@ -105,14 +124,21 @@ public final class DSIsland implements Island, Lockable {
         return this.islandRegion;
     }
 
-    public void invite(UUID member, UUID invited) {
-        this.lockWrite(() -> {
+    public boolean invite(UUID member, UUID invited) {
+        return this.lockWrite(() -> {
             if (this.isInvited(invited)) {
-                return;
+                return false;
             }
             this.islandInvites.add(new IslandInvite(member, invited, Instant.now(), ISLAND_INVITE_DURATION));
+            return true;
         });
     }
+
+    @Override
+    public boolean removeInvite(UUID member, UUID invited) {
+        return this.lockWrite(() -> this.islandInvites.removeIf(invite -> invite.invited().equals(invited)));
+    }
+
 
     @Override
     public boolean isInvited(UUID playerId) {
@@ -123,17 +149,22 @@ public final class DSIsland implements Island, Lockable {
     }
 
     @Override
-    public void acceptInvite(UUID playerId) {
-        this.lockWrite(() -> {
+    public boolean acceptInvite(UUID playerId) {
+        return this.lockWrite(() -> {
             if (this.isMember(playerId)) {
-                return;
+                return false;
             }
             if (!this.isInvited(playerId)) {
-                return;
+                return false;
             }
             this.islandInvites.removeIf(invite -> playerId.equals(invite.invited()));
-            this.members.put(playerId, IslandRole.MEMBER);
+            return this.members.put(playerId, IslandRole.MEMBER) == null;
         });
+    }
+
+    @Override
+    public boolean leaveIsland(UUID playerId) {
+        return this.lockWrite(() -> this.members.remove(playerId) != null);
     }
 
     @Override
@@ -187,7 +218,6 @@ public final class DSIsland implements Island, Lockable {
             }
             return IslandSnapshot.create(
                     this.islandId,
-                    Map.copyOf(this.worldIds),
                     List.copyOf(this.islandInvites),
                     Map.copyOf(this.members),
                     permissionsCopy,
@@ -200,12 +230,12 @@ public final class DSIsland implements Island, Lockable {
     }
 
     @Override
-    public void onMemberJoin(DSPlayer player, DSWorld world) {
+    public void onMemberJoinInstance(DSPlayer player, DSWorld world) {
         this.advancementsProgress.addViewer(player);
     }
 
     @Override
-    public void onMemberLeave(DSPlayer player, DSWorld world) {
+    public void onMemberLeaveServer(DSPlayer player, DSWorld world) {
         this.advancementsProgress.removeViewer(player);
     }
 

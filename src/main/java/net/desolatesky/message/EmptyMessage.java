@@ -21,7 +21,7 @@ public final class EmptyMessage implements Message {
 
     @Override
     public void sendTo(Player player) {
-        DSLogger.getLogger().config("No message (%s) found sending to player (%s)".formatted(this.id, player.getName()));
+        DSLogger.getLogger().config("No message (%s) found sending to player (%s)".formatted(this.id, player.getUsername()));
     }
 
     @Override

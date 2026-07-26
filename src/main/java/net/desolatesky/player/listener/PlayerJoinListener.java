@@ -21,6 +21,7 @@ import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.IslandWorld;
 import net.desolatesky.world.WorldManager;
 import net.desolatesky.world.pos.WorldPosition;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerDisconnectEvent;
@@ -88,7 +89,7 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
             final WorldPosition logoutPos = player.getLogoutPos();
             DSWorld world = null;
             if (logoutPos != null) {
-                world = this.worldManager.loadWorld(logoutPos.islandId(), logoutPos.worldId(), logoutPos.worldType()).join();
+                world = this.worldManager.loadWorld(logoutPos.islandId(), logoutPos.worldType()).join();
                 player.setRespawnPoint(logoutPos.pos().asPos());
             }
             if (world == null) {
@@ -97,6 +98,7 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
             }
             player.setLogoutPos(null);
             event.setSpawningInstance(world);
+            player.updateDisplayName();
         });
         eventHandler.addListener(PlayerSpawnEvent.class, event -> {
             if (!event.isFirstSpawn()) {
@@ -106,10 +108,6 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
                 return;
             }
             if (player.newPlayer()) {
-                final ItemDefinition itemDefinition = this.itemFactory.getItemDefinition(ItemIds.STARTING_CACHE);
-                if (itemDefinition != null) {
-                    InventoryUtil.addItemToInventory(player, itemDefinition.defaultItemStack(), player.getInstance(), player.getPosition());
-                }
                 this.messageHandler.sendMessage(player, Messages.NEW_PLAYER_JOIN);
             } else {
                 this.messageHandler.sendMessage(player, Messages.PLAYER_JOIN);
@@ -142,7 +140,7 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
             if (islandId != null) {
                 this.islandManager.loadOrGet(islandId).thenAccept(island -> {
                     if (island != null) {
-                        island.onMemberJoin(player, world);
+                        island.onMemberJoinInstance(player, world);
                     }
                 });
             }
@@ -164,7 +162,7 @@ public class PlayerJoinListener implements Listener<PlayerEvent> {
                 return;
             }
             if (event.getInstance() instanceof final DSWorld world) {
-                island.onMemberLeave(player, world);
+                island.onMemberLeaveServer(player, world);
             }
             this.islandDatabase.saveData(islandID, island.createSnapshot());
         });

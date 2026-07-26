@@ -1,8 +1,11 @@
 package net.desolatesky.island;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Multimaps;
 import net.desolatesky.advancement.AdvancementsProgress;
 import net.desolatesky.advancement.IslandAdvancementManager;
+import net.desolatesky.cooldown.DurationCooldown;
 import net.desolatesky.data.FileDatabase;
 import net.desolatesky.island.role.IslandRole;
 import net.desolatesky.lock.Lockable;
@@ -10,16 +13,21 @@ import net.desolatesky.logging.DSLogger;
 import net.desolatesky.message.MessageHandler;
 import net.desolatesky.message.Messages;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.DateTimeUtil;
 import net.desolatesky.world.PlayerWorld;
-import net.desolatesky.world.WorldType;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.event.EventDispatcher;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
-import java.util.EnumMap;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -32,7 +40,12 @@ public final class IslandManager implements Lockable {
     private final FileDatabase<IslandSnapshot> islandDatabase;
     private final IslandAdvancementManager advancementManager;
     private final MessageHandler messageHandler;
-    private final Map<UUID, Island> islands = new HashMap<>();
+    private final Cache<UUID, Island> islands = Caffeine.newBuilder()
+            .expireAfterAccess(Duration.of(1, ChronoUnit.HOURS))
+            .<UUID, Island>evictionListener((_, island, _) -> {
+                EventDispatcher.call(new IslandUnloadEvent(island));
+            })
+            .build();
 
     public IslandManager(FileDatabase<IslandSnapshot> islandDatabase, IslandAdvancementManager advancementManager, MessageHandler messageHandler) {
         this.islandDatabase = islandDatabase;
@@ -41,12 +54,12 @@ public final class IslandManager implements Lockable {
     }
 
     public @Nullable Island getLoaded(UUID islandId) {
-        return this.lockRead(() -> this.islands.get(islandId));
+        return this.lockRead(() -> this.islands.getIfPresent(islandId));
     }
 
     public CompletableFuture<@Nullable Island> loadOrGet(UUID islandId) {
         return this.lockRead(() -> {
-            final Island loaded = this.islands.get(islandId);
+            final Island loaded = this.islands.getIfPresent(islandId);
             if (loaded != null) {
                 return CompletableFuture.completedFuture(loaded);
             }
@@ -58,7 +71,7 @@ public final class IslandManager implements Lockable {
                         final Island island = new DSIsland(islandSnapshot);
                         island.getAdvancementsProgress().checkProgress(this.advancementManager, island, null);
                         return this.lockWrite(() -> {
-                            if (this.islands.containsKey(islandId)) {
+                            if (this.islands.asMap().containsKey(islandId)) {
                                 DSLogger.getLogger().severe("Island already exists (" + islandId + ") when loading island.");
                                 return null;
                             }
@@ -82,27 +95,23 @@ public final class IslandManager implements Lockable {
             this.messageHandler.sendMessage(player, Messages.ALREADY_HAS_ISLAND);
             return CompletableFuture.completedFuture(null);
         }
+        final DurationCooldown createCooldown = player.getIslandCreateCooldown();
+        if (createCooldown != null && !createCooldown.isComplete()) {
+            player.sendMessage(Component.text("You must wait before creating another island! Time left: " + DateTimeUtil.durationToString(createCooldown.getTimeLeft())));
+            player.setCreatingIsland(false);
+            return CompletableFuture.completedFuture(null);
+        }
         final UUID islandId = UUID.randomUUID();
         return CompletableFuture.supplyAsync(() -> this.lockWrite(() -> {
                     final Map<UUID, IslandRole> islandRoles = new HashMap<>();
                     islandRoles.put(player.getUuid(), IslandRole.OWNER);
-                    final Map<WorldType, UUID> worldTypes = new EnumMap<>(WorldType.class);
-                    for (final WorldType worldType : WorldType.values()) {
-                        if (worldType.hubWorld()) {
-                            continue;
-                        }
-                        worldTypes.put(worldType, UUID.randomUUID());
-                    }
                     final DSIsland island = new DSIsland(
                             islandId,
-                            worldTypes,
                             islandRoles,
                             new HashMap<>(),
                             new AdvancementsProgress(Multimaps.newSetMultimap(new HashMap<>(), HashSet::new), Multimaps.newSetMultimap(new HashMap<>(), HashSet::new)),
-                            player.getName().append(Component.text("'s Island")), PlayerWorld.STARTING_REGION);
-                    this.lockWrite(() -> {
-                        this.islands.put(islandId, island);
-                    });
+                            Component.text(player.getUsername()).append(Component.text("'s Island")), PlayerWorld.STARTING_REGION);
+                    this.lockWrite(() -> this.islands.put(islandId, island));
                     player.setIslandId(islandId);
                     player.setCreatingIsland(false);
                     return island;
@@ -114,8 +123,14 @@ public final class IslandManager implements Lockable {
                     }
                     this.messageHandler.sendMessage(player, Messages.CREATED_ISLAND);
                     this.initializeIsland(island);
+                    this.islandDatabase.saveDataNow(islandId, island.createSnapshot());
                     return island;
                 });
+    }
+
+    public boolean deleteIsland(Island island) {
+        this.islands.invalidate(island.islandId());
+        return this.islandDatabase.deleteNow(island.islandId());
     }
 
     private void initializeIsland(Island island) {
@@ -128,6 +143,10 @@ public final class IslandManager implements Lockable {
             island.getAdvancementsProgress().addViewer(player);
         }
         island.getAdvancementsProgress().checkProgress(this.advancementManager, island, null);
+    }
+
+    public @Unmodifiable Collection<Island> getAll() {
+        return Set.copyOf(this.islands.asMap().values());
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,6 +81,19 @@ public class FileDatabase<D> {
         } catch (IOException e) {
             DSLogger.getLogger().severe(e);
             return null;
+        }
+    }
+
+    public boolean deleteNow(UUID id) {
+        try {
+            final Path filePath = this.getDataFile(id);
+            if (!Files.exists(filePath)) {
+                return true;
+            }
+            return Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            DSLogger.getLogger().severe(e);
+            return false;
         }
     }
 

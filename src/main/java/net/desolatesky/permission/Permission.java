@@ -11,6 +11,7 @@ public enum Permission {
     CMD_TELEPORT("desolatesky.command.teleport"),
     CMD_BAN("desolatesky.command.ban"),
     CMD_LOG("desolatesky.command.log"),
+    CMD_CLEAR_CHAT("desolatesky.command.clearchat"),
     ADMIN("desolatesky.admin"),
     ;
 

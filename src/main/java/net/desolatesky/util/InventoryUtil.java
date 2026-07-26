@@ -2,11 +2,14 @@ package net.desolatesky.util;
 
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.event.ItemsAddedToInventoryEvent;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.ItemEntity;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
+import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.PlayerInventory;
@@ -15,9 +18,11 @@ import net.minestom.server.inventory.click.Click;
 import net.minestom.server.inventory.click.ClickType;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.utils.inventory.PlayerInventoryUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 
 public final class InventoryUtil {
 
@@ -25,10 +30,15 @@ public final class InventoryUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static void addItemToInventory(AbstractInventory inventory, ItemStack item, Instance instance, Point point) {
+    public static void addItemToInventory(@Nullable Entity entity, AbstractInventory inventory, ItemStack item, Instance instance, Point point) {
         final ItemStack result = inventory.addItemStack(item, TransactionOption.ALL);
         if (result.isAir()) {
+            EventDispatcher.call(new ItemsAddedToInventoryEvent(entity, inventory, List.of(item)));
             return;
+        }
+        final int amount = item.amount() - result.amount();
+        if (amount > 0) {
+            EventDispatcher.call(new ItemsAddedToInventoryEvent(entity, inventory, List.of(item.withAmount(amount))));
         }
         final ItemEntity itemEntity = new ItemEntity(result);
         itemEntity.setPickupDelay(Duration.ofMillis(500));
@@ -36,7 +46,7 @@ public final class InventoryUtil {
     }
 
     public static void addItemToInventory(DSPlayer player, ItemStack item, Instance instance, Point point) {
-        addItemToInventory(player.getInventory(), item, instance, point);
+        addItemToInventory(player, player.getInventory(), item, instance, point);
     }
 
     public static void addItemToInventory(DSPlayer player, ItemStack item) {
@@ -51,14 +61,14 @@ public final class InventoryUtil {
         addItemToInventory(player, itemStack, player.getInstance(), player.getPosition());
     }
 
-    public static void addItemsToInventory(AbstractInventory inventory, Collection<ItemStack> items, Instance instance, Point point) {
+    public static void addItemsToInventory(@Nullable Entity entity, AbstractInventory inventory, Collection<ItemStack> items, Instance instance, Point point) {
         for (final ItemStack item : items) {
-            addItemToInventory(inventory, item, instance, point);
+            addItemToInventory(entity, inventory, item, instance, point);
         }
     }
 
     public static void addItemsToInventory(DSPlayer player, Collection<ItemStack> items, Instance instance, Point point) {
-        addItemsToInventory(player.getInventory(), items, instance, point);
+        addItemsToInventory(player, player.getInventory(), items, instance, point);
     }
 
     public static boolean isLeftClick(Click click) {

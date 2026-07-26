@@ -2,7 +2,6 @@ package net.desolatesky.player;
 
 import net.desolatesky.data.definition.DataTranslator;
 import net.desolatesky.player.data.PlayerDataDefinitionV1;
-import net.desolatesky.player.data.PlayerDataDefinitionV2;
 import net.desolatesky.world.pos.WorldPosition;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -14,8 +13,7 @@ import java.util.UUID;
 public final class DSPlayerData {
 
     public static final DataTranslator<DSPlayerData> DATA_TRANSLATOR = new DataTranslator<>(List.of(
-            new PlayerDataDefinitionV1(),
-            new PlayerDataDefinitionV2()
+            new PlayerDataDefinitionV1()
     ));
 
     private final UUID uuid;

@@ -5,6 +5,7 @@ import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.definition.ItemDefinition;
 import net.desolatesky.permission.Permission;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.InventoryUtil;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.CommandSender;
@@ -70,6 +71,6 @@ public final class GiveCommand extends Command {
         }
         final DSPlayer player = (DSPlayer) entity;
         final int amount = context.getOrDefault(this.itemAmountArg, 1);
-        player.getInventory().addItemStack(itemDefinition.defaultItemStack().withAmount(amount));
+        InventoryUtil.addItemToInventory(player, itemDefinition.defaultItemStack().withAmount(amount));
     }
 }

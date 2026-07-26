@@ -14,9 +14,13 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SequencedMap;
 import java.util.stream.Collectors;
 
 public final class AdvancementsProgress {
@@ -26,20 +30,27 @@ public final class AdvancementsProgress {
     /// advancement tab id -> advancement with no children
     private final SetMultimap<Key, Key> completedAdvancements;
     private final Map<Key, Advancement> advancements;
-    private final Map<Key, AdvancementTab> tabs;
+    private final SequencedMap<Key, AdvancementTab> tabs;
 
     public AdvancementsProgress(SetMultimap<Key, Key> currentAdvancements, SetMultimap<Key, Key> completedAdvancements) {
         this.currentAdvancements = currentAdvancements;
         this.completedAdvancements = completedAdvancements;
         this.advancements = new HashMap<>();
-        this.tabs = new HashMap<>();
+        this.tabs = new LinkedHashMap<>();
     }
 
     public void initialize(IslandAdvancementManager islandAdvancementManager, Island island) {
-        if (this.currentAdvancements.isEmpty()) {
-            islandAdvancementManager.getAdvancements().forEach(advancements -> this.currentAdvancements.put(advancements.key(), advancements.rootAdvancement()));
-        }
-        for (final Key groupKey : this.currentAdvancements.keySet()) {
+        islandAdvancementManager.getAdvancements().forEach(advancements -> {
+            if (!this.currentAdvancements.containsKey(advancements.key()) && !this.completedAdvancements.containsKey(advancements.key())) {
+                this.currentAdvancements.put(advancements.key(), advancements.rootAdvancement());
+            }
+        });
+        final List<Key> groupKeys = islandAdvancementManager.getAdvancements()
+                .stream()
+                .sorted(Comparator.comparingInt(IslandAdvancements::index))
+                .map(IslandAdvancements::key)
+                .toList();
+        for (final Key groupKey : groupKeys) {
             final IslandAdvancements islandAdvancements = islandAdvancementManager.getAdvancements(groupKey);
             if (islandAdvancements == null) {
                 continue;
@@ -166,7 +177,6 @@ public final class AdvancementsProgress {
         }
         final Advancement minecraftAdvancement = this.advancements.get(id);
         if (minecraftAdvancement != null) {
-            minecraftAdvancement.setHidden(false);
             minecraftAdvancement.showToast(true);
             minecraftAdvancement.setAchieved(true);
             minecraftAdvancement.showToast(false);

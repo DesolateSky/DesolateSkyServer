@@ -28,7 +28,7 @@ public final class IslandAdvancementManager {
         final Path advancementsFolder = Path.of("advancements");
         final List<IslandAdvancements> islandAdvancements = new ArrayList<>();
         try {
-            Files.walkFileTree(advancementsFolder, new FileVisitor<Path>() {
+            Files.walkFileTree(advancementsFolder, new FileVisitor<>() {
                 @Override
                 public @NotNull FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attrs) {
                     return FileVisitResult.CONTINUE;

@@ -1,5 +1,6 @@
 package net.desolatesky.player;
 
+import net.desolatesky.cooldown.DurationCooldown;
 import net.desolatesky.crafting.CraftingMenuHolder;
 import net.desolatesky.data.DataHolder;
 import net.desolatesky.lock.Lockable;
@@ -12,6 +13,9 @@ import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.pos.WorldPosition;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.minestom.server.entity.attribute.Attribute;
@@ -22,6 +26,8 @@ import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -38,11 +44,16 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
     private @UnknownNullability User user;
     private boolean creatingIsland = false;
 
+    private boolean afk = false;
+
     private @Nullable WorldPosition logoutPos;
 
     private boolean teleporting = false;
     private @Nullable ShapedRecipe.Result currentOutputResult;
     private @Nullable Key currentRecipeId;
+
+    // todo make an actual cooldown system, this is just to prevent people spam creating islands
+    private @Nullable DurationCooldown islandCreateCooldown;
 
     public DSPlayer(
             PlayerConnection playerConnection,
@@ -69,21 +80,42 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
     }
 
     public boolean hasPermission(String permission) {
+        final User user = this.getUser();
+        return user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+    }
+
+    private @UnknownNullability User getUser() {
         if (this.user == null) {
             this.user = LuckPermsProvider.get().getUserManager().getUser(this.getUuid());
         }
-        if (this.user == null) {
-            return false;
-        }
-        return this.user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+        return this.user;
     }
 
     @Override
     public Component getDisplayName() {
         final Component display = super.getDisplayName();
         if (display == null) {
-            return Component.text(this.getUsername());
+            return this.updateDisplayName();
         }
+        return display;
+    }
+
+    public Component updateDisplayName() {
+        final String prefixString = this.getUser().getCachedData().getMetaData().getPrefix();
+        Component display = Component.text(this.getUsername());
+        if (prefixString != null) {
+            display = ComponentUtil.parse(prefixString)
+                    .appendSpace()
+                    .append(display);
+        }
+        if (this.afk) {
+            display = Component.empty()
+                    .append(Component.text("[AFK] ")
+                            .color(NamedTextColor.RED)
+                            .decorate(TextDecoration.BOLD))
+                    .append(display);
+        }
+        super.setDisplayName(display);
         return display;
     }
 
@@ -99,8 +131,23 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
         return this.lockRead(() -> this.islandId != null);
     }
 
-    public void setIslandId(UUID islandId) {
-        this.lockWrite(() -> this.islandId = islandId);
+    public void setIslandId(@Nullable UUID islandId) {
+        this.lockWrite(() -> {
+            this.islandId = islandId;
+            if (this.islandId == null) {
+                return;
+            }
+            this.islandCreateCooldown = new DurationCooldown(Instant.now(), Duration.ofMinutes(10));
+        });
+    }
+
+    public @Nullable DurationCooldown getIslandCreateCooldown() {
+        return this.lockRead(() -> {
+            if (this.islandCreateCooldown != null && this.islandCreateCooldown.isComplete()) {
+                this.islandCreateCooldown = null;
+            }
+            return this.islandCreateCooldown;
+        });
     }
 
     public void setCreatingIsland(boolean creatingIsland) {
@@ -121,7 +168,9 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
 
     @Override
     public void setCurrentOutputResult(@Nullable ShapedRecipe.Result currentOutputResult) {
-        this.lockWrite(() -> this.currentOutputResult = currentOutputResult);
+        this.lockWrite(() -> {
+            this.currentOutputResult = currentOutputResult;
+        });
     }
 
     @Override
@@ -190,6 +239,11 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
     public void kick(String message) {
         super.kick(message);
         DSLogger.getLogger().info(this.getUsername() + " was kicked with reason: " + message);
+    }
+
+    public void toggleAfkStatus() {
+        this.afk = !this.afk;
+        this.updateDisplayName();
     }
 
     @Override

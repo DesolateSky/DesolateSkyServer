@@ -31,7 +31,7 @@ public final class PointData implements Data<Point> {
                 PointType.DATA.write(writer, PointType.POS);
                 Data.DOUBLE.write(writer, p.x());
                 Data.DOUBLE.write(writer, p.y());
-                Data.DOUBLE.write(writer, p.x());
+                Data.DOUBLE.write(writer, p.z());
                 Data.FLOAT.write(writer, p.yaw());
                 Data.FLOAT.write(writer, p.pitch());
             }

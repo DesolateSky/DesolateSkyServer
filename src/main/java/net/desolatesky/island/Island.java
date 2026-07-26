@@ -33,11 +33,15 @@ public interface Island {
 
     void setIslandRole(UUID playerId, IslandRole role);
 
-    void invite(UUID islandMember, UUID invitedPlayer);
+    boolean invite(UUID islandMember, UUID invitedPlayer);
+
+    boolean removeInvite(UUID islandMember, UUID invitedPlayer);
 
     boolean isInvited(UUID playerId);
 
-    void acceptInvite(UUID playerId);
+    boolean acceptInvite(UUID playerId);
+
+    boolean leaveIsland(UUID playerId);
 
     void setName(UUID player, Component newName);
 
@@ -49,9 +53,9 @@ public interface Island {
 
     IslandSnapshot createSnapshot();
 
-    void onMemberJoin(DSPlayer player, DSWorld world);
+    void onMemberJoinInstance(DSPlayer player, DSWorld world);
 
-    void onMemberLeave(DSPlayer player, DSWorld world);
+    void onMemberLeaveServer(DSPlayer player, DSWorld world);
 
     AdvancementsProgress getAdvancementsProgress();
 }

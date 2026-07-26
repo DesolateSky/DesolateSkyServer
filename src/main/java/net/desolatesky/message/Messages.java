@@ -23,6 +23,7 @@ public final class Messages {
     public static final MessageKey CONFIRM_DELETE_ISLAND = new MessageKey("confirm-delete-island");
     public static final MessageKey DELETING_ISLAND = new MessageKey("deleting-island");
     public static final MessageKey DELETED_ISLAND = new MessageKey("deleted-island");
+    public static final MessageKey CANNOT_DELETE_ISLAND = new MessageKey("cannot-delete-island");
     public static final MessageKey ISLAND_DELETION_FAILED = new MessageKey("island-deletion-failed");
 
     // invites
@@ -45,7 +46,9 @@ public final class Messages {
     // kicking
     public static final MessageKey RECEIVED_KICK_FROM_ISLAND = new MessageKey("received-kick-from-island");
     public static final MessageKey SENT_KICK_FROM_ISLAND = new MessageKey("sent-kick-from-island");
-    public static final MessageKey LEFT_ISLAND = new MessageKey("left-island");
+    public static final MessageKey SELF_LEFT_ISLAND = new MessageKey("self-left-island");
+    public static final MessageKey MEMBER_LEFT_ISLAND = new MessageKey("member-left-island");
+    public static final MessageKey NO_PERMISSION_TO_KICK_MEMBER = new MessageKey("no-permission-to-kick-member");
 
     // permissions
     public static final MessageKey ISLAND_PERMISSION_DENIED = new MessageKey("island-permission-denied");
@@ -54,5 +57,8 @@ public final class Messages {
     public static final MessageKey PLAYER_NOT_FOUND = new MessageKey("player-not-found");
     public static final MessageKey PLAYER_JOIN = new MessageKey("player-join");
     public static final MessageKey NEW_PLAYER_JOIN = new MessageKey("new-player-join");
+    public static final MessageKey TUTORIAL = new MessageKey("tutorial");
+    public static final MessageKey STORY = new MessageKey("story");
+    public static final MessageKey RULES = new MessageKey("rules");
 
 }

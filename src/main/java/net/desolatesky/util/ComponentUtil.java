@@ -1,6 +1,5 @@
 package net.desolatesky.util;
 
-import ch.qos.logback.core.rolling.SizeAndTimeBasedFileNamingAndTriggeringPolicy;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -21,9 +20,10 @@ public final class ComponentUtil {
     public static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
             .editTags(b -> b.tag("primary-color", (_, _) -> createTag(Constants.PRIMARY_COLOR))
                     .tag("secondary-color", (_, _) -> createTag(Constants.SECONDARY_COLOR))
-                    .tag("text-color", (_, _) -> createTag(Constants.SECONDARY_COLOR))
+                    .tag("text-color", (_, _) -> createTag(Constants.TEXT_COLOR))
                     .tag("highlight-color", (_, _) -> createTag(Constants.HIGHLIGHT_COLOR))
                     .tag("background-color", (_, _) -> createTag(Constants.BACKGROUND_COLOR))
+                    .resolver(TagResolver.resolver(Placeholder.parsed("server-version", Constants.SERVER_VERSION)))
                     .resolver(TagResolver.resolver(Placeholder.parsed("prefix", Constants.PREFIX_STRING)))
             )
             .postProcessor(component -> component.decoration(TextDecoration.ITALIC, false))

@@ -6,6 +6,7 @@ import net.desolatesky.data.type.Data;
 import net.desolatesky.data.writer.DataWriter;
 import net.desolatesky.logging.DSLogger;
 import net.desolatesky.player.DSPlayerData;
+import net.desolatesky.world.pos.WorldPosition;
 import net.kyori.adventure.nbt.TagStringIO;
 import net.minestom.server.codec.Transcoder;
 import net.minestom.server.item.ItemStack;
@@ -27,12 +28,7 @@ public final class PlayerDataDefinitionV1 extends DataDefinition<DSPlayerData> {
     @Override
     public void write(DataWriter writer, DSPlayerData data) throws IOException {
         Data.UUID.write(writer, data.uuid());
-        if (data.islandId() == null) {
-            Data.BOOLEAN.write(writer, false);
-        } else {
-            Data.BOOLEAN.write(writer, true);
-            Data.UUID.write(writer, data.islandId());
-        }
+        Data.UUID.writeNullable(writer, data.islandId());
         final List<String> items = data.inventory()
                 .stream()
                 .map(itemStack -> ItemStack.CODEC.encode(Transcoder.NBT, itemStack).orElse(null))
@@ -48,17 +44,13 @@ public final class PlayerDataDefinitionV1 extends DataDefinition<DSPlayerData> {
                 .filter(Objects::nonNull)
                 .toList();
         Data.STRING.writeList(writer, items);
+        WorldPosition.DATA_TRANSLATOR.writeNullable(writer, data.logoutPos());
     }
 
     @Override
     public DSPlayerData read(DataReader reader) throws IOException {
         final UUID id = Data.UUID.read(reader);
-        final @Nullable UUID islandId;
-        if (reader.readBoolean()) {
-            islandId = Data.UUID.read(reader);
-        } else {
-            islandId = null;
-        }
+        final @Nullable UUID islandId = Data.UUID.readNullable(reader);
         final List<ItemStack> inventory = Data.STRING.readList(reader).
                 stream()
                 .map(itemString -> {
@@ -72,6 +64,7 @@ public final class PlayerDataDefinitionV1 extends DataDefinition<DSPlayerData> {
                 .map(tag -> ItemStack.CODEC.decode(Transcoder.NBT, tag).orElse(null))
                 .filter(Objects::nonNull)
                 .toList();
-        return new DSPlayerData(id, null /* use v2 */, inventory, null);
+        final WorldPosition logoutPos = WorldPosition.DATA_TRANSLATOR.readNullable(reader);
+        return new DSPlayerData(id, islandId, inventory, logoutPos);
     }
 }

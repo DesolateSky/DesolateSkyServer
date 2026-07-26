@@ -1,0 +1,7 @@
+package net.desolatesky.island;
+
+import net.minestom.server.event.Event;
+
+public final record IslandUnloadEvent(Island island) implements Event {
+
+}

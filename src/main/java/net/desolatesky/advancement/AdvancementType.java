@@ -5,5 +5,7 @@ public enum AdvancementType {
     CREATE_ISLAND,
     COLLECT_ITEM,
     PLACE_BLOCK,
-    CRAFT
+    CRAFT,
+    HYDRATE_SOIL,
+    ENTER_WORLD
 }

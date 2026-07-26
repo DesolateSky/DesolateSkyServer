@@ -11,6 +11,7 @@ public class ConfigFile {
 
     protected final Path filePath;
     protected final String resourcePath;
+    private final Function<HoconConfigurationLoader.Builder, HoconConfigurationLoader.Builder> loaderBuilderFunction;
     protected ConfigNode rootNode;
 
     public static ConfigFile get(Path filePath, String resourcePath) {
@@ -18,7 +19,7 @@ public class ConfigFile {
     }
 
     public static ConfigFile get(Path filePath, String resourcePath, Function<HoconConfigurationLoader.Builder, HoconConfigurationLoader.Builder> loaderBuilderFunction) {
-        final ConfigFile configFile = new ConfigFile(filePath, resourcePath);
+        final ConfigFile configFile = new ConfigFile(filePath, resourcePath, loaderBuilderFunction);
         configFile.load();
         final HoconConfigurationLoader loader = loaderBuilderFunction.apply(
                         HoconConfigurationLoader.builder()
@@ -33,9 +34,10 @@ public class ConfigFile {
         return configFile;
     }
 
-    private ConfigFile(Path filePath, String resourcePath) {
+    private ConfigFile(Path filePath, String resourcePath, Function<HoconConfigurationLoader.Builder, HoconConfigurationLoader.Builder> loaderBuilderFunction) {
         this.filePath = filePath;
         this.resourcePath = resourcePath;
+        this.loaderBuilderFunction = loaderBuilderFunction;
     }
 
     private void load() {
@@ -50,6 +52,20 @@ public class ConfigFile {
             loader.save(this.rootNode);
         } catch (Exception e) {
             throw new RuntimeException("Failed to save configuration from " + this.filePath, e);
+        }
+    }
+
+    public void reload() {
+        this.load();
+        final HoconConfigurationLoader loader = this.loaderBuilderFunction.apply(
+                        HoconConfigurationLoader.builder()
+                                .path(this.filePath)
+                )
+                .build();
+        try {
+            this.rootNode = new ConfigNode(loader.load());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load configuration from " + this.filePath, e);
         }
     }
 

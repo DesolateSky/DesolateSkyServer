@@ -14,5 +14,6 @@ public final class MaterialTags {
     public static final RegistryTag<Material> SHOVEL_MINEABLE = Material.staticRegistry().getOrCreateTag(TagKey.ofHash("#minecraft:mineable/shovel"));
     public static final RegistryTag<Material> HOE_MINEABLE = Material.staticRegistry().getOrCreateTag(TagKey.ofHash("#minecraft:mineable/hoe"));
     public static final RegistryTag<Material> DIRT = Material.staticRegistry().getOrCreateTag(TagKey.ofHash("#dirt"));
+    public static final RegistryTag<Material> GRASS_BLOCKS = Material.staticRegistry().getOrCreateTag(TagKey.ofHash("#grass_blocks"));
 
 }

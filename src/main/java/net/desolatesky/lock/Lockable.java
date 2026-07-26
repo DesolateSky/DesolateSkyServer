@@ -1,6 +1,8 @@
 package net.desolatesky.lock;
 
 import net.desolatesky.util.functional.SafeRunnable;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Supplier;
@@ -27,7 +29,7 @@ public interface Lockable {
         }
     }
 
-    default <T> T lockWrite(Supplier<T> supplier) {
+    default <T> @UnknownNullability T lockWrite(Supplier<@UnknownNullability T> supplier) {
         this.lock().writeLock().lock();
         try {
             return supplier.get();
@@ -36,7 +38,7 @@ public interface Lockable {
         }
     }
 
-    default <T> T lockRead(Supplier<T> supplier) {
+    default <T> @UnknownNullability T lockRead(Supplier<@UnknownNullability T> supplier) {
         this.lock().readLock().lock();
         try {
             return supplier.get();

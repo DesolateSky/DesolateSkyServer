@@ -48,12 +48,8 @@ public final class PlayerTickListener implements Listener<PlayerEvent> {
             final Island island = islandWorld.island();
             switch (worldType) {
                 case LOBBY -> {
-                    return;
                 }
-                case VOID, ISLAND -> {
-                    final UUID voidWorldId = island.getWorldId(WorldType.VOID);
-                    TeleportManager.teleportPlayerImmediate(this.worldManager, player, island.islandId(), voidWorldId, VoidWorld.SPAWN_POINT, WorldType.VOID);
-                }
+                case VOID, ISLAND -> TeleportManager.teleportPlayerImmediate(this.worldManager, player, island.islandId(), VoidWorld.SPAWN_POINT, WorldType.VOID);
             }
         });
     }

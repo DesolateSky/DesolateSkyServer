@@ -4,11 +4,14 @@ import com.google.common.collect.Collections2;
 import net.desolatesky.advancement.impl.CollectItemAdvancement;
 import net.desolatesky.advancement.impl.CraftRecipeAdvancement;
 import net.desolatesky.advancement.impl.CreateIslandAdvancement;
+import net.desolatesky.advancement.impl.EnterWorldAdvancement;
+import net.desolatesky.advancement.impl.HydrateSoilAdvancement;
 import net.desolatesky.advancement.impl.PlaceBlockAdvancement;
 import net.desolatesky.advancement.impl.RootAdvancement;
 import net.desolatesky.config.ConfigFile;
 import net.desolatesky.config.ConfigNode;
 import net.desolatesky.util.ComponentUtil;
+import net.desolatesky.world.WorldType;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.advancements.Advancement;
@@ -97,6 +100,11 @@ public final class IslandAdvancements {
             case CRAFT -> {
                 final Key recipe = Key.key(Objects.requireNonNull(node.node("recipe").getString()));
                 yield new CraftRecipeAdvancement(group, advancementId, title, description, icon, frameType, x, y, children, recipe);
+            }
+            case HYDRATE_SOIL -> new HydrateSoilAdvancement(group, advancementId, title, description, icon, frameType, x, y, children);
+            case ENTER_WORLD -> {
+                final WorldType worldType = WorldType.valueOf(node.node("world-type").getString(""));
+                yield new EnterWorldAdvancement(group, advancementId, title, description, icon, frameType, x, y, children, worldType);
             }
         };
     }

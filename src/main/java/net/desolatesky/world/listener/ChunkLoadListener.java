@@ -5,18 +5,31 @@ import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.listener.LoadBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
+import net.desolatesky.island.Island;
+import net.desolatesky.island.IslandUnloadEvent;
 import net.desolatesky.world.DSWorld;
+import net.desolatesky.world.WorldManager;
+import net.desolatesky.world.WorldType;
+import net.minestom.server.MinecraftServer;
+import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.instance.InstanceChunkLoadEvent;
-import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.instance.Chunk;
 import org.jetbrains.annotations.NotNullByDefault;
 
+import java.util.UUID;
+
 @NotNullByDefault
-public class ChunkLoadListener implements Listener<InstanceEvent> {
+public class ChunkLoadListener implements Listener<Event> {
+
+    private final WorldManager worldManager;
+
+    public ChunkLoadListener(WorldManager worldManager) {
+        this.worldManager = worldManager;
+    }
 
     @Override
-    public void register(EventNode<InstanceEvent> node) {
+    public void register(EventNode<Event> node) {
         node.addListener(InstanceChunkLoadEvent.class, event -> {
             if (!(event.getInstance() instanceof final DSWorld world)) {
                 return;
@@ -34,6 +47,21 @@ public class ChunkLoadListener implements Listener<InstanceEvent> {
                 }
                 loadBehavior.onLoad(world, pos, block);
             });
+        });
+        node.addListener(IslandUnloadEvent.class, event -> {
+            final Island island = event.island();
+            for (final UUID member : island.getMembers()) {
+                if (MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(member) != null) {
+                    return;
+                }
+            }
+            for (final WorldType worldType : WorldType.values()) {
+                if (worldType.hubWorld()) {
+                    continue;
+                }
+                final UUID worldId = island.getWorldId(worldType);
+                this.worldManager.unloadWorld(worldId);
+            }
         });
     }
 }

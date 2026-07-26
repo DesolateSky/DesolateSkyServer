@@ -20,7 +20,7 @@ public final class ChatMessage implements Message {
     }
 
     public static ChatMessage parse(String id, SequencedCollection<String> contents) {
-        return new ChatMessage(id, contents.stream().map(ComponentUtil::parse).toList());
+        return new ChatMessage(id, contents.stream().map(s -> s.replaceAll("[\\n\\r]","")).map(ComponentUtil::parse).toList());
     }
 
     public static ChatMessage parse(String id, String message) {

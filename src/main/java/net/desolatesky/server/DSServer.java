@@ -9,17 +9,25 @@ import net.desolatesky.advancement.listener.IslandAdvancementListener;
 import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.MaterialTags;
 import net.desolatesky.block.behavior.listener.BlockClickListener;
-import net.desolatesky.command.DiscordCommand;
+import net.desolatesky.command.informational.AfkCommand;
+import net.desolatesky.command.informational.DiscordCommand;
 import net.desolatesky.command.SpawnCommand;
 import net.desolatesky.command.admin.BanCommand;
+import net.desolatesky.command.admin.ClearChatCommand;
+import net.desolatesky.command.admin.ClearInventoryCommand;
 import net.desolatesky.command.admin.FlyCommand;
 import net.desolatesky.command.admin.GameModeCommand;
 import net.desolatesky.command.admin.GiveCommand;
 import net.desolatesky.command.admin.LogLevelCommand;
+import net.desolatesky.command.admin.PlayerDataCommand;
+import net.desolatesky.command.admin.ReloadMessagesCommand;
 import net.desolatesky.command.admin.StopCommand;
 import net.desolatesky.command.admin.TpCommand;
 import net.desolatesky.command.admin.WhitelistCommand;
 import net.desolatesky.command.console.ConsoleCommandHandler;
+import net.desolatesky.command.informational.RulesCommand;
+import net.desolatesky.command.informational.StoryCommand;
+import net.desolatesky.command.informational.TutorialCommand;
 import net.desolatesky.command.island.IslandCommand;
 import net.desolatesky.config.ConfigFile;
 import net.desolatesky.crafting.listener.CraftingMenuListener;
@@ -53,6 +61,7 @@ import net.desolatesky.util.ResourceLoader;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.WorldManager;
 import net.desolatesky.world.biome.Biomes;
+import net.desolatesky.world.dimension.Dimensions;
 import net.desolatesky.world.listener.ChunkLoadListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -155,6 +164,7 @@ public final class DSServer {
             return new DSPlayer(conn, profile, this, data);
         });
         MinecraftServer.setBrandName("DesolateSky");
+        Dimensions.registerDimensions();
         Biomes.registerBiomes();
 
         boolean initialized = true;
@@ -271,6 +281,7 @@ public final class DSServer {
         for (final Player player : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
             player.kick(Component.text("Server is restarting").color(NamedTextColor.RED));
         }
+        this.islandManager.getAll().forEach(i -> this.islandDatabase.saveDataNow(i.islandId(), i.createSnapshot()));
         DSLogger.getLogger().info("Disabling LuckPerms");
         LuckPermsMinestom.disable();
         DSLogger.getLogger().info("Saving instances");
@@ -308,8 +319,7 @@ public final class DSServer {
 
         new CraftingMenuListener(this.recipeFactory, this.itemFactory).register(inventoryEventNode);
 
-        new ChunkLoadListener().register(instanceEventNode);
-
+        new ChunkLoadListener(this.worldManager).register(globalEventHandler);
         new ItemPickupListener().register(globalEventHandler);
         new ItemThrowListener().register(globalEventHandler);
         new EntityDamageListener().register(globalEventHandler);
@@ -333,9 +343,13 @@ public final class DSServer {
     private void registerCommands() {
         final CommandManager commandManager = MinecraftServer.getCommandManager();
         commandManager.register(new StopCommand(this));
-        commandManager.register(new IslandCommand(this.teleportManager, this.messageHandler, this.worldManager, this.islandManager));
+        commandManager.register(new IslandCommand(this.teleportManager, this.messageHandler, this.worldManager, this.islandManager, this.playerDatabase, this.serverDatabases));
         commandManager.register(new GiveCommand(this.itemFactory));
         commandManager.register(new LogLevelCommand());
+        commandManager.register(new ReloadMessagesCommand(this.messageHandler));
+        commandManager.register(new ClearInventoryCommand(this.serverDatabases, this.playerDatabase));
+        commandManager.register(new PlayerDataCommand(this.serverDatabases, this.playerDatabase));
+        commandManager.register(new ClearChatCommand());
         commandManager.register(new BanCommand(this.serverConfig, this.serverDatabases));
         commandManager.register(new WhitelistCommand(this.whitelist));
         commandManager.register(new SpawnCommand(this.teleportManager));
@@ -343,6 +357,10 @@ public final class DSServer {
         commandManager.register(new GameModeCommand());
         commandManager.register(new FlyCommand());
         commandManager.register(new TpCommand());
+        commandManager.register(new TutorialCommand(this.messageHandler));
+        commandManager.register(new StoryCommand(this.messageHandler));
+        commandManager.register(new RulesCommand(this.messageHandler));
+        commandManager.register(new AfkCommand());
     }
 
     private void setupPermissions() {

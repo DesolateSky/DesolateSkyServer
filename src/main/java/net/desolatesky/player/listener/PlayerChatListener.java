@@ -7,6 +7,7 @@ import net.desolatesky.profanity.ProfanityFilter;
 import net.desolatesky.util.ComponentUtil;
 import net.desolatesky.util.ItemUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.player.PlayerChatEvent;
 import net.minestom.server.event.player.PlayerCommandEvent;
@@ -37,7 +38,7 @@ public final class PlayerChatListener implements Listener<PlayerEvent> {
             if (filteredMessage == null) {
                 filteredMessage = event.getRawMessage();
             }
-            final Component message = player.getDisplayName().append(Component.text(": "))
+            final Component message = player.getDisplayName().append(Component.text(": ").style(Style.empty()))
                     .append(ComponentUtil.safeParse(filteredMessage));
             event.setFormattedMessage(message.replaceText(c -> c.matchLiteral("[item]").replacement(
                     Component.text("[").append(

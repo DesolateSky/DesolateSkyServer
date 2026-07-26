@@ -28,7 +28,7 @@ public final class HoeBehavior implements ClickBehavior {
         if (material == null) {
             return;
         }
-        if (!MaterialTags.DIRT.contains(material)) {
+        if (!MaterialTags.DIRT.contains(material) && !MaterialTags.GRASS_BLOCKS.contains(material)) {
             return;
         }
         world.setBlock(clickedPos, Block.FARMLAND.key(), Function.identity());

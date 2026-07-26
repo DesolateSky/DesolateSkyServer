@@ -1,5 +1,6 @@
 package net.desolatesky.item.behavior.impl;
 
+import net.desolatesky.block.HydrateSoilEvent;
 import net.desolatesky.block.property.BlockProperties;
 import net.desolatesky.item.behavior.ClickBehavior;
 import net.desolatesky.player.DSPlayer;
@@ -8,6 +9,7 @@ import net.desolatesky.util.InventoryUtil;
 import net.desolatesky.world.DSWorld;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.PlayerHand;
+import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -30,6 +32,7 @@ public final class WaterBottleBehavior implements ClickBehavior {
         }
         world.setBlock(clickedPos, BlockProperties.FARMLAND_MOISTURE_PROPERTY.write(clickedBlock, maxMoisture));
         InventoryUtil.subtractFromHeldItem(player, hand, 1);
+        EventDispatcher.call(new HydrateSoilEvent(player, world, clickedBlock, clickedPos.asBlockVec()));
         final ItemStack glassBottle = world.itemFactory().getDefaultItem(Material.GLASS_BOTTLE.key());
         if (glassBottle == null) {
             return;

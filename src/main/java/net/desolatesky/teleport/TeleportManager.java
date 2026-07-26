@@ -33,24 +33,21 @@ public final class TeleportManager implements Lockable {
         this.requests = new HashMap<>();
     }
 
-    public static void teleportPlayerImmediate(WorldManager worldManager, DSPlayer player, @UnknownNullability UUID islandId, UUID worldId, Point position, WorldType worldType) {
+    public static void teleportPlayerImmediate(WorldManager worldManager, DSPlayer player, @UnknownNullability UUID islandId, Point position, WorldType worldType) {
         if (player.isTeleporting()) {
             return;
         }
         player.setTeleporting(true);
-        if (player.getInstance().getUuid().equals(worldId)) {
-            player.teleport(position.asPos());
-            player.setTeleporting(false);
-            return;
-        }
-        worldManager.loadWorld(islandId, worldId, worldType).
-                whenComplete((world, _) -> {
+        worldManager.loadWorld(islandId, worldType).
+                whenComplete((world, e) -> {
                     if (world == null) {
-                        DSLogger.getLogger().severe("Could not teleport %s to world %s".formatted(player.getUuid().toString(), worldId.toString()));
+                        DSLogger.getLogger().severe("Could not teleport %s to world %s".formatted(player.getUsername(), worldType.toString()));
                         player.setTeleporting(false);
+                        DSLogger.getLogger().severe(e);
                         return;
                     }
-                    player.setInstance(world, position).whenComplete((_, _) -> player.setTeleporting(false));
+                    TeleportUtil.teleportEntity(player, world, position.asPos())
+                            .whenComplete((_, _) -> player.setTeleporting(false));
                 });
     }
 
@@ -78,7 +75,7 @@ public final class TeleportManager implements Lockable {
             final Request request = requestData.request();
             if (request.isComplete()) {
                 final TeleportLocation location = request.location();
-                this.worldManager.loadWorld(location.islandId(), location.worldId(), location.worldType())
+                this.worldManager.loadWorld(location.islandId(), location.worldType())
                         .whenComplete((world, exception) -> {
                             final DSPlayer player = request.teleporter();
                             if (!player.isOnline()) {
