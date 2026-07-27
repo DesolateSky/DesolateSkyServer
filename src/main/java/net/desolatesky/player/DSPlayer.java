@@ -1,6 +1,8 @@
 package net.desolatesky.player;
 
-import net.desolatesky.cooldown.DurationCooldown;
+import net.desolatesky.cooldown.CooldownHolder;
+import net.desolatesky.cooldown.Cooldowns;
+import net.desolatesky.cooldown.CooldownCollection;
 import net.desolatesky.crafting.CraftingMenuHolder;
 import net.desolatesky.data.DataHolder;
 import net.desolatesky.lock.Lockable;
@@ -14,7 +16,6 @@ import net.desolatesky.world.pos.WorldPosition;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -27,19 +28,20 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @NotNullByDefault
-public final class DSPlayer extends net.minestom.server.entity.Player implements Lockable, DataHolder<DSPlayer>, CraftingMenuHolder {
+public final class DSPlayer extends net.minestom.server.entity.Player implements Lockable, DataHolder<DSPlayer>, CraftingMenuHolder, CooldownHolder {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final DSServer server;
     private final boolean newPlayer;
+    private final CooldownCollection cooldowns;
     private @Nullable UUID islandId;
     private @UnknownNullability User user;
     private boolean creatingIsland = false;
@@ -51,9 +53,6 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
     private boolean teleporting = false;
     private @Nullable ShapedRecipe.Result currentOutputResult;
     private @Nullable Key currentRecipeId;
-
-    // todo make an actual cooldown system, this is just to prevent people spam creating islands
-    private @Nullable DurationCooldown islandCreateCooldown;
 
     public DSPlayer(
             PlayerConnection playerConnection,
@@ -77,6 +76,7 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
         } else {
             this.newPlayer = true;
         }
+        this.cooldowns = new CooldownCollection(this, new HashMap<>(), new HashMap<>());
     }
 
     public boolean hasPermission(String permission) {
@@ -137,17 +137,12 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
             if (this.islandId == null) {
                 return;
             }
-            this.islandCreateCooldown = new DurationCooldown(Instant.now(), Duration.ofMinutes(10));
+            this.cooldowns.addToCooldown(Cooldowns.ISLAND_CREATION);
         });
     }
 
-    public @Nullable DurationCooldown getIslandCreateCooldown() {
-        return this.lockRead(() -> {
-            if (this.islandCreateCooldown != null && this.islandCreateCooldown.isComplete()) {
-                this.islandCreateCooldown = null;
-            }
-            return this.islandCreateCooldown;
-        });
+    public @Nullable Duration getIslandCreateCooldown() {
+        return this.lockRead(() -> this.cooldowns.getTimeLeft(Cooldowns.ISLAND_CREATION));
     }
 
     public void setCreatingIsland(boolean creatingIsland) {
@@ -244,6 +239,11 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
     public void toggleAfkStatus() {
         this.afk = !this.afk;
         this.updateDisplayName();
+    }
+
+    @Override
+    public CooldownCollection cooldowns() {
+        return this.cooldowns;
     }
 
     @Override

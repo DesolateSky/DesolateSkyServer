@@ -6,6 +6,7 @@ import net.kyori.adventure.key.Key;
 import net.minestom.server.tag.Tag;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 public final class ItemTags {
@@ -23,6 +24,8 @@ public final class ItemTags {
     public static final Tag<Double> SHOVEL_MINING_SPEED = Tags.Double("shovel_mining_speed");
     public static final Tag<Double> HOE_MINING_SPEED = Tags.Double("hoe_mining_speed");
     public static final Tag<Double> SWORD_MINING_SPEED = Tags.Double("sword_mining_speed");
+
+    public static final Tag<Instant> ATTACK_COOLDOWN = Tags.Instant("attack-cooldown");
 
     public static final Tag<Double> COMPOSTER_VALUE = Tags.Double("composter_value");
 

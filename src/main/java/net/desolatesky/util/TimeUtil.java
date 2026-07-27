@@ -27,11 +27,15 @@ public final class TimeUtil {
         return ticks * MILLIS_PER_TICK;
     }
 
-    public static long millisToTicks(long ticks) {
-        return ticks / MILLIS_PER_TICK;
+    public static long millisToTicks(long millis) {
+        return millis / MILLIS_PER_TICK;
     }
 
     public static Duration ticksToDuration(long ticks) {
         return Duration.ofMillis(ticksToMillis(ticks));
+    }
+
+    public static long durationToTicks(Duration duration) {
+        return duration.toMillis() / MILLIS_PER_TICK;
     }
 }

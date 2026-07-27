@@ -227,14 +227,12 @@ public final class DSServer {
         }, TaskSchedule.tick(10), TaskSchedule.tick(10));
 
         MinecraftServer.getSchedulerManager().scheduleTask(() -> {
-            DSLogger.getLogger().info("Beginning save of data");
             for (final Player player : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
                 this.playerDatabase.saveData(player.getUuid(), ((DSPlayer) player).createSnapshot());
             }
             for (final Island island : this.islandManager.getAll()) {
                 this.islandDatabase.saveData(island.islandId(), island.createSnapshot());
             }
-            DSLogger.getLogger().info("Ending save of data");
         }, TaskSchedule.duration(Duration.ofMinutes(3)), TaskSchedule.duration(Duration.ofMinutes(3)));
     }
 

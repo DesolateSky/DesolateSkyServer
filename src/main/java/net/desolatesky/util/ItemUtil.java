@@ -25,6 +25,11 @@ public final class ItemUtil {
         return name;
     }
 
+    public static Key getItemUseCooldownKey(ItemStack itemStack) {
+        final Key itemId = getItemId(itemStack);
+        return Key.key(itemId.namespace(), itemId.value() + "_cooldown");
+    }
+
     private ItemUtil() {
     }
 }
