@@ -95,9 +95,9 @@ public final class IslandManager implements Lockable {
             this.messageHandler.sendMessage(player, Messages.ALREADY_HAS_ISLAND);
             return CompletableFuture.completedFuture(null);
         }
-        final DurationCooldown createCooldown = player.getIslandCreateCooldown();
-        if (createCooldown != null && !createCooldown.isComplete()) {
-            player.sendMessage(Component.text("You must wait before creating another island! Time left: " + DateTimeUtil.durationToString(createCooldown.getTimeLeft())));
+        final Duration createCooldown = player.getIslandCreateCooldown();
+        if (createCooldown != null) {
+            player.sendMessage(Component.text("You must wait before creating another island! Time left: " + DateTimeUtil.durationToString(createCooldown)));
             player.setCreatingIsland(false);
             return CompletableFuture.completedFuture(null);
         }
