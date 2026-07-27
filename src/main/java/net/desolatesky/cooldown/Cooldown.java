@@ -8,4 +8,8 @@ public interface Cooldown {
 
     Duration getTimeLeft();
 
+    Cooldown add(Duration duration);
+
+    double calculatePercentageCompleted();
+
 }

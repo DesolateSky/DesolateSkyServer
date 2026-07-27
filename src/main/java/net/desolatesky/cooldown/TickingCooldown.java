@@ -6,10 +6,12 @@ import java.time.Duration;
 
 public final class TickingCooldown implements Cooldown {
 
-    private int ticksLeft;
+    private final long ticks;
+    private long ticksLeft;
 
-    public TickingCooldown(int ticksLeft) {
-        this.ticksLeft = ticksLeft;
+    public TickingCooldown(long ticks) {
+        this.ticks = ticks;
+        this.ticksLeft = ticks;
     }
 
     public void tick() {
@@ -27,5 +29,18 @@ public final class TickingCooldown implements Cooldown {
     @Override
     public Duration getTimeLeft() {
         return Duration.ofMillis(TimeUtil.ticksToMillis(this.ticksLeft));
+    }
+
+    @Override
+    public Cooldown add(Duration duration) {
+        return new TickingCooldown(TimeUtil.durationToTicks(duration) + this.ticksLeft);
+    }
+
+    @Override
+    public double calculatePercentageCompleted() {
+        if (this.ticksLeft <= 0) {
+            return 1;
+        }
+        return (double) this.ticksLeft / this.ticks;
     }
 }
