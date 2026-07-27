@@ -59,7 +59,7 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
             if (!(event.getPlayer() instanceof final DSPlayer player)) {
                 return;
             }
-            if (event.getInventory() instanceof PlayerInventory) {
+            if (event.getInventory() instanceof PlayerInventory && player.getOpenInventory() == null) {
                 this.handlePlayerInventoryPreClick(event, player);
                 return;
             }
@@ -90,7 +90,7 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
     }
 
     private void handlePlayerInventoryPreClick(InventoryPreClickEvent event, DSPlayer player) {
-        if (!(player.getOpenInventory() instanceof CraftingInventory)) {
+        if (player.getOpenInventory() != null) {
             return;
         }
         final CraftingHandler craftingHandler = createPlayerInventoryCraftingHandler(player);
