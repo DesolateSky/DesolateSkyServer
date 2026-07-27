@@ -11,7 +11,7 @@ public final class Constants {
         throw new UnsupportedOperationException();
     }
 
-    public static final String SERVER_VERSION = "0.0.2";
+    public static final String SERVER_VERSION = "0.0.3";
 
     public static final UUID UUID_ZERO = new UUID(0, 0);
     public static final String CONSOLE_NAME = "Console";

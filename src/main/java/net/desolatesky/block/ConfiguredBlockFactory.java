@@ -116,10 +116,7 @@ public final class ConfiguredBlockFactory implements BlockFactory {
         this.register(BlockDefinition.builder().key(Block.CARROTS.key())
                 .defaultBlock(Block.CARROTS)
                 .settings(BlockSettings.builder().setting(BlockSetting.Type.SUPPORTED_BLOCK,
-                                SupportedBlockSetting.blocks(Direction.DOWN, false, Set.of(Block.FARMLAND.key()), b -> {
-                                    final Integer moisture = BlockProperties.FARMLAND_MOISTURE_PROPERTY.read(b);
-                                    return moisture != null && moisture >= BlockProperties.FARMLAND_MOISTURE_PROPERTY.max();
-                                }))
+                                SupportedBlockSetting.blocks(Direction.DOWN, false, Set.of(Block.FARMLAND.key())))
                         .build())
                 .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
                 .defineBehaviors(new CropBehavior(
