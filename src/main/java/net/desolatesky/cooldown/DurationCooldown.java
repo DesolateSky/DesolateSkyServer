@@ -30,7 +30,7 @@ public final class DurationCooldown implements Cooldown {
     @Override
     public double calculatePercentageCompleted() {
         final double total = this.duration.toMillis();
-        final double left = this.getTimeLeft().toMillis();
+        final double left = total - this.getTimeLeft().toMillis();
         if (left <= 0) {
             return 1;
         }

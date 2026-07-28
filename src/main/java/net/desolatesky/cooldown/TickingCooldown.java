@@ -41,6 +41,6 @@ public final class TickingCooldown implements Cooldown {
         if (this.ticksLeft <= 0) {
             return 1;
         }
-        return (double) this.ticksLeft / this.ticks;
+        return (double) (this.ticks - this.ticksLeft) / this.ticks;
     }
 }
