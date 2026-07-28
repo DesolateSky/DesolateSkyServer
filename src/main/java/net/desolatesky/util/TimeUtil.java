@@ -1,11 +1,14 @@
 package net.desolatesky.util;
 
+import net.minestom.server.ServerFlag;
+import org.h2.tools.Server;
+
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public final class TimeUtil {
 
-    public static final int MILLIS_PER_TICK = 50;
+    public static final int MILLIS_PER_TICK = 1000 / ServerFlag.SERVER_TICKS_PER_SECOND;
 
     private TimeUtil() {
         throw new UnsupportedOperationException();

@@ -258,12 +258,6 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defaultItem(ItemStack.builder(Material.WOODEN_PICKAXE)
                         .set(ItemTags.PICKAXE_MINING_SPEED, 0.75)
                         .customName(ComponentUtil.noItalics("Thatch Pickaxe"))
-                        .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(
-                                List.of(
-                                        new AttributeList.Modifier(Attribute.ATTACK_SPEED, new AttributeModifier("default_speed", 1.2, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND),
-                                        new AttributeList.Modifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("default_speed", 2, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)
-                                        )
-                        ))
                         .build())
                 .defineBehavior(
                         ItemBehavior.Type.MINING_SPEED,
@@ -274,12 +268,6 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defaultItem(ItemStack.builder(Material.WOODEN_AXE)
                         .set(ItemTags.AXE_MINING_SPEED, 0.75)
                         .customName(ComponentUtil.noItalics("Thatch Axe"))
-                        .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(
-                                List.of(
-                                        new AttributeList.Modifier(Attribute.ATTACK_SPEED, new AttributeModifier("default_speed", 1.5, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND),
-                                        new AttributeList.Modifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("default_speed", 0.8, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)
-                                        )
-                        ))
                         .build())
                 .defineBehavior(
                         ItemBehavior.Type.MINING_SPEED,
@@ -290,12 +278,6 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defaultItem(ItemStack.builder(Material.WOODEN_SHOVEL)
                         .set(ItemTags.SHOVEL_MINING_SPEED, 0.75)
                         .customName(ComponentUtil.noItalics("Thatch Shovel"))
-                        .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(
-                                List.of(
-                                        new AttributeList.Modifier(Attribute.ATTACK_SPEED, new AttributeModifier("default_speed", 1.5, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND),
-                                        new AttributeList.Modifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("default_speed", 1.2, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)
-                                        )
-                        ))
                         .build())
                 .defineBehavior(
                         ItemBehavior.Type.MINING_SPEED,
@@ -306,12 +288,6 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defaultItem(ItemStack.builder(Material.WOODEN_HOE)
                         .set(ItemTags.HOE_MINING_SPEED, 0.75)
                         .customName(ComponentUtil.noItalics("Thatch Hoe"))
-                        .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(
-                                List.of(
-                                        new AttributeList.Modifier(Attribute.ATTACK_SPEED, new AttributeModifier("default_speed", 1.5, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND),
-                                        new AttributeList.Modifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("default_speed", 1.2, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)
-                                        )
-                        ))
                         .build())
                 .defineBehavior(
                         ItemBehavior.Type.MINING_SPEED,
@@ -322,12 +298,6 @@ public final class ConfiguredItemFactory implements ItemFactory {
         this.register(ItemDefinition.builder().key(ItemIds.THATCH_SWORD)
                 .defaultItem(ItemStack.builder(Material.WOODEN_SWORD)
                         .set(ItemTags.SWORD_MINING_SPEED, 0.75)
-                        .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(
-                                List.of(
-                                        new AttributeList.Modifier(Attribute.ATTACK_SPEED, new AttributeModifier("default_speed", 4, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND),
-                                        new AttributeList.Modifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("default_speed", 1.6, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)
-                                        )
-                        ))
                         .customName(ComponentUtil.noItalics("Thatch Sword"))
                         .build())
                 .defineBehavior(

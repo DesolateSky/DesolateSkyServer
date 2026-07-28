@@ -5,6 +5,7 @@ import net.desolatesky.cooldown.CooldownHolder;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.ItemUtil;
+import net.desolatesky.util.MinecraftUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -42,15 +43,11 @@ public final class EntityDamageListener implements Listener<Event> {
             if (event.getEntity() instanceof Player && event.getTarget() instanceof Player) {
                 return;
             }
-            if (!(event.getTarget() instanceof final LivingEntity livingEntity)) {
+            if (!(event.getEntity() instanceof final LivingEntity attacker) || !(event.getTarget() instanceof final LivingEntity target)) {
                 return;
             }
-            float damage = 1.0f;
-            if (event.getEntity() instanceof final LivingEntity attacker) {
-                final ItemStack inHand = attacker.getItemInMainHand();
-                damage = this.getAttackDamage(attacker, inHand);
-            }
-            livingEntity.damage(Damage.fromEntity(event.getEntity(), damage));
+            final float damage = MinecraftUtil.getAttackDamage(attacker);
+            target.damage(Damage.fromEntity(event.getEntity(), damage));
         });
         node.addListener(EntityDamageEvent.class, event -> {
             final Entity entity = event.getEntity();
@@ -75,29 +72,5 @@ public final class EntityDamageListener implements Listener<Event> {
 //            event.setChatMessage(lastDamage.buildDeathMessage(player));
 //            event.setDeathText(lastDamage.buildDeathScreenText(player));
         });
-    }
-
-    private float getAttackDamage(LivingEntity entity, ItemStack used) {
-        final ItemStack inHand = entity.getItemInMainHand();
-        final AttributeInstance damageAttribute = entity.getAttribute(Attribute.ATTACK_DAMAGE);
-        final AttributeInstance cooldownAttribute = entity.getAttribute(Attribute.ATTACK_SPEED);
-        final AttributeList attributeList = inHand.get(DataComponents.ATTRIBUTE_MODIFIERS);
-        if (attributeList != null) {
-            attributeList.modifiers().forEach(m -> {
-                if (m.attribute().equals(damageAttribute.attribute())) {
-                    damageAttribute.addModifier(m.modifier());
-                } else if (m.attribute().equals(cooldownAttribute.attribute())) {
-                    cooldownAttribute.addModifier(m.modifier());
-                }
-            });
-        }
-        float damage = (float) damageAttribute.getValue();
-        if (entity instanceof final CooldownHolder cooldownHolder) {
-            final Key key = ItemUtil.getItemUseCooldownKey(used);
-            final double percentage = cooldownHolder.cooldowns().calculatePercentageCompleted(key);
-            damage *= (float) (1.0 / percentage);
-            cooldownHolder.cooldowns().setCooldown(key, Duration.ofMillis((long) (cooldownAttribute.getBaseValue() * 1000)));
-        }
-        return damage;
     }
 }
