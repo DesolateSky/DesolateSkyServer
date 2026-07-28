@@ -4,10 +4,10 @@ import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.BlockUpdateBehavior;
+import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
 import net.desolatesky.block.behavior.listener.LoadBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
-import net.desolatesky.block.setting.BlockSetting;
 import net.desolatesky.breaking.BreakingManager;
 import net.desolatesky.breaking.listener.BreakingListener;
 import net.desolatesky.entity.EntityManager;
@@ -17,6 +17,7 @@ import net.desolatesky.player.DSPlayer;
 import net.desolatesky.recipe.RecipeFactory;
 import net.desolatesky.util.BlockUtil;
 import net.desolatesky.util.DistanceUtil;
+import net.desolatesky.util.MinecraftUtil;
 import net.desolatesky.util.chance.Chance;
 import net.desolatesky.world.region.SquareRegion;
 import net.kyori.adventure.key.Key;
@@ -34,6 +35,7 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.instance.generator.Generator;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.utils.Direction;
 import net.minestom.server.world.DimensionType;
@@ -43,6 +45,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.SequencedSet;
@@ -151,17 +154,11 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
             if (blockDefinition == null) {
                 return;
             }
-            final BlockSetting.Result result = blockDefinition.settings().getAllSettings().stream()
-                    .map(setting -> setting.checkState(this, point, block))
-                    .reduce(BlockSetting.Result.GOOD, (f, s) -> {
-                        if (f.ordinal() < s.ordinal()) {
-                            return f;
-                        }
-                        return s;
-                    });
+            final PlaceRequirementsBehavior placeRequirementsBehavior = blockDefinition.getBehavior(BlockBehavior.Type.PLACE_REQUIREMENTS);
+            final PlaceRequirementsBehavior.Result result = placeRequirementsBehavior == null ? PlaceRequirementsBehavior.Result.GOOD : placeRequirementsBehavior.checkState(this, point, block);
             switch (result) {
                 case DESTROY_AND_DROP -> this.destroyAndDropBlock(point, block);
-                case DESTROY -> this.destroyAndDropBlock(point, block);
+                case DESTROY -> this.destroyBlock(point);
                 case GOOD -> {
                     final BlockUpdateBehavior updateBehavior = blockDefinition.getBehavior(BlockBehavior.Type.UPDATE);
                     if (updateBehavior == null) {
@@ -245,6 +242,22 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
     }
 
     private void destroyAndDropBlock(Point point, Block block) {
+        final BlockDefinition blockDefinition = this.blockFactory.getBlockDefinition(block);
+        if (blockDefinition == null) {
+            this.destroyBlock(point);
+            return;
+        }
+        final BlockDropBehavior blockDropBehavior = blockDefinition.getBehavior(BlockBehavior.Type.BLOCK_DROP);
+        if (blockDropBehavior == null) {
+            this.destroyBlock(point);
+            return;
+        }
+        final Collection<ItemStack> drops = blockDropBehavior.getDrops(this, point, block, BlockUtil.getBlockId(block), this.itemFactory, null);
+        this.destroyBlock(point);
+        MinecraftUtil.spawnDroppedBlockItems(this, point, drops);
+    }
+
+    private void destroyBlock(Point point) {
         this.setBlock(point, Block.AIR, true);
     }
 
@@ -280,13 +293,14 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
             return;
         }
         this.setBlock(blockPosition, Block.AIR);
-        dropBehavior.getDrops(this,
+        final Collection<ItemStack> drops =  dropBehavior.getDrops(this,
                 blockPosition,
                 block,
                 BlockUtil.getBlockId(block),
                 this.itemFactory,
                 player.getItemInMainHand()
-        ).forEach(i -> new ItemEntity(i).setInstance(this, blockPosition.add(0.5, 0, 0.5)));
+        );
+        MinecraftUtil.spawnDroppedBlockItems(this, blockPosition, drops);
     }
 
     public BreakingManager breakingManager() {

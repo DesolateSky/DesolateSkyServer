@@ -7,7 +7,7 @@ import me.lucko.luckperms.minestom.LuckPermsMinestom;
 import net.desolatesky.advancement.IslandAdvancementManager;
 import net.desolatesky.advancement.listener.IslandAdvancementListener;
 import net.desolatesky.block.BlockFactory;
-import net.desolatesky.block.MaterialTags;
+import net.desolatesky.block.MCMaterialTags;
 import net.desolatesky.block.behavior.listener.BlockClickListener;
 import net.desolatesky.command.informational.AfkCommand;
 import net.desolatesky.command.informational.DiscordCommand;
@@ -82,7 +82,6 @@ import net.minestom.server.event.trait.InventoryEvent;
 import net.minestom.server.event.trait.PlayerEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.monitoring.TickMonitor;
-import net.minestom.server.network.debug.info.DebugStructureInfo;
 import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.utils.MathUtils;
@@ -162,7 +161,7 @@ public final class DSServer {
 
     public void init() {
         // register material tags
-        final String ignored = MaterialTags.class.getName();
+        final String ignored = MCMaterialTags.class.getName();
 
         MinecraftServer.getConnectionManager().setPlayerProvider((conn, profile) -> {
             final DSPlayerData data = this.playerDatabase.loadDataNow(profile.uuid());
@@ -298,6 +297,10 @@ public final class DSServer {
 
     public void stop() {
         for (final Player player : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
+            if (!(player instanceof final DSPlayer dsPlayer)) {
+                continue;
+            }
+            this.playerDatabase.saveDataNow(player.getUuid(), dsPlayer.createSnapshot());
             player.kick(Component.text("Server is restarting").color(NamedTextColor.RED));
         }
         this.islandManager.getAll().forEach(i -> this.islandDatabase.saveDataNow(i.islandId(), i.createSnapshot()));

@@ -3,6 +3,7 @@ package net.desolatesky.block.behavior.impl;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.GrowthBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
+import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.property.BlockProperties;
 import net.desolatesky.block.property.IntBlockProperty;
 import net.desolatesky.item.ItemFactory;
@@ -13,6 +14,7 @@ import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.MaterialKeys;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -20,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public final class CropBehavior extends GrowthBehavior implements BlockDropBehavior, MiningSpeedBehavior {
+public final class CropBehavior extends GrowthBehavior implements BlockDropBehavior, MiningSpeedBehavior, PlaceRequirementsBehavior {
 
     private final Key droppedItem;
     private final Key voidCrop;
@@ -103,7 +105,24 @@ public final class CropBehavior extends GrowthBehavior implements BlockDropBehav
     }
 
     @Override
+    public PlaceRequirementsBehavior.Result checkState(DSWorld world, Point pos, Block block) {
+        final Block under = world.getBlock(pos.sub(0, 1, 0));
+        final boolean onFarmland = under.key().equals(MaterialKeys.FARMLAND.key());
+        return onFarmland ? Result.GOOD : Result.DESTROY_AND_DROP;
+    }
+
+    @Override
+    public boolean isValidForInitialPlace(DSWorld world, Point pos, Block block) {
+        final Block under = world.getBlock(pos.sub(0, 1, 0));
+        final boolean onFarmland = under.key().equals(MaterialKeys.FARMLAND.key());
+        if (!onFarmland) {
+            return false;
+        }
+        return BlockProperties.FARMLAND_MOISTURE_PROPERTY.isMax(under);
+    }
+
+    @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.RANDOM_TICK, Type.MINING_SPEED, Type.BLOCK_DROP);
+        return List.of(Type.RANDOM_TICK, Type.MINING_SPEED, Type.BLOCK_DROP, Type.PLACE_REQUIREMENTS);
     }
 }

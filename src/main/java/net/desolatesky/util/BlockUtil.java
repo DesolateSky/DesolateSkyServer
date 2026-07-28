@@ -16,8 +16,12 @@ public final class BlockUtil {
         return key;
     }
 
+    public static boolean isSameBlock(Block first, Block second) {
+        return getBlockId(first).equals(getBlockId(second));
+    }
+
     public static boolean isReplaceable(Block block) {
-        return block.replaceable() && getBlockId(block) == block.key(); // reference is faster here, not that it matters much
+        return block.air() || block.liquid();
     }
 
 }

@@ -154,11 +154,14 @@ public final class DSPlayer extends net.minestom.server.entity.Player implements
     }
 
     public DSPlayerData createSnapshot() {
-        return this.lockRead(() -> new DSPlayerData(this.getUuid(),
-                this.islandId,
-                Arrays.asList(this.getInventory().getItemStacks()),
-                this.logoutPos
-        ));
+        return this.lockRead(() -> {
+            this.logoutPos = this.getWorldPosition();
+            return new DSPlayerData(this.getUuid(),
+                    this.islandId,
+                    Arrays.asList(this.getInventory().getItemStacks()),
+                    this.logoutPos
+            );
+        });
     }
 
     @Override

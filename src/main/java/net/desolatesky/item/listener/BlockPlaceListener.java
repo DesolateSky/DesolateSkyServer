@@ -2,8 +2,9 @@ package net.desolatesky.item.listener;
 
 import net.desolatesky.Listener;
 import net.desolatesky.block.BlockFactory;
+import net.desolatesky.block.behavior.BlockBehavior;
+import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
-import net.desolatesky.block.setting.BlockSetting;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.behavior.BlockPlaceBehavior;
 import net.desolatesky.item.behavior.ItemBehavior;
@@ -66,6 +67,11 @@ public final class BlockPlaceListener implements Listener<Event> {
                 return;
             }
             final Point blockPos = event.getBlockPosition();
+            final Block at = world.getBlock(event.getBlockPosition());
+            if (!BlockUtil.isReplaceable(at)) {
+                event.setCancelled(true);
+                return;
+            }
             if (!blockPlaceBehavior.canPlace(world, player, itemStack, blockPos)) {
                 event.setCancelled(true);
                 return;
@@ -85,11 +91,10 @@ public final class BlockPlaceListener implements Listener<Event> {
                 event.setCancelled(true);
                 return;
             }
-            for (final BlockSetting setting : blockDefinition.settings().getAllSettings()) {
-                if (setting.checkState(world, blockPos, block) != BlockSetting.Result.GOOD) {
-                    event.setCancelled(true);
-                    return;
-                }
+            final PlaceRequirementsBehavior placeRequirementsBehavior = blockDefinition.getBehavior(BlockBehavior.Type.PLACE_REQUIREMENTS);
+            if (placeRequirementsBehavior != null && !placeRequirementsBehavior.isValidForInitialPlace(world, blockPos, block)) {
+                event.setCancelled(true);
+                return;
             }
             event.setBlock(block);
         });
@@ -117,6 +122,10 @@ public final class BlockPlaceListener implements Listener<Event> {
             if (!BlockUtil.isReplaceable(block)) {
                 final Direction direction = player.getPosition().facing();
                 blockPos = blockPos.add(direction.vec());
+                // check next block
+                if (!BlockUtil.isReplaceable(world.getBlock(blockPos))) {
+                    return;
+                }
             }
             final BlockDefinition blockDefinition = this.blockFactory.getBlockDefinition(block);
             if (blockDefinition == null) {
@@ -125,10 +134,9 @@ public final class BlockPlaceListener implements Listener<Event> {
             if (!world.canPlaceBlock(player, blockPos, block)) {
                 return;
             }
-            for (final BlockSetting setting : blockDefinition.settings().getAllSettings()) {
-                if (setting.checkState(world, blockPos, block) != BlockSetting.Result.GOOD) {
-                    return;
-                }
+            final PlaceRequirementsBehavior placeRequirementsBehavior = blockDefinition.getBehavior(BlockBehavior.Type.PLACE_REQUIREMENTS);
+            if (placeRequirementsBehavior != null && !placeRequirementsBehavior.isValidForInitialPlace(world, blockPos, block)) {
+                return;
             }
             if (!blockPlaceBehavior.canPlace(world, player, itemStack, blockPos)) {
                 return;

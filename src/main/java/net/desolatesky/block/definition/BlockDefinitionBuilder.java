@@ -1,12 +1,10 @@
 package net.desolatesky.block.definition;
 
-import net.desolatesky.block.behavior.BlockBehavior;
-import net.desolatesky.block.setting.BlockSettings;
 import net.desolatesky.block.BlockTags;
+import net.desolatesky.block.behavior.BlockBehavior;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.instance.block.Block;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,26 +27,11 @@ public final class BlockDefinitionBuilder {
             this.key = key;
         }
 
-        public BlockSettingsStep defaultBlock(Block defaultBlock) {
+        public BlockAttributesStep defaultBlock(Block defaultBlock) {
             if (!this.key.namespace().equals(Key.MINECRAFT_NAMESPACE)) {
-                return new BlockSettingsStep(this.key, defaultBlock.withTag(BlockTags.ID, this.key));
+                return new BlockAttributesStep(this.key, defaultBlock.withTag(BlockTags.ID, this.key));
             }
-            return new BlockSettingsStep(this.key, defaultBlock);
-        }
-    }
-
-    public static final class BlockSettingsStep {
-
-        private final Key key;
-        private final Block defaultBlock;
-
-        private BlockSettingsStep(Key key, Block defaultBlock) {
-            this.key = key;
-            this.defaultBlock = defaultBlock;
-        }
-
-        public BlockAttributesStep settings(BlockSettings settings) {
-            return new BlockAttributesStep(this.key, this.defaultBlock, settings);
+            return new BlockAttributesStep(this.key, defaultBlock);
         }
     }
 
@@ -56,20 +39,18 @@ public final class BlockDefinitionBuilder {
 
         private final Key key;
         private final Block defaultBlock;
-        private final BlockSettings blockSettings;
 
-        private BlockAttributesStep(Key key, Block defaultBlock, BlockSettings blockSettings) {
+        private BlockAttributesStep(Key key, Block defaultBlock) {
             this.key = key;
             this.defaultBlock = defaultBlock;
-            this.blockSettings = blockSettings;
         }
 
         public BlockBehaviorsStep attributes(Set<Key> blockAttributes) {
-            return new BlockBehaviorsStep(this.key, this.defaultBlock, this.blockSettings, blockAttributes);
+            return new BlockBehaviorsStep(this.key, this.defaultBlock, blockAttributes);
         }
 
         public BlockBehaviorsStep skipAttributes() {
-            return new BlockBehaviorsStep(this.key, this.defaultBlock, this.blockSettings, Collections.emptySet());
+            return new BlockBehaviorsStep(this.key, this.defaultBlock, Collections.emptySet());
         }
     }
 
@@ -77,14 +58,12 @@ public final class BlockDefinitionBuilder {
 
         private final Key key;
         private final Block defaultBlock;
-        private final BlockSettings settings;
         private final Set<Key> blockAttributes;
         private final Map<BlockBehavior.Type<?>, BlockBehavior> blockBehaviors;
 
-        private BlockBehaviorsStep(Key key, Block defaultBlock, BlockSettings settings, Set<Key> blockAttributes) {
+        private BlockBehaviorsStep(Key key, Block defaultBlock, Set<Key> blockAttributes) {
             this.key = key;
             this.defaultBlock = defaultBlock;
-            this.settings = settings;
             this.blockBehaviors = new HashMap<>();
             this.blockAttributes = blockAttributes;
         }
@@ -103,7 +82,7 @@ public final class BlockDefinitionBuilder {
         }
 
         public BlockDefinition build() {
-            return new BlockDefinition(this.key, this.defaultBlock, this.settings, this.blockAttributes, this.blockBehaviors);
+            return new BlockDefinition(this.key, this.defaultBlock, this.blockAttributes, this.blockBehaviors);
         }
     }
 }

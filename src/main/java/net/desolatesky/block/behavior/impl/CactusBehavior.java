@@ -1,7 +1,10 @@
 package net.desolatesky.block.behavior.impl;
 
+import net.desolatesky.block.MCBlockTags;
+import net.desolatesky.block.MCMaterialTags;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
+import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
 import net.desolatesky.block.property.IntBlockProperty;
 import net.desolatesky.item.ItemFactory;
@@ -19,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public final class CactusBehavior implements RandomTickBehavior, MiningSpeedBehavior, BlockDropBehavior {
+public final class CactusBehavior implements RandomTickBehavior, MiningSpeedBehavior, BlockDropBehavior, PlaceRequirementsBehavior {
 
     private static final IntBlockProperty AGE_PROPERTY = new IntBlockProperty("age", 0, 9);
     private final double growthChance;
@@ -76,7 +79,19 @@ public final class CactusBehavior implements RandomTickBehavior, MiningSpeedBeha
     }
 
     @Override
+    public Result checkState(DSWorld world, Point pos, Block block) {
+        final Block under = world.getBlock(pos.sub(0, 1, 0));
+        final boolean good = MCBlockTags.isDirtOrGrass(under) || BlockUtil.isSameBlock(under, block);
+        return good ? Result.GOOD : Result.DESTROY_AND_DROP;
+    }
+
+    @Override
+    public boolean isValidForInitialPlace(DSWorld world, Point pos, Block block) {
+        return this.checkState(world, pos, block) == Result.GOOD;
+    }
+
+    @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.RANDOM_TICK, Type.MINING_SPEED, Type.BLOCK_DROP);
+        return List.of(Type.RANDOM_TICK, Type.MINING_SPEED, Type.BLOCK_DROP, Type.PLACE_REQUIREMENTS);
     }
 }

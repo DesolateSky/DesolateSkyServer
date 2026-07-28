@@ -1,12 +1,8 @@
 package net.desolatesky.item.behavior.impl;
 
-import net.desolatesky.block.MaterialTags;
-import net.desolatesky.block.property.BlockProperties;
-import net.desolatesky.item.ItemFactory;
+import net.desolatesky.block.MCMaterialTags;
 import net.desolatesky.item.behavior.ClickBehavior;
 import net.desolatesky.player.DSPlayer;
-import net.desolatesky.util.BlockUtil;
-import net.desolatesky.util.InventoryUtil;
 import net.desolatesky.world.DSWorld;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.PlayerHand;
@@ -28,7 +24,7 @@ public final class HoeBehavior implements ClickBehavior {
         if (material == null) {
             return;
         }
-        if (!MaterialTags.DIRT.contains(material) && !MaterialTags.GRASS_BLOCKS.contains(material)) {
+        if (!MCMaterialTags.DIRT.contains(material) && !MCMaterialTags.GRASS_BLOCKS.contains(material)) {
             return;
         }
         world.setBlock(clickedPos, Block.FARMLAND.key(), Function.identity());

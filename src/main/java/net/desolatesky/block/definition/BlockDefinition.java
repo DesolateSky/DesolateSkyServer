@@ -1,7 +1,6 @@
 package net.desolatesky.block.definition;
 
 import net.desolatesky.block.behavior.BlockBehavior;
-import net.desolatesky.block.setting.BlockSettings;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.minestom.server.instance.block.Block;
@@ -22,19 +21,16 @@ public final class BlockDefinition implements Keyed {
 
     private final Key key;
     private final Block defaultBlock;
-    private final BlockSettings blockSettings;
     private final Set<Key> attributes;
     private final Map<BlockBehavior.Type<? extends BlockBehavior>, BlockBehavior> blockBehaviors;
 
     BlockDefinition(Key key,
                     Block defaultBlock,
-                    BlockSettings settings,
                     Set<Key> attributes,
                     Map<BlockBehavior.Type<? extends BlockBehavior>, BlockBehavior> blockBehaviors
     ) {
         this.key = key;
         this.defaultBlock = defaultBlock;
-        this.blockSettings = settings;
         this.attributes = attributes;
         this.blockBehaviors = Collections.unmodifiableMap(blockBehaviors);
     }
@@ -62,9 +58,5 @@ public final class BlockDefinition implements Keyed {
 
     public boolean hasAttribute(Key attribute) {
         return this.attributes.contains(attribute);
-    }
-
-    public BlockSettings settings() {
-        return this.blockSettings;
     }
 }

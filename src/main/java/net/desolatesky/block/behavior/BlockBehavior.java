@@ -16,6 +16,7 @@ public interface BlockBehavior {
         public static final Type<BlockUpdateBehavior> UPDATE = new Type<>(BlockUpdateBehavior.class);
         public static final Type<ClickBehavior> CLICK = new Type<>(ClickBehavior.class);
         public static final Type<BlockDropBehavior> BLOCK_DROP = new Type<>(BlockDropBehavior.class);
+        public static final Type<PlaceRequirementsBehavior> PLACE_REQUIREMENTS = new Type<>(PlaceRequirementsBehavior.class);
         public static final Type<LoadBehavior> LOAD = new Type<>(LoadBehavior.class);
         public static final Type<VoidCoreBehavior> VOID_CORE = new Type<>(VoidCoreBehavior.class);
     }
