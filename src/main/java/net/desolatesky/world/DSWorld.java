@@ -24,6 +24,7 @@ import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Area;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.ItemEntity;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Chunk;
@@ -49,11 +50,13 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.SequencedSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract sealed class DSWorld extends InstanceContainer permits PlayerWorld, LobbyWorld, VoidWorld {
@@ -311,11 +314,12 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
         if (this.randomTickCount <= 0) {
             return;
         }
-        this.getPlayers()
+        final Set<Chunk> chunks = this.getPlayers()
                 .stream()
                 .flatMap(player -> DistanceUtil.getChunksNear(this, player.getPosition(), 5).stream())
-                .distinct()
-                .forEach(this::randomTickChunk);
+                .collect(Collectors.toSet());
+        chunks.addAll(DistanceUtil.getChunksNear(this, new Vec(0), 5));
+        chunks.forEach(this::randomTickChunk);
     }
 
 

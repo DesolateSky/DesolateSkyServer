@@ -13,8 +13,9 @@ public final class IslandCoreMobSpawner {
 
     // TODO - move to actual non-static storage
     public static final @Unmodifiable Map<Key, IslandCoreMobSpawner> SPAWNERS = Map.of(
-            IslandCoreMobSpawnerIds.SILVERFISH, new IslandCoreMobSpawner(IslandCoreMobSpawnerIds.SILVERFISH, ItemIds.ENTITY_ATTRACTOR_SILVERFISH, new WeightedCollection<Key>().add(1.0,EntityIds.VOID_SILVERFISH)),
-            IslandCoreMobSpawnerIds.RABBIT, new IslandCoreMobSpawner(IslandCoreMobSpawnerIds.RABBIT, ItemIds.VOID_INFUSED_BUSH, new WeightedCollection<Key>().add(1.0,EntityIds.VOID_RABBIT))
+            IslandCoreMobSpawnerIds.SILVERFISH, new IslandCoreMobSpawner(IslandCoreMobSpawnerIds.SILVERFISH, ItemIds.VOID_INFUSED_POTATO, new WeightedCollection<Key>().add(1.0,EntityIds.VOID_SILVERFISH)),
+            IslandCoreMobSpawnerIds.RABBIT, new IslandCoreMobSpawner(IslandCoreMobSpawnerIds.RABBIT, ItemIds.VOID_INFUSED_BUSH, new WeightedCollection<Key>().add(1.0,EntityIds.VOID_RABBIT)),
+            IslandCoreMobSpawnerIds.PIG, new IslandCoreMobSpawner(IslandCoreMobSpawnerIds.PIG, ItemIds.VOID_INFUSED_CARROT, new WeightedCollection<Key>().add(1.0,EntityIds.VOID_PIG))
     );
 
     private final Key key;

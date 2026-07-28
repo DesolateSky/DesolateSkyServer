@@ -2,6 +2,7 @@ package net.desolatesky.entity;
 
 import net.desolatesky.entity.type.CraftingCatalystEntity;
 import net.desolatesky.entity.type.IslandCoreSpawnerEntity;
+import net.desolatesky.entity.type.VoidPig;
 import net.desolatesky.entity.type.VoidSilverfish;
 import net.desolatesky.entity.type.VoidRabbit;
 import net.desolatesky.island.Island;
@@ -31,6 +32,7 @@ public final class TypedEntityFactory implements EntityManager {
     public void initialize() {
         this.entityCreators.put(EntityIds.VOID_SILVERFISH, VoidSilverfish::new);
         this.entityCreators.put(EntityIds.VOID_RABBIT, VoidRabbit::new);
+        this.entityCreators.put(EntityIds.VOID_PIG, VoidPig::new);
         this.entityCreators.put(EntityIds.ISLAND_CORE_SPAWNER_DISPLAY, IslandCoreSpawnerEntity::new);
         this.entityCreators.put(EntityIds.CRAFTING_CATALYST, CraftingCatalystEntity::new);
         this.entityCreators.put(EntityIds.ITEM, DSItemEntity::new);

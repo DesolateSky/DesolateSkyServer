@@ -17,7 +17,7 @@ public final class EntityNavigator<T extends DSLivingEntity<T>> {
     private static final double REACHED_TARGET_THRESHOLD = 0.25;
     private static final double MOVED_AWAY_FROM_TARGET_THRESHOLD = Math.pow(2, 2);
 
-    private static final int UPDATE_PATH_TICK_COOLDOWN = 20;
+    private static final int UPDATE_PATH_TICK_COOLDOWN = 10;
 
     private final T entity;
     private final MovementStrategy<T> movementStrategy;
@@ -64,10 +64,10 @@ public final class EntityNavigator<T extends DSLivingEntity<T>> {
                 this.path.pop();
             }
         }
+        if (this.checkReachedTarget()) {
+            return;
+        }
         if (this.path.isEmpty()) {
-            if (this.checkReachedTarget()) {
-                return;
-            }
             this.updatePath(this.navigationTarget.getTargetPosition());
             return;
         }

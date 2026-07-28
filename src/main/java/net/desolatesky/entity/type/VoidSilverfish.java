@@ -12,6 +12,7 @@ import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.attribute.Attribute;
 import org.jetbrains.annotations.NotNullByDefault;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -20,10 +21,12 @@ public final class VoidSilverfish extends VoidEntity<VoidSilverfish> {
 
     public static final Component ENTITY_TYPE_NAME = Component.text("Void Silverfish");
 
-    private static final LootTable DROPS = new LootTable(new WeightedCollection<ItemLoot>()
-            .add(1, new ItemLoot(ItemIds.SILVERFISH_CRAFTING_CATALYST, 1, 1))
-            .add(10, new ItemLoot(ItemIds.SILVERFISH_EYE, 1, 2))
-            .add(10, new ItemLoot(ItemIds.PEBBLE, 1, 4)));
+    private static final LootTable DROPS = new LootTable(List.of(
+            new WeightedCollection<ItemLoot>()
+                    .add(10, new ItemLoot(ItemIds.STONE_CHUNK, 1, 3)),
+            new WeightedCollection<ItemLoot>()
+                    .add(10, new ItemLoot(ItemIds.SILVERFISH_SCALE, 1, 2))
+    ));
 
     public VoidSilverfish(UUID uuid, Island island, Consumer<Entity> tagApplier) {
         super(EntityType.SILVERFISH, DROPS, uuid, island, new WalkingStrategy<>(), tagApplier, ENTITY_TYPE_NAME);

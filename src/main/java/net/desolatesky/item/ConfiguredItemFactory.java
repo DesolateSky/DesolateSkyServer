@@ -132,11 +132,13 @@ public final class ConfiguredItemFactory implements ItemFactory {
         this.register(ItemDefinition.builder().key(ItemIds.VOID_INFUSED_CARROT.key())
                 .defaultItem(ItemStack.builder(Material.CARROT)
                         .customName(ComponentUtil.noItalics("Void Infused Carrot"))
+                        .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
                         .lore(
                                 ComponentUtil.noItalics(""),
                                 ComponentUtil.noItalics("Entity Attractor (Pig)")
                         )
                         .set(DataComponents.RARITY, ItemRarity.UNCOMMON)
+                        .set(ItemTags.ISLAND_CORE_SPAWNER_KEY, IslandCoreMobSpawnerIds.PIG)
                         .build())
                 .build());
         this.register(ItemDefinition.builder().key(Material.POTATO.key())
@@ -148,11 +150,13 @@ public final class ConfiguredItemFactory implements ItemFactory {
         this.register(ItemDefinition.builder().key(ItemIds.VOID_INFUSED_POTATO.key())
                 .defaultItem(ItemStack.builder(Material.POTATO)
                         .customName(ComponentUtil.noItalics("Void Infused Potato"))
+                        .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
                         .lore(
                                 ComponentUtil.noItalics(""),
                                 ComponentUtil.noItalics("Entity Attractor (Silverfish)")
                         )
                         .set(DataComponents.RARITY, ItemRarity.UNCOMMON)
+                        .set(ItemTags.ISLAND_CORE_SPAWNER_KEY, IslandCoreMobSpawnerIds.SILVERFISH)
                         .build())
                 .build());
         this.register(ItemDefinition.builder().key(ItemIds.VOID_INFUSED_BUSH)
@@ -191,7 +195,7 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defaultItem(ItemStack.builder(Material.STONE_BUTTON)
                         .customName(ComponentUtil.noItalics("Stone Chunk"))
                         .build())
-                .defineBehavior(ItemBehavior.Type.CLICK, new StoneChunkBehavior(10, 4))
+                .defineBehavior(ItemBehavior.Type.CLICK, new StoneChunkBehavior(20, 3))
                 .build());
     }
 
@@ -307,6 +311,58 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .build());
         this.register(ItemDefinition.builder().key(MaterialKeys.FLINT.key())
                 .defaultItem(ItemStack.of(Material.FLINT))
+                .build());
+
+        this.register(ItemDefinition.builder().key(ItemIds.FLINT_PICKAXE)
+                .defaultItem(ItemStack.builder(Material.WOODEN_PICKAXE)
+                        .set(ItemTags.PICKAXE_MINING_SPEED, 0.65)
+                        .customName(ComponentUtil.noItalics("Flint Pickaxe"))
+                        .build())
+                .defineBehavior(
+                        ItemBehavior.Type.MINING_SPEED,
+                        new AttributeMiningSpeedBehavior(Set.of(BlockAttributes.PICKAXE_MINEABLE), ItemTags.PICKAXE_MINING_SPEED)
+                )
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.FLINT_AXE)
+                .defaultItem(ItemStack.builder(Material.WOODEN_AXE)
+                        .set(ItemTags.AXE_MINING_SPEED, 0.65)
+                        .customName(ComponentUtil.noItalics("Flint Axe"))
+                        .build())
+                .defineBehavior(
+                        ItemBehavior.Type.MINING_SPEED,
+                        new AttributeMiningSpeedBehavior(Set.of(BlockAttributes.AXE_MINEABLE), ItemTags.AXE_MINING_SPEED)
+                )
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.FLINT_SHOVEL)
+                .defaultItem(ItemStack.builder(Material.WOODEN_SHOVEL)
+                        .set(ItemTags.SHOVEL_MINING_SPEED, 0.65)
+                        .customName(ComponentUtil.noItalics("Flint Shovel"))
+                        .build())
+                .defineBehavior(
+                        ItemBehavior.Type.MINING_SPEED,
+                        new AttributeMiningSpeedBehavior(Set.of(BlockAttributes.SHOVEL_MINEABLE), ItemTags.SHOVEL_MINING_SPEED)
+                )
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.FLINT_HOE)
+                .defaultItem(ItemStack.builder(Material.WOODEN_HOE)
+                        .set(ItemTags.HOE_MINING_SPEED, 0.65)
+                        .customName(ComponentUtil.noItalics("Flint Hoe"))
+                        .build())
+                .defineBehavior(
+                        ItemBehavior.Type.MINING_SPEED,
+                        new AttributeMiningSpeedBehavior(Set.of(BlockAttributes.HOE_MINEABLE), ItemTags.HOE_MINING_SPEED)
+                )
+                .defineBehavior(ItemBehavior.Type.CLICK, new HoeBehavior())
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.FLINT_SWORD)
+                .defaultItem(ItemStack.builder(Material.WOODEN_SWORD)
+                        .set(ItemTags.SWORD_MINING_SPEED, 0.65)
+                        .customName(ComponentUtil.noItalics("Flint Sword"))
+                        .build())
+                .defineBehavior(
+                        ItemBehavior.Type.MINING_SPEED,
+                        new AttributeMiningSpeedBehavior(Set.of(BlockAttributes.SWORD_MINEABLE), ItemTags.SWORD_MINING_SPEED)
+                )
                 .build());
     }
 

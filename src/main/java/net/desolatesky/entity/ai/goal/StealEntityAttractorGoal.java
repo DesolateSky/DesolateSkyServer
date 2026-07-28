@@ -48,7 +48,7 @@ public final class StealEntityAttractorGoal<T extends VoidEntity<T>> extends Goa
                 return;
             }
             if (this.escapePoint == null) {
-                this.escapePoint = RegionUtil.getClosestBorderPointTo(world.getRegion(), this.entity.getPosition());
+                this.escapePoint = RegionUtil.getClosestBorderPointTo(world.getRegion(), this.entity.getPosition()).add(0.5, 0, 0.5);
                 this.escapePoint = this.escapePoint.withY(this.escapePoint.blockY());
             }
             this.entity.navigator().setNewTarget(NavigationTarget.createTarget(this.escapePoint, 1.5));

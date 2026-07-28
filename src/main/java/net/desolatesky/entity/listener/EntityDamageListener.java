@@ -3,9 +3,13 @@ package net.desolatesky.entity.listener;
 import net.desolatesky.Listener;
 import net.desolatesky.cooldown.CooldownHolder;
 import net.desolatesky.item.ItemTags;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.Constants;
 import net.desolatesky.util.ItemUtil;
 import net.desolatesky.util.MinecraftUtil;
+import net.desolatesky.world.DSWorld;
+import net.desolatesky.world.IslandWorld;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -23,6 +27,7 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.entity.EntityDamageEvent;
 import net.minestom.server.event.entity.EntityDeathEvent;
+import net.minestom.server.event.entity.EntityTickEvent;
 import net.minestom.server.event.player.PlayerDeathEvent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.component.AttributeList;
@@ -71,6 +76,19 @@ public final class EntityDamageListener implements Listener<Event> {
 //            }
 //            event.setChatMessage(lastDamage.buildDeathMessage(player));
 //            event.setDeathText(lastDamage.buildDeathScreenText(player));
+        });
+        node.addListener(EntityTickEvent.class, event -> {
+           if (event.getEntity() instanceof Player) {
+               return;
+           }
+           final Entity entity = event.getEntity();
+           if (!(entity.getInstance() instanceof final IslandWorld islandWorld)) {
+               return;
+           }
+           if (entity.getPosition().y() < Constants.WORLD_MIN_Y) {
+               DSLogger.getLogger().info("Removed entity from falling in the void: " + entity.getEntityType() + " " + entity.getPosition() + " on island: " + islandWorld.island().islandId());
+               entity.remove();
+           }
         });
     }
 }

@@ -34,7 +34,7 @@ public final class VoidWorld extends DSWorld implements IslandWorld {
     public static final Point SPAWN_POINT = new BlockVec(0, 0, 0);
     public static final Point VOID_CORE_POS = SPAWN_POINT.sub(0, 1, 0);
 
-    private static final double RADIUS = 7;
+    private static final double RADIUS = 16;
     private static final RandomGenerator RANDOM_GENERATOR = new SplittableRandom(0);
     private final Pos spawn;
     private final SquareRegion region;
@@ -65,7 +65,7 @@ public final class VoidWorld extends DSWorld implements IslandWorld {
         this.island = island;
         this.spawn = new Pos(0, 64, 0);
         this.region = Region.square(this.spawn, RADIUS, Constants.WORLD_MIN_Y, Constants.WORLD_MAX_Y);
-        this.setWorldBorder(new WorldBorder(this.region.radius() * 2, this.spawn.x() + 0.5, this.spawn.z() + 0.5, 0, 0, (int) this.region.radius() * 2));
+        this.setWorldBorder(new WorldBorder(this.region.radius() * 2 + 1, this.spawn.x() + 0.5, this.spawn.z() + 0.5, 0, 0, (int) this.region.radius() * 2));
     }
 
     @Override

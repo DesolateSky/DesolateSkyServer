@@ -118,7 +118,23 @@ public final class ConfiguredBlockFactory implements BlockFactory {
                         60,
                         1,
                         4,
-                        3
+                        30,
+                        7
+                ))
+                .build());
+               this.register(BlockDefinition.builder().key(Block.POTATOES.key())
+                .defaultBlock(Block.POTATOES)
+                .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
+                .defineBehaviors(new CropBehavior(
+                        new IntBlockProperty("age", 0, 7),
+                        45,
+                        Material.POTATO.key(),
+                        ItemIds.VOID_INFUSED_POTATO,
+                        60,
+                        1,
+                        4,
+                        30,
+                        5
                 ))
                 .build());
         this.register(BlockDefinition.builder().key(Block.CACTUS.key())

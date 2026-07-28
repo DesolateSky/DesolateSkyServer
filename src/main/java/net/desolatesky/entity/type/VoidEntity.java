@@ -18,6 +18,9 @@ import net.minestom.server.entity.ai.EntityAIGroupBuilder;
 import net.minestom.server.entity.ai.goal.CombinedAttackGoal;
 import net.minestom.server.entity.ai.goal.MeleeAttackGoal;
 import net.minestom.server.entity.ai.target.ClosestEntityTarget;
+import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.entity.attribute.AttributeInstance;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.scoreboard.Team;
 import net.minestom.server.scoreboard.TeamManager;
@@ -99,9 +102,14 @@ public abstract class VoidEntity<T extends VoidEntity<T>> extends DSLivingEntity
     }
 
     public void setStolenAttractor(ItemStack itemStack) {
+        if (this.instance == null) {
+            return;
+        }
         this.stolenAttractor = new ItemEntity(itemStack);
         this.stolenAttractor.setPickable(false);
         this.stolenAttractor.setInstance(this.instance, this.position);
+        final AttributeInstance movementSpeed = this.getAttribute(Attribute.MOVEMENT_SPEED);
+        movementSpeed.setBaseValue(movementSpeed.getBaseValue() / 2);
         this.addPassenger(this.stolenAttractor);
     }
 

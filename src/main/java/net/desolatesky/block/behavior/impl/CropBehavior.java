@@ -29,6 +29,7 @@ public final class CropBehavior extends GrowthBehavior implements BlockDropBehav
     private final int ticksToMine;
     private final int minDrops;
     private final int maxDrops;
+    private final double removeWaterChance;
     private final double voidCropChance;
 
     public CropBehavior(
@@ -39,6 +40,7 @@ public final class CropBehavior extends GrowthBehavior implements BlockDropBehav
             int ticksToMine,
             int minDrops,
             int maxDrops,
+            double removeWaterChance,
             double voidCropChance
     ) {
         super(ageProperty, growthChance);
@@ -47,6 +49,7 @@ public final class CropBehavior extends GrowthBehavior implements BlockDropBehav
         this.ticksToMine = ticksToMine;
         this.minDrops = minDrops;
         this.maxDrops = maxDrops;
+        this.removeWaterChance = removeWaterChance;
         this.voidCropChance = voidCropChance;
     }
 
@@ -99,6 +102,9 @@ public final class CropBehavior extends GrowthBehavior implements BlockDropBehav
         final Point posUnder = pos.sub(0, 1, 0);
         final Block under = world.getBlock(posUnder);
         if (!Block.FARMLAND.key().equals(BlockUtil.getBlockId(under))) {
+            return;
+        }
+        if (!world.rollChance(pos, this.removeWaterChance)) {
             return;
         }
         world.setBlock(posUnder, BlockProperties.FARMLAND_MOISTURE_PROPERTY.write(under, BlockProperties.FARMLAND_MOISTURE_PROPERTY.min()));

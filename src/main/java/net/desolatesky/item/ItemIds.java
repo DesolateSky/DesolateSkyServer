@@ -38,5 +38,11 @@ public final class ItemIds {
     public static final Key THATCH_HOE = Namespace.key("thatch_hoe");
     public static final Key THATCH_SWORD = Namespace.key("thatch_sword");
 
+    public static final Key FLINT_PICKAXE = Namespace.key("flint_pickaxe");
+    public static final Key FLINT_AXE = Namespace.key("flint_axe");
+    public static final Key FLINT_SHOVEL = Namespace.key("flint_shovel");
+    public static final Key FLINT_HOE = Namespace.key("flint_hoe");
+    public static final Key FLINT_SWORD = Namespace.key("flint_sword");
+    
     public static final Key WATER_BOTTLE = Namespace.key("water_bottle");
 }
