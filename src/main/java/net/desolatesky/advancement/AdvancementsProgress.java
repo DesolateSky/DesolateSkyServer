@@ -61,7 +61,10 @@ public final class AdvancementsProgress {
             if (root == null) {
                 continue;
             }
-            final AdvancementTab tab = MinecraftServer.getAdvancementManager().createTab(createTabId(island, groupKey), root);
+            AdvancementTab tab = MinecraftServer.getAdvancementManager().getTab(createTabId(island, groupKey));
+            if (tab == null) {
+                tab = MinecraftServer.getAdvancementManager().createTab(createTabId(island, groupKey), root);
+            }
             root.showToast(false);
             root.setAchieved(true);
             this.advancements.put(rootKey, root);

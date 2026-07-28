@@ -42,9 +42,7 @@ public final class IslandManager implements Lockable {
     private final MessageHandler messageHandler;
     private final Cache<UUID, Island> islands = Caffeine.newBuilder()
             .expireAfterAccess(Duration.of(1, ChronoUnit.HOURS))
-            .<UUID, Island>evictionListener((_, island, _) -> {
-                EventDispatcher.call(new IslandUnloadEvent(island));
-            })
+            .<UUID, Island>evictionListener((_, island, _) -> EventDispatcher.call(new IslandUnloadEvent(island)))
             .build();
 
     public IslandManager(FileDatabase<IslandSnapshot> islandDatabase, IslandAdvancementManager advancementManager, MessageHandler messageHandler) {
