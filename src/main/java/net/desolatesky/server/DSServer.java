@@ -80,7 +80,9 @@ import net.minestom.server.event.server.ServerTickMonitorEvent;
 import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.event.trait.InventoryEvent;
 import net.minestom.server.event.trait.PlayerEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.monitoring.TickMonitor;
+import net.minestom.server.network.debug.info.DebugStructureInfo;
 import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.utils.MathUtils;
@@ -233,7 +235,13 @@ public final class DSServer {
             for (final Island island : this.islandManager.getAll()) {
                 this.islandDatabase.saveData(island.islandId(), island.createSnapshot());
             }
-        }, TaskSchedule.duration(Duration.ofMinutes(3)), TaskSchedule.duration(Duration.ofMinutes(3)));
+            for (final Instance instance : MinecraftServer.getInstanceManager().getInstances()) {
+                if (!(instance instanceof final DSWorld world)) {
+                    continue;
+                }
+                world.save();
+            }
+        }, TaskSchedule.duration(Duration.ofMinutes(3)), TaskSchedule.duration(Duration.ofMinutes(5)));
     }
 
     public IslandManager islandManager() {
