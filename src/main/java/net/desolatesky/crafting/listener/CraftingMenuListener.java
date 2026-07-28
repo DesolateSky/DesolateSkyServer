@@ -45,8 +45,12 @@ public final class CraftingMenuListener implements Listener<InventoryEvent> {
                return;
            }
            final DSPlayer player = (DSPlayer) event.getPlayer();
-           for (final ItemStack itemStack : craftingInventory.getItemStacks()) {
-               InventoryUtil.addItemToInventory(player, itemStack);
+           final CraftingHandler craftingHandler = craftingInventory.craftingHandler();
+           for (int slot = 0; slot < craftingInventory.getSize(); slot++) {
+               if (craftingHandler.isOutputSlot(slot)) {
+                   continue;
+               }
+               InventoryUtil.addItemToInventory(player, craftingInventory.getItemStack(slot));
            }
         });
     }
