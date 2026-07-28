@@ -41,3 +41,14 @@ bin/
 ### Mac OS ###
 .DS_Store
 /.idea/
+
+databases/
+
+badwords.txt
+
+deleted/
+islands/
+luckperms/
+players/
+spark/
+worlds/
