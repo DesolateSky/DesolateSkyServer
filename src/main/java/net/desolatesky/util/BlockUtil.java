@@ -17,7 +17,7 @@ public final class BlockUtil {
     }
 
     public static boolean isReplaceable(Block block) {
-        return block.replaceable();
+        return block.replaceable() && getBlockId(block) == block.key(); // reference is faster here, not that it matters much
     }
 
 }
