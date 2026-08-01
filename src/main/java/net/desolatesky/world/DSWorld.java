@@ -18,11 +18,13 @@ import net.desolatesky.recipe.RecipeFactory;
 import net.desolatesky.util.BlockUtil;
 import net.desolatesky.util.DistanceUtil;
 import net.desolatesky.util.MinecraftUtil;
+import net.desolatesky.util.RegionUtil;
 import net.desolatesky.util.chance.Chance;
 import net.desolatesky.world.region.SquareRegion;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Area;
 import net.minestom.server.coordinate.BlockVec;
+import net.minestom.server.coordinate.CoordConversion;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.ItemEntity;
@@ -39,6 +41,8 @@ import net.minestom.server.instance.generator.Generator;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.utils.Direction;
+import net.minestom.server.utils.chunk.ChunkUtils;
+import net.minestom.server.utils.position.PositionUtils;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 
@@ -292,10 +296,10 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
             return;
         }
         final BlockDropBehavior dropBehavior = blockDefinition.getBehavior(BlockBehavior.Type.BLOCK_DROP);
+        this.setBlock(blockPosition, Block.AIR);
         if (dropBehavior == null) {
             return;
         }
-        this.setBlock(blockPosition, Block.AIR);
         final Collection<ItemStack> drops =  dropBehavior.getDrops(this,
                 blockPosition,
                 block,
@@ -355,7 +359,7 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
         if (blockDefinition == null) {
             return;
         }
-        final Block block = blockTransformer.apply(blockDefinition.defaultBlock());
+        final Block block = blockTransformer.apply(blockDefinition.createBlock());
         this.setBlock(pos, block, true);
     }
 
@@ -415,7 +419,8 @@ public abstract sealed class DSWorld extends InstanceContainer permits PlayerWor
                 if (loadBehavior == null) {
                     return;
                 }
-                loadBehavior.save(this, pos, block);
+                final Point worldPos = CoordConversion.chunkBlockRelativeGetGlobal(pos.blockX(), pos.blockY(), pos.blockZ(), chunk.getChunkX(), chunk.getChunkZ());
+                loadBehavior.save(this, worldPos, block);
             });
         }
         return this.saveInstance().thenCompose(_ -> this.saveChunksToStorage());

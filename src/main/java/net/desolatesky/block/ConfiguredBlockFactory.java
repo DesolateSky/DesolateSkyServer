@@ -3,8 +3,9 @@ package net.desolatesky.block;
 import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
-import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.behavior.core.VoidCoreBehavior;
+import net.desolatesky.block.behavior.impl.BarrelBehavior;
+import net.desolatesky.block.behavior.impl.BlockEntityBehavior;
 import net.desolatesky.block.behavior.impl.CactusBehavior;
 import net.desolatesky.block.behavior.impl.CactusFlowerBehavior;
 import net.desolatesky.block.behavior.impl.ComposterBehavior;
@@ -13,187 +14,155 @@ import net.desolatesky.block.behavior.impl.CropBehavior;
 import net.desolatesky.block.behavior.impl.DryGrassBehavior;
 import net.desolatesky.block.behavior.impl.SupportedBlockBehavior;
 import net.desolatesky.block.behavior.impl.WoodPlanksBehavior;
+import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.definition.BlockDefinition;
-import net.desolatesky.block.handler.DSBlockHandler;
-import net.desolatesky.block.property.IntBlockProperty;
-import net.desolatesky.item.ItemIds;
+import net.desolatesky.block.definition.BlockDefinitionBuilder;
+import net.desolatesky.config.ConfigFile;
+import net.desolatesky.logging.DSLogger;
 import net.desolatesky.util.BlockUtil;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockHandler;
-import net.minestom.server.item.Material;
-import net.minestom.server.item.MaterialKeys;
-import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public final class ConfiguredBlockFactory implements BlockFactory {
 
-    private final Map<Key, BlockDefinition> blocks;
+    private static final List<Path> DEFAULT_CONFIG_FILES = List.of(
+            Path.of("simple_blocks.conf"),
+            Path.of("special_blocks.conf")
+    );
 
-    public ConfiguredBlockFactory() {
+    private final Map<Key, BlockDefinition> blocks;
+    private final Map<Key, BlockBehaviorSerializer<? extends BlockBehavior>> blockBehaviorSerializers;
+
+    private final Path folderPath;
+
+    public ConfiguredBlockFactory(Path folderPath) {
+        this.folderPath = folderPath;
         this.blocks = new HashMap<>();
+        this.blockBehaviorSerializers = new HashMap<>();
+    }
+
+    public <T extends BlockBehavior> void registerBlockBehaviorSerializer(BlockBehaviorSerializer<T> serializer) {
+        this.blockBehaviorSerializers.put(serializer.key(), serializer);
+    }
+
+    private void load() throws IOException {
+        this.registerBlockBehaviorSerializer(new WoodPlanksBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new SupportedBlockBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new DryGrassBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new CropBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new CraftingTableBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new ComposterBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new CactusFlowerBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new CactusBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new VoidCoreBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new MiningSpeedBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new BarrelBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new BlockDropBehavior.Serializer());
+
+        final List<Path> files = new ArrayList<>();
+        DEFAULT_CONFIG_FILES.forEach(p -> files.add(this.folderPath.resolve(p)));
+        try (final Stream<Path> walked = Files.walk(this.folderPath).filter(Files::isRegularFile)) {
+            files.addAll(walked.toList());
+        }
+        for (final Path path : files) {
+            final ConfigFile config = ConfigFile.get(path, "", builder -> builder.defaultOptions(options -> options.serializers(b -> {
+                for (final BlockBehaviorSerializer<?> serializer : this.blockBehaviorSerializers.values()) {
+                    @SuppressWarnings("unchecked") final BlockBehaviorSerializer<BlockBehavior> behavior = (BlockBehaviorSerializer<BlockBehavior>) serializer;
+                    b.register(behavior.behaviorClass(), behavior);
+                }
+            })));
+            final Map<Object, ? extends ConfigurationNode> children = config.rootNode().childrenMap();
+            try {
+                for (final var entry : children.entrySet()) {
+                    if (!(entry.getKey() instanceof final String blockIdString)) {
+                        DSLogger.getLogger().warn(entry.getKey() + " is not a valid block id.");
+                        continue;
+                    }
+                    final ConfigurationNode node = entry.getValue();
+                    final Key key = Key.key(blockIdString);
+                    Key blockKey = node.node("block").get(Key.class);
+                    if (blockKey == null) {
+                        blockKey = key;
+                    }
+                    final Block block = Block.fromKey(blockKey);
+                    if (block == null) {
+                        DSLogger.getLogger().warn("Block for " + key.asString() + " is null");
+                        continue;
+                    }
+                    final Map<String, String> properties = new HashMap<>();
+                    final Map<Object, ? extends ConfigurationNode> propertiesNode = node.node("properties").childrenMap();
+
+                    for (final var propertyEntry : propertiesNode.entrySet()) {
+                        if (!(propertyEntry.getKey() instanceof final String property)) {
+                            DSLogger.getLogger().warn(propertyEntry.getKey() + " is not a valid property for " + blockKey.asString());
+                            continue;
+                        }
+                        final String value = propertyEntry.getValue().getString();
+                        if (value == null) {
+                            DSLogger.getLogger().warn("Property " + property + " has no value for block " + blockKey.asString());
+                            continue;
+                        }
+                        properties.put(property, value);
+                    }
+                    final Set<Key> blockAttributes = new HashSet<>(node.node("attributes").getList(Key.class, new ArrayList<>()));
+                    final Map<Object, ? extends ConfigurationNode> behaviorsMap = node.node("behaviors").childrenMap();
+                    final BlockDefinitionBuilder.BlockBehaviorsStep blockDefinition = BlockDefinition.builder()
+                            .key(key)
+                            .defaultBlock(block.withProperties(properties))
+                            .attributes(blockAttributes);
+                    for (final var serializerEntry : behaviorsMap.entrySet()) {
+                        if (!(serializerEntry.getKey() instanceof final String type)) {
+                            DSLogger.getLogger().warn(serializerEntry.getKey() + " is not a valid block behavior serialize for block " + blockKey.asString());
+                            continue;
+                        }
+                        final ConfigurationNode serializerNode = serializerEntry.getValue();
+                        final Key serializerKey = Key.key(type);
+                        final BlockBehaviorSerializer<?> serializer = this.blockBehaviorSerializers.get(serializerKey);
+                        if (serializer == null) {
+                            DSLogger.getLogger().warn("No block serializer found for type " + type);
+                            continue;
+                        }
+                        final BlockBehavior behavior = serializer.deserialize(serializer.behaviorClass(), serializerNode);
+                        blockDefinition.defineBehaviors(behavior);
+                    }
+                    this.blocks.put(key, blockDefinition.build());
+                }
+            } catch (SerializationException e) {
+                DSLogger.getLogger().severe(e);
+            }
+        }
     }
 
     @Override
     public void initialize() {
-//        this.register(BlockDefinition.builder().key(BlockIds.WHEAT)
-//                .defaultBlock(Block.WHEAT)
-//                .settings(BlockSettings.builder().setting(BlockSetting.Type.SUPPORTED_BLOCK, SupportedBlockSetting.blocks(Direction.DOWN, Set.of(Block.FARMLAND.key()))).build())
-//                .defineBehavior(BlockBehavior.Type.RANDOM_TICK, new GrowthBehavior(new IntBlockProperty("age", 0, 7), 100)).build());
-//        this.register(BlockDefinition.builder().key(BlockIds.BAMBOO)
-//                .defaultBlock(Block.BAMBOO)
-//                .settings(BlockSettings.builder().setting(BlockSetting.Type.SUPPORTED_BLOCK, SupportedBlockSetting.blocks(Direction.DOWN, Set.of(Block.GRASS_BLOCK.key()))).build())
-//                .defineBehavior(BlockBehavior.Type.RANDOM_TICK, new DirectionalSpreadBehavior(100, Direction.UP, 5)).build());
-        this.register(BlockDefinition.builder().key(BlockIds.VOID_CORE)
-                .defaultBlock(Block.SCULK_SHRIEKER.withHandler(DSBlockHandler.newTickingBlockHandler(BlockIds.VOID_CORE, this)))
-                .skipAttributes()
-                .defineBehaviors(new VoidCoreBehavior(5))
-                .build());
-        this.register(BlockDefinition.builder().key(Block.SCULK.key())
-                .defaultBlock(Block.SCULK)
-                .skipAttributes()
-                .defineBehavior(BlockBehavior.Type.MINING_SPEED, MiningSpeedBehavior.UNBREAKABLE)
-                .build());
-//        this.register(BlockDefinition.builder().key(Block.DIRT.key())
-//                .defaultBlock(Block.DIRT)
-//                .settings(BlockSettings.NONE)
-//                .build());
-
-        this.registerBlocks();
-        this.registerWood();
-        this.registerCrops();
-        this.registerInventoryBlocks();
+        try {
+            this.load();
+        } catch (IOException e) {
+            DSLogger.getLogger().severe(e);
+        }
 
         this.blocks.forEach((key, definition) -> {
-            final BlockHandler blockHandler = definition.defaultBlock().handler();
-            if (blockHandler == null) {
+             final BlockEntityBehavior blockEntityBehavior = definition.getBehavior(BlockBehavior.Type.BLOCK_ENTITY);
+            if (blockEntityBehavior == null) {
                 return;
             }
-            MinecraftServer.getBlockManager().registerHandler(key.key(), () -> blockHandler);
+            MinecraftServer.getBlockManager().registerHandler(blockEntityBehavior.blockEntityId(), blockEntityBehavior::createBlockHandler);
         });
-    }
-
-    private void registerCrops() {
-        this.register(BlockDefinition.builder().key(BlockIds.DRY_GRASS_SEEDS)
-                .defaultBlock(Block.BEETROOTS.withProperty("age", "0"))
-                .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
-                .defineBehaviors(DryGrassBehavior.DRY_GRASS_BEHAVIOR)
-                .defineBehaviors(PlaceRequirementsBehavior.DIRT_SUPPORT_REQUIREMENT)
-                .build()
-        );
-        this.register(BlockDefinition.builder().key(Block.SHORT_DRY_GRASS.key())
-                .defaultBlock(Block.SHORT_DRY_GRASS)
-                .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
-                .defineBehaviors(DryGrassBehavior.DRY_GRASS_BEHAVIOR)
-                .defineBehaviors(PlaceRequirementsBehavior.DIRT_SUPPORT_REQUIREMENT)
-                .build()
-        );
-        this.register(BlockDefinition.builder().key(Block.TALL_DRY_GRASS.key())
-                .defaultBlock(Block.TALL_DRY_GRASS)
-                .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
-                .defineBehaviors(DryGrassBehavior.DRY_GRASS_BEHAVIOR)
-                .defineBehaviors(PlaceRequirementsBehavior.DIRT_SUPPORT_REQUIREMENT)
-                .build()
-        );
-        this.register(BlockDefinition.builder().key(BlockIds.VOID_INFUSED_BUSH)
-                .defaultBlock(Block.CLOSED_EYEBLOSSOM)
-                .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
-                .defineBehaviors(DryGrassBehavior.DRY_GRASS_BEHAVIOR)
-                .defineBehaviors(PlaceRequirementsBehavior.DIRT_SUPPORT_REQUIREMENT)
-                .build()
-        );
-        this.register(BlockDefinition.builder().key(Block.CARROTS.key())
-                .defaultBlock(Block.CARROTS)
-                .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
-                .defineBehaviors(new CropBehavior(
-                        new IntBlockProperty("age", 0, 7),
-                        50,
-                        Material.CARROT.key(),
-                        ItemIds.VOID_INFUSED_CARROT,
-                        60,
-                        1,
-                        4,
-                        30,
-                        7
-                ))
-                .build());
-               this.register(BlockDefinition.builder().key(Block.POTATOES.key())
-                .defaultBlock(Block.POTATOES)
-                .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
-                .defineBehaviors(new CropBehavior(
-                        new IntBlockProperty("age", 0, 7),
-                        45,
-                        Material.POTATO.key(),
-                        ItemIds.VOID_INFUSED_POTATO,
-                        60,
-                        1,
-                        4,
-                        30,
-                        5
-                ))
-                .build());
-        this.register(BlockDefinition.builder().key(Block.CACTUS.key())
-                .defaultBlock(Block.CACTUS)
-                .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
-                .defineBehaviors(new CactusBehavior(10, 50))
-                .build());
-        this.register(BlockDefinition.builder().key(Block.CACTUS_FLOWER.key())
-                .defaultBlock(Block.CACTUS_FLOWER)
-                .attributes(Set.of(BlockAttributes.HOE_MINEABLE))
-                .defineBehaviors(new CactusFlowerBehavior(100, 0.2, 3))
-                .defineBehaviors(new SupportedBlockBehavior(Direction.DOWN, false, Set.of(Block.CACTUS.key())))
-                .build());
-    }
-
-    private void registerBlocks() {
-        this.register(BlockDefinition.builder().key(Block.DIRT.key())
-                .defaultBlock(Block.DIRT)
-                .attributes(Set.of(BlockAttributes.SHOVEL_MINEABLE))
-                .defineBehaviors(MiningSpeedBehavior.ticks(20))
-                .defineBehaviors(BlockDropBehavior.constantDrop(MaterialKeys.DIRT.key()))
-                .build());
-        this.register(BlockDefinition.builder().key(Block.GRASS_BLOCK.key())
-                .defaultBlock(Block.GRASS_BLOCK)
-                .skipAttributes()
-                .build());
-        this.register(BlockDefinition.builder().key(Block.FARMLAND.key())
-                .defaultBlock(Block.FARMLAND)
-                .attributes(Set.of(BlockAttributes.SHOVEL_MINEABLE))
-                .defineBehaviors(MiningSpeedBehavior.ticks(20))
-                        .defineBehaviors(BlockDropBehavior.constantDrop(MaterialKeys.DIRT.key()))
-                .build());
-    }
-
-    private void registerWood() {
-        this.register(BlockDefinition.builder().key(BlockIds.THATCH_PLANKS)
-                .defaultBlock(Block.BAMBOO_PLANKS)
-                .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
-                .defineBehaviors(new WoodPlanksBehavior(ItemIds.THATCH_PLANKS))
-                .build());
-        this.register(BlockDefinition.builder().key(BlockIds.THATCH_SLAB)
-                .defaultBlock(Block.BAMBOO_SLAB)
-                .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
-                .defineBehaviors(new WoodPlanksBehavior(ItemIds.THATCH_SLAB))
-                .build());
-    }
-
-    private void registerInventoryBlocks() {
-        this.register(BlockDefinition.builder().key(Block.CRAFTING_TABLE.key())
-                .defaultBlock(Block.CRAFTING_TABLE)
-                .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
-                .defineBehaviors(new CraftingTableBehavior())
-                .build());
-        this.register(BlockDefinition.builder().key(Block.COMPOSTER.key())
-                .defaultBlock(Block.COMPOSTER)
-                .attributes(Set.of(BlockAttributes.AXE_MINEABLE))
-                .defineBehaviors(new ComposterBehavior())
-                .build()
-        );
     }
 
     private void register(BlockDefinition definition) {

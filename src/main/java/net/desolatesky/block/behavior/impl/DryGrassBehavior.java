@@ -4,17 +4,21 @@ import net.desolatesky.block.BlockIds;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
+import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.ItemIds;
 import net.desolatesky.item.definition.ItemDefinition;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.BlockUtil;
+import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +27,35 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
-public final class DryGrassBehavior implements RandomTickBehavior, MiningSpeedBehavior, BlockDropBehavior {
+public final class DryGrassBehavior implements RandomTickBehavior, BlockDropBehavior {
+
+    public static final class Serializer extends BlockBehaviorSerializer<DryGrassBehavior> {
+
+        public Serializer() {
+            super(Namespace.key("dry_grass"));
+        }
+
+        private static final String VOID_GRASS_CHANCE_KEY = "void-grass-chance";
+
+        @Override
+        public DryGrassBehavior deserialize(java.lang.reflect.Type type, ConfigurationNode node) throws SerializationException {
+            final double voidGrassChance = node.node("void-grass-chance").getDouble();
+            return new DryGrassBehavior(voidGrassChance);
+        }
+
+        @Override
+        public void serialize(java.lang.reflect.Type type, @org.jspecify.annotations.Nullable DryGrassBehavior obj, ConfigurationNode node) throws SerializationException {
+            if (obj == null) {
+                return;
+            }
+            node.node(VOID_GRASS_CHANCE_KEY).set(obj.voidGrassChance);
+        }
+
+        @Override
+        public Class<DryGrassBehavior> behaviorClass() {
+            return DryGrassBehavior.class;
+        }
+    }
 
     public static final DryGrassBehavior DRY_GRASS_BEHAVIOR = new DryGrassBehavior(2);
 
@@ -44,14 +76,6 @@ public final class DryGrassBehavior implements RandomTickBehavior, MiningSpeedBe
                 world.setBlock(pos, Block.TALL_DRY_GRASS.key(), Function.identity());
             }
         }
-    }
-
-    @Override
-    public int getTicksToMine(DSWorld world, Point blockPos, Block block, DSPlayer player) {
-        if (block.key().equals(Block.TALL_DRY_GRASS.key())) {
-            return 20;
-        }
-        return 10;
     }
 
     @Override
@@ -95,6 +119,6 @@ public final class DryGrassBehavior implements RandomTickBehavior, MiningSpeedBe
 
     @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.RANDOM_TICK, Type.MINING_SPEED, Type.BLOCK_DROP);
+        return List.of(Type.RANDOM_TICK, Type.BLOCK_DROP);
     }
 }

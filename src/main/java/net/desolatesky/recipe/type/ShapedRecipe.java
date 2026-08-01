@@ -220,6 +220,9 @@ public class ShapedRecipe implements Recipe<ShapedRecipe.Input, ShapedRecipe.Res
                 final ItemStack ingredient = shifted[i][j];
                 final int amount = ingredient.amount();
                 if (this.recipeAmounts[i][j] <= 0) {
+                    if (!ingredient.isAir()) {
+                       return null;
+                    }
                     continue;
                 }
                 if (!recipeIngredient.equals(ItemUtil.getItemId(ingredient))) {

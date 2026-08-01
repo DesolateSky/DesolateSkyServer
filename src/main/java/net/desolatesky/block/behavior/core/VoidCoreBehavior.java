@@ -4,10 +4,13 @@ import net.desolatesky.block.BlockIds;
 import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.behavior.ClickBehavior;
 import net.desolatesky.block.behavior.TickBehavior;
+import net.desolatesky.block.behavior.impl.BlockEntityBehavior;
 import net.desolatesky.block.behavior.listener.LoadBehavior;
+import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.definition.BlockDefinition;
-import net.desolatesky.entity.EntityManager;
+import net.desolatesky.block.handler.DSBlockHandler;
 import net.desolatesky.entity.EntityIds;
+import net.desolatesky.entity.EntityManager;
 import net.desolatesky.entity.EntityTags;
 import net.desolatesky.entity.IslandEntity;
 import net.desolatesky.island.permission.IslandPermission;
@@ -17,6 +20,7 @@ import net.desolatesky.item.definition.ItemDefinition;
 import net.desolatesky.loot.LootFactory;
 import net.desolatesky.loot.LootTable;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.VoidWorld;
 import net.desolatesky.world.region.Region;
@@ -32,8 +36,11 @@ import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.Weather;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.item.ItemStack;
 import org.jspecify.annotations.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -42,14 +49,50 @@ import java.util.List;
 import java.util.UUID;
 import java.util.random.RandomGenerator;
 
-public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, LoadBehavior {
+public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, LoadBehavior, BlockEntityBehavior {
 
+    private static final Key KEY = Namespace.key("void_core");
+
+    public static final class Serializer extends BlockBehaviorSerializer<VoidCoreBehavior> {
+
+        public Serializer() {
+            super(KEY);
+        }
+
+        private static final String GENERATE_ITEM_CHANCE_KEY = "generate-item-chance";
+
+        @Override
+        public VoidCoreBehavior deserialize(java.lang.reflect.Type type, ConfigurationNode node) throws SerializationException {
+            final double generateItemChance = node.node(GENERATE_ITEM_CHANCE_KEY).getDouble();
+            return new VoidCoreBehavior(generateItemChance);
+        }
+
+        @Override
+        public void serialize(java.lang.reflect.Type type, @org.jspecify.annotations.Nullable VoidCoreBehavior obj, ConfigurationNode node) throws SerializationException {
+            if (obj == null) {
+                return;
+            }
+            node.node(GENERATE_ITEM_CHANCE_KEY, obj.generateItemChance);
+        }
+
+        @Override
+        public Class<VoidCoreBehavior> behaviorClass() {
+            return VoidCoreBehavior.class;
+        }
+    }
+
+    private static final BlockHandler BLOCK_HANDLER = DSBlockHandler.newTickingBlockHandler(KEY);
     private static final Region BLOCK_REGION = Region.square(new Vec(0.5, 0, 0.5), 0.5, 0, 1);
 
     private final double generateItemChance;
 
     public VoidCoreBehavior(double generateItemChance) {
         this.generateItemChance = generateItemChance;
+    }
+
+    @Override
+    public BlockHandler createBlockHandler() {
+        return BLOCK_HANDLER;
     }
 
     @Override
@@ -317,7 +360,12 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
     }
 
     @Override
+    public Key blockEntityId() {
+        return KEY;
+    }
+
+    @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.CLICK, Type.TICK, Type.LOAD, Type.VOID_CORE);
+        return List.of(Type.CLICK, Type.TICK, Type.LOAD, Type.VOID_CORE, Type.BLOCK_ENTITY);
     }
 }

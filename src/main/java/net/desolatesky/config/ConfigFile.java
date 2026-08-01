@@ -1,5 +1,6 @@
 package net.desolatesky.config;
 
+import net.desolatesky.config.serializer.BuiltInTypeSerializers;
 import net.desolatesky.util.ResourceLoader;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 
@@ -21,10 +22,9 @@ public class ConfigFile {
     public static ConfigFile get(Path filePath, String resourcePath, Function<HoconConfigurationLoader.Builder, HoconConfigurationLoader.Builder> loaderBuilderFunction) {
         final ConfigFile configFile = new ConfigFile(filePath, resourcePath, loaderBuilderFunction);
         configFile.load();
-        final HoconConfigurationLoader loader = loaderBuilderFunction.apply(
-                        HoconConfigurationLoader.builder()
-                                .path(filePath)
-                )
+        final HoconConfigurationLoader.Builder builder = HoconConfigurationLoader.builder().path(filePath);
+        builder.defaultOptions(opt -> opt.serializers(BuiltInTypeSerializers::registerToLoader));
+        final HoconConfigurationLoader loader = loaderBuilderFunction.apply(builder)
                 .build();
         try {
             configFile.rootNode = new ConfigNode(loader.load());

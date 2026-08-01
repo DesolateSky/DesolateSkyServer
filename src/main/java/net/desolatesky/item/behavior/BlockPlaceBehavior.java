@@ -73,7 +73,7 @@ public interface BlockPlaceBehavior extends ItemBehavior {
             if (blockDefinition == null) {
                 return null;
             }
-            return blockDefinition.defaultBlock();
+            return blockDefinition.createBlock();
         }
     }
 
@@ -96,7 +96,7 @@ public interface BlockPlaceBehavior extends ItemBehavior {
             if (blockDefinition == null) {
                 return null;
             }
-            final Block defaultBlock = blockDefinition.defaultBlock();
+            final Block defaultBlock = blockDefinition.createBlock();
             if (cursorPosition.y() > 0.5) {
                 return BlockProperties.SLAB_TYPE_PROPERTY.write(defaultBlock, SlabType.TOP);
             } else {

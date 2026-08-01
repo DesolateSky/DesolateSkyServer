@@ -1,13 +1,14 @@
 package net.desolatesky.block.behavior.impl;
 
-import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.ClickBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
+import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.crafting.CraftingInventory;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.definition.ItemDefinition;
 import net.desolatesky.player.DSPlayer;
+import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
@@ -16,12 +17,35 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public final class CraftingTableBehavior implements ClickBehavior, MiningSpeedBehavior, BlockDropBehavior {
+public final class CraftingTableBehavior implements ClickBehavior {
+
+    public static final class Serializer extends BlockBehaviorSerializer<CraftingTableBehavior> {
+
+        public Serializer() {
+            super(Namespace.minecraftKey("crafting_table"));
+        }
+
+        @Override
+        public CraftingTableBehavior deserialize(java.lang.reflect.Type type, ConfigurationNode node) {
+            return new CraftingTableBehavior();
+        }
+
+        @Override
+        public void serialize(java.lang.reflect.Type type, @org.jspecify.annotations.Nullable CraftingTableBehavior obj, ConfigurationNode node) throws SerializationException {
+        }
+
+        @Override
+        public Class<CraftingTableBehavior> behaviorClass() {
+            return CraftingTableBehavior.class;
+        }
+    }
 
     @Override
     public Result onRightClick(DSWorld world, DSPlayer player, PlayerHand hand, Point clickedPos, Block clickedBlock, ItemStack clickedWith) {
@@ -36,26 +60,7 @@ public final class CraftingTableBehavior implements ClickBehavior, MiningSpeedBe
     }
 
     @Override
-    public Collection<ItemStack> getDrops(DSWorld world,
-                                          Point pos,
-                                          Block block,
-                                          Key blockId,
-                                          ItemFactory itemFactory,
-                                          @Nullable ItemStack toolUsed) {
-        final ItemDefinition itemDefinition = itemFactory.getItemDefinition(Material.CRAFTING_TABLE.key());
-        if (itemDefinition == null) {
-            return Collections.emptyList();
-        }
-        return List.of(itemDefinition.defaultItemStack());
-    }
-
-    @Override
-    public int getTicksToMine(DSWorld world, Point blockPos, Block block, DSPlayer player) {
-        return 2 * 20;
-    }
-
-    @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.MINING_SPEED, Type.BLOCK_DROP, Type.CLICK);
+        return List.of(Type.CLICK);
     }
 }

@@ -70,7 +70,7 @@ public final class BlockDefinitionBuilder {
 
         public <T extends BlockBehavior> BlockBehaviorsStep defineBehavior(BlockBehavior.Type<? extends T> type, T blockBehavior) {
             if (this.blockBehaviors.containsKey(type)) {
-                throw new IllegalArgumentException("Block behavior of type " + type.blockBehaviorClass().getName() + " is already defined.");
+                throw new IllegalArgumentException("Block behavior of type " + type.blockBehaviorClass().getName() + " is already defined for block " + this.key);
             }
             this.blockBehaviors.put(type, blockBehavior);
             return this;

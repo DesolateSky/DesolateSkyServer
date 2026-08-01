@@ -3,11 +3,13 @@ package net.desolatesky.block.behavior.impl;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.ClickBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
+import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.property.BlockProperties;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.ItemTags;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
+import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
@@ -16,12 +18,35 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.MaterialKeys;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public final class ComposterBehavior implements ClickBehavior, MiningSpeedBehavior, BlockDropBehavior {
+public final class ComposterBehavior implements ClickBehavior, BlockDropBehavior {
+
+    public static final class Serializer extends BlockBehaviorSerializer<ComposterBehavior> {
+
+        public Serializer() {
+            super(Namespace.minecraftKey("composter"));
+        }
+
+        @Override
+        public ComposterBehavior deserialize(java.lang.reflect.Type type, ConfigurationNode node) {
+            return new ComposterBehavior();
+        }
+
+        @Override
+        public void serialize(java.lang.reflect.Type type, @org.jspecify.annotations.Nullable ComposterBehavior obj, ConfigurationNode node) throws SerializationException {
+        }
+
+        @Override
+        public Class<ComposterBehavior> behaviorClass() {
+            return ComposterBehavior.class;
+        }
+    }
 
     @Override
     public Result onRightClick(
@@ -73,12 +98,7 @@ public final class ComposterBehavior implements ClickBehavior, MiningSpeedBehavi
     }
 
     @Override
-    public int getTicksToMine(DSWorld world, Point blockPos, Block block, DSPlayer player) {
-        return 3 * 20;
-    }
-
-    @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.CLICK, Type.MINING_SPEED, Type.BLOCK_DROP);
+        return List.of(Type.CLICK, Type.BLOCK_DROP);
     }
 }

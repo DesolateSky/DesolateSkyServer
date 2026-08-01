@@ -17,6 +17,7 @@ import net.desolatesky.recipe.RecipeIds;
 import net.desolatesky.util.ComponentUtil;
 import net.desolatesky.util.Constants;
 import net.desolatesky.util.ItemUtil;
+import net.desolatesky.util.Namespace;
 import net.desolatesky.util.Pair;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -394,6 +395,10 @@ public final class ConfiguredItemFactory implements ItemFactory {
         this.register(ItemDefinition.builder().key(MaterialKeys.DIRT.key())
                 .defaultItem(ItemStack.of(Material.DIRT))
                 .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(BlockKeys.DIRT.key()))
+                .build());
+        this.register(ItemDefinition.builder().key(ItemIds.SMALL_BARREL)
+                .defaultItem(ItemStack.of(Material.BARREL))
+                .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(Namespace.key("small_barrel")))
                 .build());
     }
 

@@ -1,6 +1,7 @@
 package net.desolatesky.block.definition;
 
 import net.desolatesky.block.behavior.BlockBehavior;
+import net.desolatesky.block.behavior.impl.BlockEntityBehavior;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.minestom.server.instance.block.Block;
@@ -52,8 +53,16 @@ public final class BlockDefinition implements Keyed {
         return this.key;
     }
 
-    public Block defaultBlock() {
-        return this.defaultBlock;
+    public Block createBlock() {
+        final BlockEntityBehavior blockEntityBehavior = this.getBehavior(BlockBehavior.Type.BLOCK_ENTITY);
+        if (blockEntityBehavior == null) {
+            return this.defaultBlock;
+        }
+        return this.defaultBlock.withHandler(blockEntityBehavior.createBlockHandler());
+    }
+
+    public Key minecraftKey() {
+        return this.defaultBlock.key();
     }
 
     public boolean hasAttribute(Key attribute) {

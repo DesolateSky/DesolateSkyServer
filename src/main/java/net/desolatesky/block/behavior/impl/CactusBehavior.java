@@ -6,10 +6,12 @@ import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
 import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
+import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.property.IntBlockProperty;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.BlockUtil;
+import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
@@ -17,12 +19,46 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public final class CactusBehavior implements RandomTickBehavior, MiningSpeedBehavior, BlockDropBehavior, PlaceRequirementsBehavior {
+public final class CactusBehavior implements RandomTickBehavior, BlockDropBehavior {
+
+    public static final class Serializer extends BlockBehaviorSerializer<CactusBehavior> {
+
+        public Serializer() {
+            super(Namespace.key("cactus"));
+        }
+
+        private static final String GROWTH_CHANCE_KEY = "growth-chance";
+        private static final String FLOWER_CHANCE_KEY = "flower-chance";
+
+        @Override
+        public CactusBehavior deserialize(java.lang.reflect.Type type, ConfigurationNode node) throws SerializationException {
+            final double growthChance = node.node(GROWTH_CHANCE_KEY).getDouble();
+            final double flowerChance = node.node(FLOWER_CHANCE_KEY).getDouble();
+            return new CactusBehavior(growthChance, flowerChance);
+        }
+
+        @Override
+        public void serialize(java.lang.reflect.Type type, @org.jspecify.annotations.Nullable CactusBehavior obj, ConfigurationNode node) throws SerializationException {
+            if (obj == null) {
+                return;
+            }
+            node.node(GROWTH_CHANCE_KEY).set(obj.growthChance);
+            node.node(FLOWER_CHANCE_KEY).set(obj.flowerChance);
+        }
+
+        @Override
+        public Class<CactusBehavior> behaviorClass() {
+            return CactusBehavior.class;
+        }
+    }
+
 
     private static final IntBlockProperty AGE_PROPERTY = new IntBlockProperty("age", 0, 9);
     private final double growthChance;
@@ -74,24 +110,7 @@ public final class CactusBehavior implements RandomTickBehavior, MiningSpeedBeha
     }
 
     @Override
-    public int getTicksToMine(DSWorld world, Point blockPos, Block block, DSPlayer player) {
-        return 60;
-    }
-
-    @Override
-    public Result checkState(DSWorld world, Point pos, Block block) {
-        final Block under = world.getBlock(pos.sub(0, 1, 0));
-        final boolean good = MCBlockTags.isDirtOrGrass(under) || BlockUtil.isSameBlock(under, block);
-        return good ? Result.GOOD : Result.DESTROY_AND_DROP;
-    }
-
-    @Override
-    public boolean isValidForInitialPlace(DSWorld world, Point pos, Block block) {
-        return this.checkState(world, pos, block) == Result.GOOD;
-    }
-
-    @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.RANDOM_TICK, Type.MINING_SPEED, Type.BLOCK_DROP, Type.PLACE_REQUIREMENTS);
+        return List.of(Type.RANDOM_TICK, Type.BLOCK_DROP);
     }
 }

@@ -43,9 +43,6 @@ public final class CraftingHandler {
                 continue;
             }
             this.holder.setCurrentRecipeId(recipe.key());
-//            final ItemStack[][] newInput = this.currentOutputResult.newInput();
-//            this.setInputItems(newInput);
-//            final ItemStack output = currentOutputResult.output();
             final ItemStack output = this.holder.currentOutputResult().create(itemFactory);
             this.setOutputItem(output);
             break;

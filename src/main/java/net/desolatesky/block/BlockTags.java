@@ -1,17 +1,23 @@
 package net.desolatesky.block;
 
 import net.desolatesky.util.Namespace;
+import net.desolatesky.util.Pair;
 import net.desolatesky.util.Tags;
 import net.kyori.adventure.key.Key;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.utils.Direction;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public final class BlockTags {
 
-    private BlockTags() {}
+    private BlockTags() {
+    }
 
     public static final Tag<Key> ID = Tags.Key(Namespace.key("id").asString());
     public static final Tag<Direction> FACING = Tags.Enum("direction", Direction.class);
@@ -27,5 +33,7 @@ public final class BlockTags {
 
     public static final Tag<Boolean> IS_VOID_CROP = Tags.Boolean("is_void_crop");
     public static final Tag<UUID> VOID_CROP_ENTITY = Tags.UUID("void_crop_entity");
+
+    public static final Tag<Map<Integer, ItemStack>> INVENTORY = Tags.Map("inventory", Tags.Integer("slot"), Tags.ItemStack("item"), HashMap::new);
 
 }

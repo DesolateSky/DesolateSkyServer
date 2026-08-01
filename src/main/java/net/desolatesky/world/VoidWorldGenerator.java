@@ -38,10 +38,10 @@ public final class VoidWorldGenerator implements Generator {
         final Point start = unit.absoluteStart();
         final Point floorPoint = VoidWorld.SPAWN_POINT.sub(0, 2, 0);
         if (start.blockX() == 0 && start.blockZ() == 0) {
-            final Block voidCore = Objects.requireNonNull(this.blockFactory.getBlockDefinition(BlockIds.VOID_CORE)).defaultBlock();
+            final Block voidCore = Objects.requireNonNull(this.blockFactory.getBlockDefinition(BlockIds.VOID_CORE)).createBlock();
             unitModifier.setBlock(VoidWorld.VOID_CORE_POS, voidCore);
         }
-        final Block sculk = Objects.requireNonNull(this.blockFactory.getBlockDefinition(Block.SCULK)).defaultBlock();
+        final Block sculk = Objects.requireNonNull(this.blockFactory.getBlockDefinition(Block.SCULK)).createBlock();
         unitModifier.fillHeight(Constants.WORLD_MIN_Y, Constants.WORLD_MIN_Y + 1, Block.END_PORTAL);
         for (int x = 0; x < Chunk.CHUNK_SIZE_X; x++) {
             for (int z = 0; z < Chunk.CHUNK_SIZE_Z; z++) {

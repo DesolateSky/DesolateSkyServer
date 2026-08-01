@@ -45,4 +45,6 @@ public final class ItemIds {
     public static final Key FLINT_SWORD = Namespace.key("flint_sword");
     
     public static final Key WATER_BOTTLE = Namespace.key("water_bottle");
+
+    public static final Key SMALL_BARREL = Namespace.key("small_barrel");
 }

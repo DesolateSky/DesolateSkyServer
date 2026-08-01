@@ -28,7 +28,7 @@ public final class Main {
         final MinecraftServer minecraftServer = MinecraftServer.init(new Auth.Online());
         final FileDatabase<DSPlayerData> playerDatabase = new FileDatabase<>(Path.of("players"), DSPlayerData.DATA_TRANSLATOR);
         final FileDatabase<IslandSnapshot> islandDatabase = new FileDatabase<>(Path.of("islands"), IslandSnapshot.DATA_TRANSLATOR);
-        final BlockFactory blockFactory = new ConfiguredBlockFactory();
+        final BlockFactory blockFactory = new ConfiguredBlockFactory(Path.of("blocks"));
         final ItemFactory itemFactory = new ConfiguredItemFactory();
         final EntityManager entityFactory = new TypedEntityFactory();
         final LootFactory lootFactory = new LootFactory();

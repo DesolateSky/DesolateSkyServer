@@ -1,6 +1,5 @@
 package net.desolatesky.block.handler;
 
-import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.TickBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
@@ -16,20 +15,17 @@ import org.jetbrains.annotations.NotNullByDefault;
 import java.util.Collection;
 
 @NotNullByDefault
-public final class DSBlockHandler implements BlockHandler {
+public class DSBlockHandler implements BlockHandler {
 
-    public static DSBlockHandler newTickingBlockHandler(Key key, BlockFactory blockFactory) {
-        return new DSBlockHandler(key, blockFactory, true);
+    public static DSBlockHandler newTickingBlockHandler(Key key) {
+        return new DSBlockHandler(key, true);
     }
 
-
     private final Key key;
-    private final BlockFactory blockFactory;
     private final boolean ticks;
 
-    public DSBlockHandler(Key key, BlockFactory blockFactory, boolean ticks) {
+    public DSBlockHandler(Key key, boolean ticks) {
         this.key = key;
-        this.blockFactory = blockFactory;
         this.ticks = ticks;
     }
 
@@ -63,15 +59,15 @@ public final class DSBlockHandler implements BlockHandler {
         final Block block = tick.getBlock();
         final Point pos = tick.getBlockPosition();
         final Key blockId = BlockUtil.getBlockId(block);
-        final BlockDefinition blockDefinition = this.blockFactory.getBlockDefinition(blockId);
+        if (!(tick.getInstance() instanceof final DSWorld world)) {
+            return;
+        }
+        final BlockDefinition blockDefinition = world.blockFactory().getBlockDefinition(blockId);
         if (blockDefinition == null) {
             return;
         }
         final TickBehavior tickBehavior = blockDefinition.getBehavior(BlockBehavior.Type.TICK);
         if (tickBehavior == null) {
-            return;
-        }
-        if (!(tick.getInstance() instanceof final DSWorld world)) {
             return;
         }
         tickBehavior.onTick(world, pos, block, blockId);

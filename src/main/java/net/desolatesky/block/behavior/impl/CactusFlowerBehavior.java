@@ -5,11 +5,13 @@ import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.ClickBehavior;
 import net.desolatesky.block.behavior.MiningSpeedBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
+import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.fluid.FluidMeasurement;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.ItemIds;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.InventoryUtil;
+import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.coordinate.Point;
@@ -21,13 +23,49 @@ import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.random.RandomGenerator;
 
-public final class CactusFlowerBehavior implements RandomTickBehavior, MiningSpeedBehavior, BlockDropBehavior, ClickBehavior {
+public final class CactusFlowerBehavior implements RandomTickBehavior, BlockDropBehavior, ClickBehavior {
+
+    public static final class Serializer extends BlockBehaviorSerializer<CactusFlowerBehavior> {
+
+        public Serializer() {
+            super(Namespace.key("cactus_flower"));
+        }
+
+        private static final String WATER_CHANCE_KEY = "water-chance";
+        private static final String WATER_BUCKETS_INCREMENT_KEY = "water-buckets-increment";
+        private static final String MAX_WATER_BUCKETS_KEY = "max-water-buckets";
+
+        @Override
+        public CactusFlowerBehavior deserialize(java.lang.reflect.Type type, ConfigurationNode node) throws SerializationException {
+            final double waterChance = node.node(WATER_CHANCE_KEY).getDouble();
+            final double waterBucketsIncrement = node.node(WATER_BUCKETS_INCREMENT_KEY).getDouble();
+            final int maxWaterBuckets = node.node(MAX_WATER_BUCKETS_KEY).getInt();
+            return new CactusFlowerBehavior(waterChance, waterBucketsIncrement, maxWaterBuckets);
+        }
+
+        @Override
+        public void serialize(java.lang.reflect.Type type, @org.jspecify.annotations.Nullable CactusFlowerBehavior obj, ConfigurationNode node) throws SerializationException {
+            if (obj == null) {
+                return;
+            }
+            node.node(WATER_CHANCE_KEY).set(obj.waterChance);
+            node.node(WATER_BUCKETS_INCREMENT_KEY).set(obj.waterBucketsIncrement);
+            node.node(MAX_WATER_BUCKETS_KEY).set(obj.maxWaterBuckets);
+        }
+
+        @Override
+        public Class<CactusFlowerBehavior> behaviorClass() {
+            return CactusFlowerBehavior.class;
+        }
+    }
 
     private final double waterChance;
     private final double waterBucketsIncrement;
@@ -76,11 +114,6 @@ public final class CactusFlowerBehavior implements RandomTickBehavior, MiningSpe
     }
 
     @Override
-    public int getTicksToMine(DSWorld world, Point blockPos, Block block, DSPlayer player) {
-        return 40;
-    }
-
-    @Override
     public Result onRightClick(DSWorld world, DSPlayer player, PlayerHand hand, Point clickedPos, Block clickedBlock, ItemStack clickedWith) {
         if (!clickedWith.material().equals(Material.GLASS_BOTTLE)) {
             return Result.ALLOW;
@@ -107,6 +140,6 @@ public final class CactusFlowerBehavior implements RandomTickBehavior, MiningSpe
 
     @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.RANDOM_TICK, Type.MINING_SPEED, Type.BLOCK_DROP, Type.CLICK);
+        return List.of(Type.RANDOM_TICK, Type.BLOCK_DROP, Type.CLICK);
     }
 }
