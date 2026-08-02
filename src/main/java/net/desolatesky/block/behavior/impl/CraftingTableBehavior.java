@@ -49,6 +49,9 @@ public final class CraftingTableBehavior implements ClickBehavior {
 
     @Override
     public Result onRightClick(DSWorld world, DSPlayer player, PlayerHand hand, Point clickedPos, Block clickedBlock, ItemStack clickedWith) {
+        if (player.isSneaking()) {
+            return Result.ALLOW;
+        }
         final CraftingInventory craftingInventory = new CraftingInventory(world, clickedPos);
         player.openInventory(craftingInventory);
         return Result.BLOCK_INTERACTION;

@@ -5,11 +5,13 @@ import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.ClickBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
+import net.desolatesky.island.permission.IslandPermission;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.behavior.ItemBehavior;
 import net.desolatesky.item.definition.ItemDefinition;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.world.DSWorld;
+import net.desolatesky.world.IslandWorld;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
@@ -67,6 +69,10 @@ public final class BlockClickListener implements Listener<Event> {
             }
             final ClickBehavior clickBehavior = blockDefinition.getBehavior(BlockBehavior.Type.CLICK);
             if (clickBehavior == null) {
+                return;
+            }
+            if (world instanceof final IslandWorld islandWorld && !islandWorld.island().hasPermission(player.getUuid(), IslandPermission.BREAK_BLOCK)) {
+                event.setCancelled(true);
                 return;
             }
             final ClickBehavior.Result result = clickBehavior.onLeftClick(world, player, event.getBlockPosition(), block, player.getItemInMainHand());

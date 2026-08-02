@@ -9,6 +9,7 @@ import net.desolatesky.item.behavior.BlockPlaceBehavior;
 import net.desolatesky.item.behavior.ItemBehavior;
 import net.desolatesky.item.behavior.impl.AttributeMiningSpeedBehavior;
 import net.desolatesky.item.behavior.impl.CacheItemBehavior;
+import net.desolatesky.item.behavior.impl.FlintBehavior;
 import net.desolatesky.item.behavior.impl.HoeBehavior;
 import net.desolatesky.item.behavior.impl.StoneChunkBehavior;
 import net.desolatesky.item.behavior.impl.WaterBottleBehavior;
@@ -197,6 +198,7 @@ public final class ConfiguredItemFactory implements ItemFactory {
                         .customName(ComponentUtil.noItalics("Stone Chunk"))
                         .build())
                 .defineBehavior(ItemBehavior.Type.CLICK, new StoneChunkBehavior(20, 3))
+                        .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(BlockIds.STONE_CHUNK))
                 .build());
     }
 
@@ -312,6 +314,7 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .build());
         this.register(ItemDefinition.builder().key(MaterialKeys.FLINT.key())
                 .defaultItem(ItemStack.of(Material.FLINT))
+                        .defineBehavior(ItemBehavior.Type.CLICK, new FlintBehavior())
                 .build());
 
         this.register(ItemDefinition.builder().key(ItemIds.FLINT_PICKAXE)

@@ -3,8 +3,6 @@ package net.desolatesky.block.property;
 import net.minestom.server.instance.block.Block;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Locale;
-
 public class EnumBlockProperty<E extends Enum<E>> implements BlockProperty<E>{
 
     private final String name;

@@ -112,6 +112,9 @@ public class SupportedBlockBehavior implements PlaceRequirementsBehavior {
         if (this.supportsSelf && BlockUtil.isSameBlock(block, at)) {
             return Result.GOOD;
         }
+        if (this.supportingBlocks.isEmpty() && this.supportingBlockTags.isEmpty() && at.solid()) {
+            return Result.GOOD;
+        }
         if (this.supportingBlocks.contains(at.key())) {
             return Result.GOOD;
         }

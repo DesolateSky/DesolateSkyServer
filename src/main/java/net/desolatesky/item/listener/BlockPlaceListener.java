@@ -4,6 +4,7 @@ import net.desolatesky.Listener;
 import net.desolatesky.block.BlockFactory;
 import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
+import net.desolatesky.block.behavior.impl.PlaceBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.behavior.BlockPlaceBehavior;
@@ -96,7 +97,13 @@ public final class BlockPlaceListener implements Listener<Event> {
                 event.setCancelled(true);
                 return;
             }
-            event.setBlock(block);
+            final PlaceBehavior blockBehavior = blockDefinition.getBehavior(BlockBehavior.Type.PLACE);
+            if (blockBehavior != null) {
+                final Block toPlace = blockBehavior.getBlockToPlace(world, blockPos, block, this.blockFactory.getBlockId(block));
+                event.setBlock(toPlace);
+            } else {
+                event.setBlock(block);
+            }
         });
     }
 
@@ -150,7 +157,14 @@ public final class BlockPlaceListener implements Listener<Event> {
             if (blockToPlace == null) {
                 return;
             }
-            world.setBlock(blockPos, BlockUtil.getBlockId(blockToPlace), Function.identity());
+            final PlaceBehavior blockBehavior = blockDefinition.getBehavior(BlockBehavior.Type.PLACE);
+            final Block finalBlockToPlace;
+            if (blockBehavior != null) {
+                finalBlockToPlace = blockBehavior.getBlockToPlace(world, blockPos, block, this.blockFactory.getBlockId(block));
+            } else {
+                finalBlockToPlace = block;
+            }
+            world.setBlock(blockPos, BlockUtil.getBlockId(blockToPlace), _ -> finalBlockToPlace);
         });
     }
 }

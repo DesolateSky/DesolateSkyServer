@@ -12,6 +12,7 @@ import net.desolatesky.block.behavior.impl.ComposterBehavior;
 import net.desolatesky.block.behavior.impl.CraftingTableBehavior;
 import net.desolatesky.block.behavior.impl.CropBehavior;
 import net.desolatesky.block.behavior.impl.DryGrassBehavior;
+import net.desolatesky.block.behavior.impl.FireBehavior;
 import net.desolatesky.block.behavior.impl.SupportedBlockBehavior;
 import net.desolatesky.block.behavior.impl.WoodPlanksBehavior;
 import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
@@ -73,6 +74,7 @@ public final class ConfiguredBlockFactory implements BlockFactory {
         this.registerBlockBehaviorSerializer(new MiningSpeedBehavior.Serializer());
         this.registerBlockBehaviorSerializer(new BarrelBehavior.Serializer());
         this.registerBlockBehaviorSerializer(new BlockDropBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new FireBehavior.Serializer());
 
         final List<Path> files = new ArrayList<>();
         DEFAULT_CONFIG_FILES.forEach(p -> files.add(this.folderPath.resolve(p)));

@@ -12,5 +12,7 @@ public final class BlockAttributes {
     public static final Key SHOVEL_MINEABLE = Namespace.minecraftKey("mineable/shovel");
     public static final Key HOE_MINEABLE = Namespace.minecraftKey("mineable/hoe");
     public static final Key SWORD_MINEABLE = Namespace.minecraftKey("mineable/sword");
+    public static final Key FLAMMABLE = Namespace.key("flammable");
+    public static final Key FIRE_STARTER = Namespace.key("fire_starter");
 
 }

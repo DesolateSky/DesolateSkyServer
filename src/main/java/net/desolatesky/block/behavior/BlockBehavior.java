@@ -2,6 +2,8 @@ package net.desolatesky.block.behavior;
 
 import net.desolatesky.block.behavior.core.VoidCoreBehavior;
 import net.desolatesky.block.behavior.impl.BlockEntityBehavior;
+import net.desolatesky.block.behavior.impl.FireBehavior;
+import net.desolatesky.block.behavior.impl.PlaceBehavior;
 import net.desolatesky.block.behavior.listener.LoadBehavior;
 
 import java.util.Collection;
@@ -11,6 +13,7 @@ public interface BlockBehavior {
     Collection<BlockBehavior.Type<?>> types();
 
     record Type<T extends BlockBehavior>(Class<T> blockBehaviorClass) {
+        public static final Type<PlaceBehavior> PLACE = new Type<>(PlaceBehavior.class);
         public static final Type<TickBehavior> TICK = new Type<>(TickBehavior.class);
         public static final Type<RandomTickBehavior> RANDOM_TICK = new Type<>(RandomTickBehavior.class);
         public static final Type<MiningSpeedBehavior> MINING_SPEED = new Type<>(MiningSpeedBehavior.class);
