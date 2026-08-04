@@ -2,13 +2,11 @@ package net.desolatesky.block.behavior.impl;
 
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.GrowthBehavior;
-import net.desolatesky.block.behavior.MiningSpeedBehavior;
 import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.property.BlockProperties;
 import net.desolatesky.block.property.IntBlockProperty;
 import net.desolatesky.item.ItemFactory;
-import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.BlockUtil;
 import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;
@@ -20,9 +18,7 @@ import net.minestom.server.item.MaterialKeys;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
-import org.spongepowered.configurate.serialize.TypeSerializer;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,7 +38,7 @@ public final class CropBehavior extends GrowthBehavior implements BlockDropBehav
         private static final String DROPPED_ITEM_KEY = "dropped-item";
         private static final String VOID_CROP_KEY = "void-crop";
         private static final String MIN_DROPS_KEY = "min-drops";
-        private static final String MAX_DROPS_KEY = "max-drop";
+        private static final String MAX_DROPS_KEY = "max-drops";
         private static final String REMOVE_WATER_CHANCE_KEY = "remove-water-chance";
         private static final String VOID_CROP_CHANCE_KEY = "void-crop-chance";
 
