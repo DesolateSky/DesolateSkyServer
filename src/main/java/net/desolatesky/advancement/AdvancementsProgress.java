@@ -57,13 +57,15 @@ public final class AdvancementsProgress {
             }
             final Key rootKey = islandAdvancements.rootAdvancement();
             final IslandAdvancement rootAdvancement = Objects.requireNonNull(islandAdvancements.getAdvancement(rootKey));
-            final AdvancementRoot root = (AdvancementRoot) rootAdvancement.createAdvancement();
+            AdvancementRoot root = (AdvancementRoot) rootAdvancement.createAdvancement();
             if (root == null) {
                 continue;
             }
             AdvancementTab tab = MinecraftServer.getAdvancementManager().getTab(createTabId(island, groupKey));
             if (tab == null) {
                 tab = MinecraftServer.getAdvancementManager().createTab(createTabId(island, groupKey), root);
+            } else {
+                root = tab.getRoot();
             }
             root.showToast(false);
             root.setAchieved(true);
