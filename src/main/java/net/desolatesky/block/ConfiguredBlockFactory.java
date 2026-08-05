@@ -15,6 +15,7 @@ import net.desolatesky.block.behavior.impl.crop.DryGrassBehavior;
 import net.desolatesky.block.behavior.impl.heat.FireBehavior;
 import net.desolatesky.block.behavior.impl.SupportedBlockBehavior;
 import net.desolatesky.block.behavior.impl.WoodPlanksBehavior;
+import net.desolatesky.block.behavior.impl.storage.CrucibleBehavior;
 import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.definition.BlockDefinition;
 import net.desolatesky.block.definition.BlockDefinitionBuilder;
@@ -40,11 +41,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class ConfiguredBlockFactory implements BlockFactory {
-
-    private static final List<Path> DEFAULT_CONFIG_FILES = List.of(
-            Path.of("simple_blocks.conf"),
-            Path.of("special_blocks.conf")
-    );
 
     private final Map<Key, BlockDefinition> blocks;
     private final Map<Key, BlockBehaviorSerializer<? extends BlockBehavior>> blockBehaviorSerializers;
@@ -75,11 +71,11 @@ public final class ConfiguredBlockFactory implements BlockFactory {
         this.registerBlockBehaviorSerializer(new BarrelBehavior.Serializer());
         this.registerBlockBehaviorSerializer(new BlockDropBehavior.Serializer());
         this.registerBlockBehaviorSerializer(new FireBehavior.Serializer());
+        this.registerBlockBehaviorSerializer(new CrucibleBehavior.Serializer());
 
-        final List<Path> files = new ArrayList<>();
-        DEFAULT_CONFIG_FILES.forEach(p -> files.add(this.folderPath.resolve(p)));
+        final List<Path> files;
         try (final Stream<Path> walked = Files.walk(this.folderPath).filter(Files::isRegularFile)) {
-            files.addAll(walked.toList());
+            files = new ArrayList<>(walked.toList());
         }
         for (final Path path : files) {
             final ConfigFile config = ConfigFile.get(path, "", builder -> builder.defaultOptions(options -> options.serializers(b -> {

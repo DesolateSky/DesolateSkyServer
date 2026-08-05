@@ -16,6 +16,8 @@ public final class ItemIds {
 
     public static final Key PEBBLE = Namespace.key("pebble");
 
+    public static final Key CRUDE_CRUCIBLE = Namespace.key("crude_crucible");
+
     public static final Key SILVERFISH_SCALE = Namespace.key("silverfish_scale");
     public static final Key STONE_CHUNK = Namespace.key("stone_chunk");
     public static final Key SILVERFISH_SCALE_BOOTS = Namespace.key("silverfish_scale_boots");

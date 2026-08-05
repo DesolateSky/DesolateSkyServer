@@ -22,6 +22,6 @@ public enum FluidUnit implements Unit<FluidUnit> {
     @Override
     public double convertTo(FluidUnit unit, double value) {
         final double buckets = this.getBucketValue(value);
-        return value / buckets;
+        return buckets / unit.buckets();
     }
 }

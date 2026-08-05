@@ -28,6 +28,7 @@ public final class RecipeFactory {
     private final ItemFactory itemFactory;
     private final Map<Key, Recipe<? extends RecipeInput, ? extends RecipeResult>> recipes = new HashMap<>();
     private final Map<Key, ShapedRecipe> shapedRecipes = new HashMap<>();
+    private final Map<Key, CrucibleRecipe> crucibleRecipes = new HashMap<>();
 
     public RecipeFactory(ItemFactory itemFactory) {
         this.itemFactory = itemFactory;
@@ -39,7 +40,7 @@ public final class RecipeFactory {
                 Map.of(ItemIds.PEBBLE, 6, ItemIds.SILVERFISH_EYE, 2),
                 ItemIds.STONE_SLAB));
 
-        this.recipes.put(RecipeIds.CRUCIBLE_LAVA, new CrucibleRecipe(RecipeIds.CRUCIBLE_LAVA,
+        this.crucibleRecipes.put(RecipeIds.CRUCIBLE_LAVA, new CrucibleRecipe(RecipeIds.CRUCIBLE_LAVA,
                 Map.of(ItemIds.STONE_CHUNK, 16),
                 CrucibleRecipe.ResultType.FLUID,
                 BlockKeys.LAVA.key(),
@@ -86,5 +87,13 @@ public final class RecipeFactory {
 
     public @Unmodifiable Collection<ShapedRecipe> getShapedRecipes() {
         return Collections.unmodifiableCollection(this.shapedRecipes.values());
+    }
+
+    public @Nullable CrucibleRecipe getCrucibleRecipe(Key key) {
+        return this.crucibleRecipes.get(key);
+    }
+
+    public @Unmodifiable Collection<CrucibleRecipe> getCrucibleRecipes() {
+        return Collections.unmodifiableCollection(this.crucibleRecipes.values());
     }
 }

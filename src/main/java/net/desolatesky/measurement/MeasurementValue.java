@@ -1,6 +1,8 @@
 package net.desolatesky.measurement;
 
-public abstract class MeasurementValue<U extends Unit<U>, T extends MeasurementValue<U, T>> {
+import org.jspecify.annotations.NonNull;
+
+public abstract class MeasurementValue<U extends Unit<U>, T extends MeasurementValue<U, T>> implements Comparable<T> {
 
     protected final U unit;
     protected final double value;
@@ -42,5 +44,15 @@ public abstract class MeasurementValue<U extends Unit<U>, T extends MeasurementV
         return this.newValue(this.value * measurement.unit.convertTo(this.unit, measurement.value));
     }
 
+    public double convertTo(U unit) {
+        return this.unit.convertTo(unit, this.value);
+    }
+
     protected abstract T newValue(double value);
+
+    @Override
+    public int compareTo(@NonNull T o) {
+        final double converted = o.convertTo(this.unit);
+        return Double.compare(this.value, converted);
+    }
 }

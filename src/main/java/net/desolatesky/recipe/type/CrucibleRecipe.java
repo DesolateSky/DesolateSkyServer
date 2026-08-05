@@ -7,6 +7,7 @@ import net.desolatesky.recipe.RecipeType;
 import net.desolatesky.recipe.input.RecipeInput;
 import net.desolatesky.recipe.result.RecipeResult;
 import net.kyori.adventure.key.Key;
+import net.minestom.server.item.ItemStackTemplate;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.Nullable;
 
@@ -49,6 +50,10 @@ public class CrucibleRecipe implements Recipe<CrucibleRecipe.Input, CrucibleReci
 
     @Override
     public @Nullable Result craft(ItemFactory itemFactory, Input input) {
+        // recipe must match exactly
+        if (input.items.size() != this.requiredItems.size()) {
+            return null;
+        }
         int minMultiple = Integer.MAX_VALUE;
         final Map<Key, Integer> leftover = new HashMap<>();
         for (final Map.Entry<Key, Integer> entry : input.items.entrySet()) {
@@ -70,6 +75,22 @@ public class CrucibleRecipe implements Recipe<CrucibleRecipe.Input, CrucibleReci
             return null;
         }
         return new Result(this.resultType, this.resultId, minMultiple, leftover);
+    }
+
+    public boolean containsIngredient(Key itemId) {
+        return this.requiredItems.containsKey(itemId);
+    }
+
+    public boolean matchesIngredients(Map<Key, Integer> input) {
+        if (input.size() != this.requiredItems.size()) {
+            return false;
+        }
+        for (final Key id : input.keySet()) {
+            if (!this.requiredItems.containsKey(id)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static final class Input implements RecipeInput {

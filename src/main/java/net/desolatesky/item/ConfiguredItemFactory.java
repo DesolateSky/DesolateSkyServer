@@ -219,6 +219,10 @@ public final class ConfiguredItemFactory implements ItemFactory {
                 .defaultItem(ItemStack.of(Material.CRAFTING_TABLE))
                 .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(Block.CRAFTING_TABLE.key()))
                 .build());
+        this.register(ItemDefinition.builder().key(ItemIds.CRUDE_CRUCIBLE)
+                .defaultItem(ItemStack.of(Material.CAULDRON))
+                .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(BlockIds.CRUDE_CRUCIBLE))
+                .build());
     }
 
     private void registerContainers() {
