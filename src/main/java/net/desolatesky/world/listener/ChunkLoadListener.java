@@ -11,6 +11,8 @@ import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.WorldManager;
 import net.desolatesky.world.WorldType;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.CoordConversion;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.instance.InstanceChunkLoadEvent;
@@ -45,7 +47,8 @@ public class ChunkLoadListener implements Listener<Event> {
                 if (loadBehavior == null) {
                     return;
                 }
-                loadBehavior.onLoad(world, pos, block);
+                final Point worldPos = CoordConversion.chunkBlockRelativeGetGlobal(pos.blockX(), pos.blockY(), pos.blockZ(), chunk.getChunkX(), chunk.getChunkZ());
+                loadBehavior.onLoad(world, worldPos, block);
             });
         });
         node.addListener(IslandUnloadEvent.class, event -> {

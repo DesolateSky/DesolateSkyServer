@@ -111,7 +111,7 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
         if (!voidWorld.island().hasPermission(player.getUuid(), IslandPermission.INTERACT_VOID_CORE)) {
             return Result.BLOCK_INTERACTION;
         }
-        if (clickedBlock.getTag(ItemTags.ISLAND_CORE_SPAWNER_KEY) != null) {
+        if (clickedBlock.getTag(BlockTags.ISLAND_CORE_SPAWNER_KEY) != null) {
             return Result.BLOCK_INTERACTION;
         }
         final EntityManager entityFactory = world.entityFactory();
@@ -119,7 +119,7 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
             e.setTag(EntityTags.ITEM_DISPLAY_KEY, spawner.itemDisplayKey());
             e.setInstance(world.asInstance(), clickedPos.asBlockVec().add(0.5, 1.5, 0.5));
             world.setBlock(clickedPos, clickedBlock.withTag(BlockTags.ISLAND_CORE_SPAWNER_KEY, islandCoreSpawnerKey)
-                    .withTag(BlockTags.ISLAND_CORE_DISPLAY_ENTITY_ID, e.getUuid()));
+                    .withTag(BlockTags.ISLAND_CORE_DISPLAY_ENTITY_ID, e.getUuid()), false);
             player.setItemInHand(hand, clickedWith.withAmount(clickedWith.amount() - 1));
         });
         return Result.BLOCK_INTERACTION;

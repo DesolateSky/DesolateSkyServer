@@ -24,6 +24,7 @@ public class FileDatabase<D> {
     protected final Path dataFolder;
     protected final DataTranslator<D> dataTranslator;
     protected final Executor executor = Executors.newSingleThreadExecutor();
+    private final Object lock = new Object();
 
     public FileDatabase(Path dataFolder, DataTranslator<D> dataTranslator) {
         this.dataFolder = dataFolder;
@@ -35,30 +36,32 @@ public class FileDatabase<D> {
     }
 
     public void saveDataNow(UUID id, D data) {
-        final Path filePath = this.getDataFile(id);
-        try {
-            if (!Files.exists(filePath)) {
-                if (filePath.getParent() != null) {
-                    Files.createDirectories(filePath.getParent());
+        synchronized (this.lock) {
+            final Path filePath = this.getDataFile(id);
+            try {
+                if (!Files.exists(filePath)) {
+                    if (filePath.getParent() != null) {
+                        Files.createDirectories(filePath.getParent());
+                    }
                 }
-            }
-            Files.deleteIfExists(filePath);
-            try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-                final DataWriter writer = DataWriter.newByteWriter(stream);
-                this.dataTranslator.write(writer, data);
-                final Path tempPath = filePath.resolveSibling("temp-" + id);
-                if (Files.exists(tempPath)) {
+                Files.deleteIfExists(filePath);
+                try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+                    final DataWriter writer = DataWriter.newByteWriter(stream);
+                    this.dataTranslator.write(writer, data);
+                    final Path tempPath = filePath.resolveSibling("temp-" + id);
+                    if (Files.exists(tempPath)) {
+                        Files.delete(tempPath);
+                    }
+                    Files.createFile(tempPath);
+                    Files.write(tempPath, stream.toByteArray(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                    Files.copy(tempPath, filePath);
                     Files.delete(tempPath);
+                } catch (IOException e) {
+                    DSLogger.getLogger().severe(e);
                 }
-                Files.createFile(tempPath);
-                Files.write(tempPath, stream.toByteArray(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-                Files.copy(tempPath, filePath);
-                Files.delete(tempPath);
             } catch (IOException e) {
                 DSLogger.getLogger().severe(e);
             }
-        } catch (IOException e) {
-            DSLogger.getLogger().severe(e);
         }
     }
 
@@ -67,20 +70,22 @@ public class FileDatabase<D> {
     }
 
     public @Nullable D loadDataNow(UUID id) {
-        final Path filePath = this.getDataFile(id);
-        if (!Files.exists(filePath)) {
-            return null;
-        }
-        try {
-            final byte[] data = Files.readAllBytes(this.getDataFile(id));
-            if (data.length == 0) {
+        synchronized (this.lock) {
+            final Path filePath = this.getDataFile(id);
+            if (!Files.exists(filePath)) {
                 return null;
             }
-            final DataReader reader = new InputStreamReader(new ByteArrayInputStream(data));
-            return this.dataTranslator.read(reader);
-        } catch (IOException e) {
-            DSLogger.getLogger().severe(e);
-            return null;
+            try {
+                final byte[] data = Files.readAllBytes(this.getDataFile(id));
+                if (data.length == 0) {
+                    return null;
+                }
+                final DataReader reader = new InputStreamReader(new ByteArrayInputStream(data));
+                return this.dataTranslator.read(reader);
+            } catch (IOException e) {
+                DSLogger.getLogger().severe(e);
+                return null;
+            }
         }
     }
 
