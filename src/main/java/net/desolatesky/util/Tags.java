@@ -1,5 +1,8 @@
 package net.desolatesky.util;
 
+import net.desolatesky.measurement.FluidType;
+import net.desolatesky.measurement.FluidUnit;
+import net.desolatesky.measurement.FluidValue;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.BinaryTag;
 import net.kyori.adventure.text.Component;
@@ -111,6 +114,32 @@ public final class Tags {
             }
         });
     }
+
+    public static Tag<FluidValue> FluidValue(String key) {
+        return Tag.Structure(key, new TagSerializer<>() {
+            private static final Tag<FluidType> FLUID_TYPE = Tags.Enum("type", FluidType.class);
+            private static final Tag<FluidUnit> FLUID_UNIT = Tags.Enum("unit", FluidUnit.class);
+            private static final Tag<Double> VALUE = Tags.Double("value");
+
+            @Override
+            public @Nullable FluidValue read(TagReadable reader) {
+                final FluidType type = reader.getTag(FLUID_TYPE);
+                final FluidUnit unit = reader.getTag(FLUID_UNIT);
+                final Double value = reader.getTag(VALUE);
+                if (type == null || unit == null || value == null) {
+                    return null;
+                }
+                return new FluidValue(unit, value, type);
+            }
+
+            @Override
+            public void write(TagWritable writer, FluidValue value) {
+                writer.setTag(FLUID_TYPE, value.fluidType());
+                writer.setTag(FLUID_UNIT, value.unit());
+                writer.setTag(VALUE, value.value());
+            }
+        });
+    }
     
     public static <K, V> Tag<Map<K, V>> Map(String key, Tag<K> keyTag, Tag<V> valueTag, Supplier<Map<K, V>> mapFactory) {
         return Tag.Structure(key, new TagSerializer<>() {
@@ -125,7 +154,7 @@ public final class Tags {
                 if (keys == null || values == null || keys.size() != values.size()) {
                     return Collections.emptyMap();
                 }
-                final Map<K, V> map = new HashMap<>();
+                final Map<K, V> map = mapFactory.get();
                 final Iterator<K> keyIterator = keys.iterator();
                 final Iterator<V> valueIterator = values.iterator();
                 while (keyIterator.hasNext() && valueIterator.hasNext()) {

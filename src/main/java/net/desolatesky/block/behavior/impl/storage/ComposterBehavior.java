@@ -1,8 +1,7 @@
-package net.desolatesky.block.behavior.impl;
+package net.desolatesky.block.behavior.impl.storage;
 
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.ClickBehavior;
-import net.desolatesky.block.behavior.MiningSpeedBehavior;
 import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.property.BlockProperties;
 import net.desolatesky.item.ItemFactory;

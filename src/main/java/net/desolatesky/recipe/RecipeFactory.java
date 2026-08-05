@@ -4,12 +4,16 @@ import net.desolatesky.config.ConfigFile;
 import net.desolatesky.config.ConfigNode;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.ItemIds;
+import net.desolatesky.measurement.TemperatureUnit;
+import net.desolatesky.measurement.TemperatureValue;
 import net.desolatesky.recipe.input.RecipeInput;
 import net.desolatesky.recipe.result.RecipeResult;
 import net.desolatesky.recipe.type.CatalystRecipe;
+import net.desolatesky.recipe.type.CrucibleRecipe;
 import net.desolatesky.recipe.type.ShapedRecipe;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.instance.block.BlockKeys;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -34,6 +38,13 @@ public final class RecipeFactory {
                 ItemIds.SILVERFISH_CRAFTING_CATALYST,
                 Map.of(ItemIds.PEBBLE, 6, ItemIds.SILVERFISH_EYE, 2),
                 ItemIds.STONE_SLAB));
+
+        this.recipes.put(RecipeIds.CRUCIBLE_LAVA, new CrucibleRecipe(RecipeIds.CRUCIBLE_LAVA,
+                Map.of(ItemIds.STONE_CHUNK, 16),
+                CrucibleRecipe.ResultType.FLUID,
+                BlockKeys.LAVA.key(),
+                new TemperatureValue(TemperatureUnit.CELSIUS, 500)
+        ));
         this.initializeShapedRecipes();
     }
 

@@ -1,4 +1,4 @@
-package net.desolatesky.block.behavior.core;
+package net.desolatesky.block.behavior.impl.core;
 
 import net.desolatesky.util.Namespace;
 import net.kyori.adventure.key.Key;

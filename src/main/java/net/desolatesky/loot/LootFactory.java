@@ -1,6 +1,6 @@
 package net.desolatesky.loot;
 
-import net.desolatesky.block.behavior.core.IslandCoreStormLoot;
+import net.desolatesky.block.behavior.impl.core.IslandCoreStormLoot;
 import net.kyori.adventure.key.Key;
 
 import java.util.HashMap;

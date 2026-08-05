@@ -1,5 +1,6 @@
 package net.desolatesky.item;
 
+import net.desolatesky.measurement.FluidValue;
 import net.desolatesky.util.Pair;
 import net.desolatesky.util.Tags;
 import net.kyori.adventure.key.Key;
@@ -28,6 +29,7 @@ public final class ItemTags {
     public static final Tag<Instant> ATTACK_COOLDOWN = Tags.Instant("attack-cooldown");
 
     public static final Tag<Double> COMPOSTER_VALUE = Tags.Double("composter_value");
+    public static final Tag<FluidValue> FLUID_VALUE = Tags.FluidValue("fluid_value");
 
     private ItemTags() {
         throw new UnsupportedOperationException();

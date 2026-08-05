@@ -295,13 +295,7 @@ public class ShapedRecipe implements Recipe<ShapedRecipe.Input, ShapedRecipe.Res
             this.amount = amount;
         }
 
-        @Override
         public ItemStack create(ItemFactory itemFactory) {
-            return this.getItemStack(itemFactory);
-        }
-
-        @Override
-        public ItemStack getDisplay(ItemFactory itemFactory) {
             return this.getItemStack(itemFactory);
         }
 

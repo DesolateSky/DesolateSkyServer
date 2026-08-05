@@ -2,8 +2,8 @@ package net.desolatesky.item;
 
 import net.desolatesky.block.BlockAttributes;
 import net.desolatesky.block.BlockIds;
-import net.desolatesky.block.behavior.core.IslandCoreMobSpawnerIds;
-import net.desolatesky.block.behavior.core.IslandCoreStormLoot;
+import net.desolatesky.block.behavior.impl.core.IslandCoreMobSpawnerIds;
+import net.desolatesky.block.behavior.impl.core.IslandCoreStormLoot;
 import net.desolatesky.entity.EntityIds;
 import net.desolatesky.item.behavior.BlockPlaceBehavior;
 import net.desolatesky.item.behavior.ItemBehavior;
@@ -14,6 +14,9 @@ import net.desolatesky.item.behavior.impl.HoeBehavior;
 import net.desolatesky.item.behavior.impl.StoneChunkBehavior;
 import net.desolatesky.item.behavior.impl.WaterBottleBehavior;
 import net.desolatesky.item.definition.ItemDefinition;
+import net.desolatesky.measurement.FluidType;
+import net.desolatesky.measurement.FluidUnit;
+import net.desolatesky.measurement.FluidValue;
 import net.desolatesky.recipe.RecipeIds;
 import net.desolatesky.util.ComponentUtil;
 import net.desolatesky.util.Constants;
@@ -23,23 +26,14 @@ import net.desolatesky.util.Pair;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.minestom.server.component.DataComponentMap;
 import net.minestom.server.component.DataComponents;
-import net.minestom.server.entity.EquipmentSlotGroup;
-import net.minestom.server.entity.attribute.Attribute;
-import net.minestom.server.entity.attribute.AttributeModifier;
-import net.minestom.server.entity.attribute.AttributeOperation;
-import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockKeys;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.MaterialKeys;
-import net.minestom.server.item.component.AttributeList;
 import net.minestom.server.item.component.ItemRarity;
 import net.minestom.server.item.component.PotionContents;
-import net.minestom.server.item.component.Weapon;
-import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionType;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -196,6 +190,7 @@ public final class ConfiguredItemFactory implements ItemFactory {
         this.register(ItemDefinition.builder().key(ItemIds.STONE_CHUNK.key())
                 .defaultItem(ItemStack.builder(Material.STONE_BUTTON)
                         .customName(ComponentUtil.noItalics("Stone Chunk"))
+                        .set(ItemTags.FLUID_VALUE, new FluidValue(FluidUnit.BUCKET, 0.05, FluidType.SOLID))
                         .build())
                 .defineBehavior(ItemBehavior.Type.CLICK, new StoneChunkBehavior(20, 3))
                         .defineBehavior(ItemBehavior.Type.BLOCK_PLACE, BlockPlaceBehavior.blockPlaceBehavior(BlockIds.STONE_CHUNK))

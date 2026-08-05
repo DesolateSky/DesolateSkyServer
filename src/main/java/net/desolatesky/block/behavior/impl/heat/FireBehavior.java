@@ -1,12 +1,15 @@
-package net.desolatesky.block.behavior.impl;
+package net.desolatesky.block.behavior.impl.heat;
 
 import net.desolatesky.block.BlockAttributes;
 import net.desolatesky.block.behavior.ClickBehavior;
 import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
+import net.desolatesky.block.behavior.impl.PlaceBehavior;
 import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.definition.BlockDefinition;
 import net.desolatesky.block.property.BlockProperties;
+import net.desolatesky.measurement.TemperatureUnit;
+import net.desolatesky.measurement.TemperatureValue;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;
@@ -26,7 +29,7 @@ import java.util.Collection;
 import java.util.List;
 
 @NotNullByDefault
-public final class FireBehavior implements RandomTickBehavior, ClickBehavior, PlaceRequirementsBehavior, PlaceBehavior {
+public final class FireBehavior implements RandomTickBehavior, ClickBehavior, PlaceRequirementsBehavior, PlaceBehavior, HeatSourceBehavior {
 
     public static final class Serializer extends BlockBehaviorSerializer<FireBehavior> {
 
@@ -35,6 +38,7 @@ public final class FireBehavior implements RandomTickBehavior, ClickBehavior, Pl
         private static final String SPREAD_CHANCE_KEY = "spread-chance";
         private static final String EXTINGUISH_CHANCE_KEY = "extinguish-chance";
         private static final String SPREAD_OFFSETS_KEY = "spread-offsets";
+        private static final String TEMPERATURE_KEY = "temperature";
 
         public Serializer() {
             super(ID);
@@ -45,7 +49,8 @@ public final class FireBehavior implements RandomTickBehavior, ClickBehavior, Pl
             final double spreadChance = node.node(SPREAD_CHANCE_KEY).getDouble();
             final double extinguishChance = node.node(EXTINGUISH_CHANCE_KEY).getDouble();
             final List<Point> spreadOffsets = node.node(SPREAD_OFFSETS_KEY).getList(Point.class, new ArrayList<>());
-            return new FireBehavior(spreadChance, extinguishChance, spreadOffsets);
+            final double temperature = node.node(TEMPERATURE_KEY).getDouble();
+            return new FireBehavior(spreadChance, extinguishChance, spreadOffsets, new TemperatureValue(TemperatureUnit.CELSIUS, temperature));
         }
 
         @Override
@@ -62,11 +67,13 @@ public final class FireBehavior implements RandomTickBehavior, ClickBehavior, Pl
     private final double spreadChance;
     private final double extinguishChance;
     private final List<Point> spreadOffsets;
+    private final TemperatureValue temperatureValue;
 
-    public FireBehavior(double spreadChance, double extinguishChance, List<Point> spreadOffsets) {
+    public FireBehavior(double spreadChance, double extinguishChance, List<Point> spreadOffsets, TemperatureValue temperatureValue) {
         this.spreadChance = spreadChance;
         this.extinguishChance = extinguishChance;
         this.spreadOffsets = spreadOffsets;
+        this.temperatureValue = temperatureValue;
     }
 
     @Override
@@ -169,6 +176,11 @@ public final class FireBehavior implements RandomTickBehavior, ClickBehavior, Pl
         return valid;
     }
 
+    @Override
+    public TemperatureValue getTemperature(DSWorld world, Point blockPos, Block block) {
+        return this.temperatureValue;
+    }
+
     private boolean checkDirection(DSWorld world, Point pos, Direction direction) {
         return this.checkSpreadable(world, pos.add(direction.vec()));
     }
@@ -187,6 +199,6 @@ public final class FireBehavior implements RandomTickBehavior, ClickBehavior, Pl
 
     @Override
     public Collection<Type<?>> types() {
-        return List.of(Type.RANDOM_TICK, Type.CLICK, Type.PLACE_REQUIREMENTS, Type.PLACE);
+        return List.of(Type.RANDOM_TICK, Type.CLICK, Type.PLACE_REQUIREMENTS, Type.PLACE, Type.HEAT_SOURCE);
     }
 }

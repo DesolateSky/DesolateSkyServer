@@ -1,7 +1,7 @@
 package net.desolatesky.entity.ai.goal;
 
 import net.desolatesky.block.behavior.BlockBehavior;
-import net.desolatesky.block.behavior.core.VoidCoreBehavior;
+import net.desolatesky.block.behavior.impl.core.VoidCoreBehavior;
 import net.desolatesky.block.definition.BlockDefinition;
 import net.desolatesky.entity.ai.navigation.NavigationTarget;
 import net.desolatesky.entity.type.VoidEntity;

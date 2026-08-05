@@ -1,17 +1,16 @@
-package net.desolatesky.block.behavior.impl;
+package net.desolatesky.block.behavior.impl.storage;
 
 import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.behavior.BlockBehavior;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.ClickBehavior;
-import net.desolatesky.block.behavior.MiningSpeedBehavior;
+import net.desolatesky.block.behavior.impl.BlockEntityBehavior;
 import net.desolatesky.block.behavior.listener.LoadBehavior;
 import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.island.permission.IslandPermission;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.Namespace;
-import net.desolatesky.util.Tags;
 import net.desolatesky.world.DSWorld;
 import net.desolatesky.world.IslandWorld;
 import net.kyori.adventure.key.Key;
@@ -23,7 +22,6 @@ import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.item.ItemStack;
-import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;

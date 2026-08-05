@@ -1,12 +1,11 @@
-package net.desolatesky.block.behavior.impl;
+package net.desolatesky.block.behavior.impl.crop;
 
 import net.desolatesky.block.BlockTags;
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.ClickBehavior;
-import net.desolatesky.block.behavior.MiningSpeedBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
 import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
-import net.desolatesky.fluid.FluidMeasurement;
+import net.desolatesky.measurement.FluidUnit;
 import net.desolatesky.item.ItemFactory;
 import net.desolatesky.item.ItemIds;
 import net.desolatesky.player.DSPlayer;
@@ -88,7 +87,7 @@ public final class CactusFlowerBehavior implements RandomTickBehavior, BlockDrop
             waterLevel = Math.max(waterLevel, this.maxWaterBuckets);
             world.setBlock(pos, block.withTag(BlockTags.CACTUS_FLOWER_WATER, waterLevel));
         }
-        if (waterLevel >= FluidMeasurement.BOTTLE.buckets()) {
+        if (waterLevel >= FluidUnit.BOTTLE.buckets()) {
             this.spawnWater(world, pos);
         }
     }
@@ -119,10 +118,10 @@ public final class CactusFlowerBehavior implements RandomTickBehavior, BlockDrop
             return Result.ALLOW;
         }
         Double waterLevel = clickedBlock.getTag(BlockTags.CACTUS_FLOWER_WATER);
-        if (waterLevel == null || waterLevel < FluidMeasurement.BOTTLE.buckets()) {
+        if (waterLevel == null || waterLevel < FluidUnit.BOTTLE.buckets()) {
             return Result.BLOCK_INTERACTION;
         }
-        waterLevel -= FluidMeasurement.BOTTLE.buckets();
+        waterLevel -= FluidUnit.BOTTLE.buckets();
         world.setBlock(clickedPos, clickedBlock.withTag(BlockTags.CACTUS_FLOWER_WATER, waterLevel));
         InventoryUtil.subtractFromHeldItem(player, hand, 1);
         final ItemStack waterBottle = world.itemFactory().getDefaultItem(ItemIds.WATER_BOTTLE);

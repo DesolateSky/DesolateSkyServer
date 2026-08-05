@@ -1,4 +1,4 @@
-package net.desolatesky.block.behavior.core;
+package net.desolatesky.block.behavior.impl.core;
 
 import net.desolatesky.block.BlockIds;
 import net.desolatesky.block.BlockTags;
@@ -109,6 +109,9 @@ public final class VoidCoreBehavior implements ClickBehavior, TickBehavior, Load
             return Result.ALLOW;
         }
         if (!voidWorld.island().hasPermission(player.getUuid(), IslandPermission.INTERACT_VOID_CORE)) {
+            return Result.BLOCK_INTERACTION;
+        }
+        if (clickedBlock.getTag(ItemTags.ISLAND_CORE_SPAWNER_KEY) != null) {
             return Result.BLOCK_INTERACTION;
         }
         final EntityManager entityFactory = world.entityFactory();

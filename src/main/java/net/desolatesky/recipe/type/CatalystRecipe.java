@@ -116,13 +116,7 @@ public final class CatalystRecipe implements Recipe<CatalystRecipe.Input, Cataly
             this.amount = amount;
         }
 
-        @Override
         public ItemStack create(ItemFactory itemFactory) {
-            return this.getItemStack(itemFactory);
-        }
-
-        @Override
-        public ItemStack getDisplay(ItemFactory itemFactory) {
             return this.getItemStack(itemFactory);
         }
 

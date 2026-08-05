@@ -1,4 +1,4 @@
-package net.desolatesky.block.behavior.impl;
+package net.desolatesky.block.behavior.impl.crop;
 
 import net.desolatesky.block.behavior.BlockDropBehavior;
 import net.desolatesky.block.behavior.GrowthBehavior;

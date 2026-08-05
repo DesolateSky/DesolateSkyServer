@@ -1,15 +1,10 @@
-package net.desolatesky.block.behavior.impl;
+package net.desolatesky.block.behavior.impl.crop;
 
-import net.desolatesky.block.MCBlockTags;
-import net.desolatesky.block.MCMaterialTags;
 import net.desolatesky.block.behavior.BlockDropBehavior;
-import net.desolatesky.block.behavior.MiningSpeedBehavior;
-import net.desolatesky.block.behavior.PlaceRequirementsBehavior;
 import net.desolatesky.block.behavior.RandomTickBehavior;
 import net.desolatesky.block.behavior.serializer.BlockBehaviorSerializer;
 import net.desolatesky.block.property.IntBlockProperty;
 import net.desolatesky.item.ItemFactory;
-import net.desolatesky.player.DSPlayer;
 import net.desolatesky.util.BlockUtil;
 import net.desolatesky.util.Namespace;
 import net.desolatesky.world.DSWorld;

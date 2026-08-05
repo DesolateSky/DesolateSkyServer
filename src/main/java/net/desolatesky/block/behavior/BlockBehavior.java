@@ -1,9 +1,9 @@
 package net.desolatesky.block.behavior;
 
-import net.desolatesky.block.behavior.core.VoidCoreBehavior;
+import net.desolatesky.block.behavior.impl.core.VoidCoreBehavior;
 import net.desolatesky.block.behavior.impl.BlockEntityBehavior;
-import net.desolatesky.block.behavior.impl.FireBehavior;
 import net.desolatesky.block.behavior.impl.PlaceBehavior;
+import net.desolatesky.block.behavior.impl.heat.HeatSourceBehavior;
 import net.desolatesky.block.behavior.listener.LoadBehavior;
 
 import java.util.Collection;
@@ -24,5 +24,6 @@ public interface BlockBehavior {
         public static final Type<LoadBehavior> LOAD = new Type<>(LoadBehavior.class);
         public static final Type<VoidCoreBehavior> VOID_CORE = new Type<>(VoidCoreBehavior.class);
         public static final Type<BlockEntityBehavior> BLOCK_ENTITY = new Type<>(BlockEntityBehavior.class);
+        public static final Type<HeatSourceBehavior> HEAT_SOURCE = new Type<>(HeatSourceBehavior.class);
     }
 }
